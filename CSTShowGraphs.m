@@ -63,7 +63,7 @@ sliderHoriz = uicontrol('parent',mainFigure,'style','slider','position',[0 0 mai
 sliderVert = uicontrol('parent',mainFigure,'style','slider','position',[mainW-20 20 20 mainH-20],'max', max(1,-mainPanelPosition(2)),'min',0, 'value',max(1,-mainPanelPosition(2)),'callback',@setMainPanelPositionBySliders);
 set(mainFigure, 'color', get(mainPanel,'backgroundcolor'));
 
-pnlTop = uipanel('parent', mainPanel , 'BorderType', 'none','units','pixels', 'position', [5 mainPnlH-100 mainPnlW-30 100]);
+pnlTop = uipanel('parent', mainPanel , 'BorderType', 'none','units','pixels', 'position', [5 mainPnlH-110 mainPnlW-30 140]);
 uicontrol('parent',pnlTop,'style','pushbutton', 'string', 'Close', 'position', [5 75 100 30], 'callback', @closeWindow);
 uicontrol('parent',pnlTop,'style','pushbutton', 'string', 'Export...', 'position', [115 75 100 30], 'callback', @exportAll);
 uicontrol('parent',pnlTop,'style','pushbutton', 'string', 'Tests...', 'position', [225 75 100 30], 'callback', @openTests);
@@ -86,14 +86,14 @@ hLabel = uicontrol('parent', pnlTop, 'style', 'text', 'FontWeight', 'bold', 'Hor
 % -----------
 % Number of usable worms
 % -----------
-uicontrol('parent', pnlTop, 'style', 'text', 'HorizontalAlignment', 'left', 'string', '# of worms:', 'position', [5 10 200 15]);
-hEditNumberOfTopWorms = uicontrol('parent', pnlTop, 'style', 'edit', 'string', num2str(numberOfTopWorms), 'position', [125 6 50 25], 'callback', @setNumberOfTopWorms);
+uicontrol('parent', pnlTop, 'style', 'text', 'HorizontalAlignment', 'left', 'string', '# of worms:', 'position', [5 5 200 15]);
+hEditNumberOfTopWorms = uicontrol('parent', pnlTop, 'style', 'edit', 'string', num2str(numberOfTopWorms), 'position', [125 0 50 25], 'callback', @setNumberOfTopWorms);
 
 % -----------
 % Colormap and number of bins
 % -----------
-uicontrol('parent', pnlTop, 'style', 'text', 'HorizontalAlignment', 'left', 'string', '# of histogram bins:', 'position', [5 30 200 15]);
-hEditBins = uicontrol('parent', pnlTop, 'style', 'edit', 'string', num2str(histoSteps), 'position', [125 26 50 25], 'callback', @setNumberBins);
+uicontrol('parent', pnlTop, 'style', 'text', 'HorizontalAlignment', 'left', 'string', '# of histogram bins:', 'position', [5 25 200 15]);
+hEditBins = uicontrol('parent', pnlTop, 'style', 'edit', 'string', num2str(histoSteps), 'position', [125 20 50 25], 'callback', @setNumberBins);
 uicontrol('parent', pnlTop, 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Colors:', 'position', [5 52 150 15]);
 idxColormap = 1;
 currentColormap = colormap(listColormaps{idxColormap});
@@ -101,13 +101,14 @@ hPopColormap = uicontrol('parent', pnlTop, 'style', 'popupmenu', 'string', listC
 nbPxl = 100;
 uicontrol('parent', pnlTop, 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'low', 'position', [160 52 20 15]);
 uicontrol('parent', pnlTop, 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'high', 'position', [290 52 30 15]);
-axeExample = axes('parent', mainPanel, 'units', 'pixels', 'position', [190 mainPnlH-100+50 100 20]);
+axeExample = axes('parent', pnlTop, 'units', 'pixels', 'position', [185 50 100 20]);
 imagesc(1:nbPxl, 'parent', axeExample)
 set(axeExample,'xtick',[],'ytick',[]);
 
+set(mainFigure,'visible','on')
 
 for sampTmp = 1:nbOfSamples
-    hSamples.panel(sampTmp) = uipanel('parent', mainPanel,'units','pixels', 'position', [5 mainPnlH-100-sampTmp*150 mainPnlW-30 150]);
+    hSamples.panel(sampTmp) = uipanel('parent', mainPanel,'units','pixels', 'position', [5 mainPnlH-115-sampTmp*150 350 150]);
     listTmp = samplesDef([1,3:end],sampTmp);
     while isempty(listTmp{end})
         listTmp(end) = [];
@@ -120,7 +121,7 @@ for sampTmp = 1:nbOfSamples
     % -----------
     % Histogram
     % -----------
-    hSamples.plotHisto(sampTmp) = axes('parent', mainPanel, 'units','pixels','position',[350 mainPnlH-100-sampTmp*150+95 mainPnlW-385 20],'xtick',[],'ytick',[],'color',[0.5 0.5 0.5],'XAxisLocation','top');
+    hSamples.plotHisto(sampTmp) = axes('parent', mainPanel, 'units','pixels','position',[375 mainPnlH-100-sampTmp*150+95 mainPnlW-385 20],'xtick',[],'ytick',[],'color',[0.5 0.5 0.5],'XAxisLocation','top');
     uicontrol('parent', hSamples.panel(sampTmp), 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Number of data points:', 'position', [5 75 200 15]);
     hSamples.txtNbWorms(sampTmp) = uicontrol('parent', hSamples.panel(sampTmp), 'style', 'text', 'HorizontalAlignment', 'left', 'string', '000 ', 'position', [200 75 100 15]);
     % -----------
@@ -128,11 +129,11 @@ for sampTmp = 1:nbOfSamples
     % -----------
     uicontrol('parent', hSamples.panel(sampTmp), 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Quartiles:', 'position', [5 60 200 15]);
     hSamples.txtQuartiles(sampTmp) = uicontrol('parent', hSamples.panel(sampTmp), 'style', 'text', 'HorizontalAlignment', 'right', 'string', '0-25-50-75-100 ', 'position', [60 60 275 15]);
-    hSamples.plotQuart(sampTmp) = axes('parent', mainPanel, 'units','pixels','position',[350 mainPnlH-100-sampTmp*150+50 mainPnlW-385 40],'xtick',[],'ytick',[]);
+    hSamples.plotQuart(sampTmp) = axes('parent', mainPanel, 'units','pixels','position',[375 mainPnlH-100-sampTmp*150+50 mainPnlW-385 40],'xtick',[],'ytick',[]);
     % -----------
     % Mean and std
     % -----------
-    hSamples.plotMean(sampTmp)  = axes('parent', mainPanel, 'units','pixels','position',[350 mainPnlH-100-sampTmp*150+5 mainPnlW-385 40],'xtick',[],'ytick',[]);
+    hSamples.plotMean(sampTmp)  = axes('parent', mainPanel, 'units','pixels','position',[375 mainPnlH-100-sampTmp*150+5 mainPnlW-385 40],'xtick',[],'ytick',[]);
     uicontrol('parent', hSamples.panel(sampTmp), 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Mean +/- Standard error:', 'position', [5 35 200 15]);
     hSamples.txtMSE(sampTmp) = uicontrol('parent', hSamples.panel(sampTmp), 'style', 'text', 'HorizontalAlignment', 'left', 'string', '0.000 +/- 0.000 ', 'position', [200 35 125 15]);
     uicontrol('parent', hSamples.panel(sampTmp), 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Mean +/- 95% Conf. Interval:', 'position', [5 20 200 15]);
