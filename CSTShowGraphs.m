@@ -1026,7 +1026,8 @@ waitfor(mainFigure,'BeingDeleted','on');
                         for idxMenu = 1:length(namesHisto{samp}{samHist})
                             uimenu(hcmenu, 'Label', [fileDB(namesHisto{samp}{samHist}{idxMenu}{1}).name , ' : worm ',  num2str(namesHisto{samp}{samHist}{idxMenu}{2})]);
                         end
-                        fill([x,x,xNext,xNext],[0 1 1 0],colorsHisto(value,:),'parent', hSamples.plotHisto(samp), 'UIContextMenu', hcmenu, 'edgecolor', 'c');
+                        fill([x,x,xNext,xNext],[0 1 1 0],colorsHisto(value,:),'parent', hSamples.plotHisto(samp), 'edgecolor', 'c');
+%                         fill([x,x,xNext,xNext],[0 1 1 0],colorsHisto(value,:),'parent', hSamples.plotHisto(samp), 'UIContextMenu', hcmenu, 'edgecolor', 'c');
                     end
                 end
                 axis(hSamples.plotHisto(samp), [xAxisCommon(1), xAxisCommon(2), 0, 1]);
