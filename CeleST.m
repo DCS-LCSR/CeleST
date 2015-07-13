@@ -11,7 +11,7 @@ global filenames fileDB traceOn timingOn timings timingsLabel timingsTime plotAl
 % ===============
 % Global flags
 % ===============
-traceOn = false;
+traceOn = true;
 timingOn = true;
 plotAllOn = false;
 flagRobustness = true;
@@ -35,7 +35,7 @@ filenames.measures = fullfile(filenames.data, 'measures');
 filenames.listOfExtensions = {'bmp', 'tif', 'tiff', 'png', 'jpg'};
 
 % ===============
-% Data base fields
+% Data base fieldsroundTruth
 % ===============
 fieldsIni = cell(1,24);
 fieldsIni{ 1} = 'name';
@@ -108,7 +108,15 @@ else
     end
     fileDB(1) = [];
 end
+clear test_db
 
+% -------------------
+% Add necessary fields
+% -------------------
+if ~isfield(fileDB, 'glareZones')
+    if traceOn; fprintf(fileToLog, 'Adding field: glareZones\n'); end
+    fileDB(1).glareZones = cell(1,0);
+end
 
 % ============
 % CREATE THE INTERFACE
