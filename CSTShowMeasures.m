@@ -119,6 +119,7 @@ waitfor(mainFigure,'BeingDeleted','on');
         listOfFiltered = get(listVideosFiltered,'string');
         listOfSelection = get(listVideosFiltered,'value');
         samplesDef = get(tableSamples, 'data');
+        disp(samplesDef)
         newCol = 1 + size(samplesDef,2);
         samplesIdx{newCol} = num2cell(listVideosFilteredIdx(listOfSelection));
         totWorms = 0;
@@ -132,8 +133,10 @@ waitfor(mainFigure,'BeingDeleted','on');
     end
 
     function addVideosExisting(hObject,eventdata)
-        if isfield(selectedCellsData,'Indices') && ~isempty(selectedCellsData.Indices)
+        
+        if (any(strcmp(properties(selectedCellsData), 'Indices')) && ~isempty(selectedCellsData.Indices))
             colToAdd = selectedCellsData.Indices(1,2);
+            
             listOfFiltered = get(listVideosFiltered,'string');
             listOfSelection = get(listVideosFiltered,'value');
             samplesDef = get(tableSamples, 'data');
@@ -143,6 +146,9 @@ waitfor(mainFigure,'BeingDeleted','on');
                 idxToAdd = idxToAdd + 1;
             end
             for name = 1:length(namesToAdd)
+                disp(namesToAdd{name})
+                disp(samplesDef(:,colToAdd))
+                
                 if ~any(strcmp(namesToAdd{name}, samplesDef(:,colToAdd)))
                     samplesDef{idxToAdd, colToAdd} = namesToAdd{name};
                     samplesIdx{colToAdd}{idxToAdd-2} = listVideosFilteredIdx(listOfSelection(name));
@@ -150,12 +156,12 @@ waitfor(mainFigure,'BeingDeleted','on');
                 end
             end
             set(tableSamples, 'data', samplesDef);
-            setRowNames
+            setRowNames;
         end
     end
 
     function removeVideos(hObject,eventdata)
-        if isfield(selectedCellsData,'Indices') && ~isempty(selectedCellsData.Indices)
+        if any(strcmp(properties(selectedCellsData), 'Indices')) && ~isempty(selectedCellsData.Indices)
             samplesDef = get(tableSamples, 'data');
             for item = size(selectedCellsData.Indices,1):-1:1
                 row = selectedCellsData.Indices(item,1);
@@ -172,7 +178,7 @@ waitfor(mainFigure,'BeingDeleted','on');
     end
 
     function removeSample(hObject,eventdata)
-        if isfield(selectedCellsData,'Indices') && ~isempty(selectedCellsData.Indices)
+        if any(strcmp(properties(selectedCellsData), 'Indices')) && ~isempty(selectedCellsData.Indices)
             samplesDef = get(tableSamples, 'data');
             colToDelete = selectedCellsData.Indices(1,2);
             button = questdlg(['Are you sure you want to delete sample ', samplesDef{1,colToDelete}, '?'],'CeleST','Delete','Cancel','Cancel');
