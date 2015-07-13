@@ -97,7 +97,7 @@ hThrash = [];
 scrsz = get(0,'ScreenSize');
 mainW = min(mainPnlW, scrsz(3) - 10);
 mainH = min(mainPnlH, scrsz(4) - 70);
-mainPanelPosition = [2 , mainH-mainPnlH-2 , mainPnlW , mainPnlH];
+mainPanelPosition = [2 , mainH-mainPnlH-2 , mainPnlW+50 , mainPnlH+50];
 mainFigure = figure('Visible','off','Position',[5,40,mainW,mainH],'Name','DURATION VALUES','numbertitle','off', 'menubar', 'none', 'resizefcn', @resizeMainFigure);
 mainPanel = uipanel('parent', mainFigure,'BorderType', 'none','units','pixels', 'position', mainPanelPosition);
 sliderHoriz = uicontrol('parent',mainFigure,'style','slider','position',[0 0 mainW-20 20],'max', 1,'min',0, 'value',0,'callback',@setMainPanelPositionBySliders);
@@ -142,7 +142,7 @@ uicontrol('parent', mainPanel, 'style', 'pushbutton', 'string', 'Close (not savi
 pnlLoad = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [380-40 yFilters-filterH-185 2*filterW+120 270]);
 btnLoad = uicontrol('parent',pnlLoad,'enable','off','style','pushbutton','string','Load the segmentation results', 'position', [0 240 2*filterW 30],'callback', @loadVideoContents);
 txtVideoLoaded = uicontrol('parent',pnlLoad,'style','text','HorizontalAlignment', 'center','String','<no results loaded>','fontweight','bold','position',[0 210 2*filterW+100 20]);
-listWorms =  uicontrol('parent',pnlLoad,'style','listbox','String',{''},'max',1,'min',0,'position',[0 70 filterW filterH],'callback', @selectWorm);
+listWorms =  uicontrol('parent',pnlLoad,'style','listbox','String',{''},'max',1,'min',0,'position',[1 70 filterW filterH],'callback', @selectWorm);
 uicontrol('parent',pnlLoad,'style','pushbutton','string','Validate', 'position', [0 40 75 30],'callback', @validateWorm);
 uicontrol('parent',pnlLoad,'style','pushbutton','string','Reject', 'position', [75 40 75 30],'callback', @rejectWorm);
 uicontrol('parent', pnlLoad, 'style', 'pushbutton', 'string', 'Save and Compute measures','position', [0 0 2*filterW 30],'callback', @updateMeasureForCurrentVideo);
@@ -152,7 +152,7 @@ uicontrol('parent', pnlLoad, 'style', 'pushbutton', 'string', 'Glare zones','pos
 % ----------
 % Switch trajectories
 % ----------
-pnlSwitch = uipanel('parent',pnlLoad,'BorderType', 'none','units','pixels', 'position', [180 70 120 filterH]);
+pnlSwitch = uipanel('parent',pnlLoad,'BorderType', 'none','units','pixels', 'position', [180 50 120 filterH+5]);
 uicontrol('parent',pnlSwitch,'style','text','HorizontalAlignment', 'left','String','From frame','position',[0 80 80 20]);
 editFrameCutStart = uicontrol('parent',pnlSwitch,'style','edit','string','1','position',[70 80 50 25]);
 uicontrol('parent',pnlSwitch,'style','text','HorizontalAlignment', 'left','String','to frame','position',[0 60 80 20]);
@@ -160,17 +160,17 @@ editFrameCutEnd = uicontrol('parent',pnlSwitch,'style','edit','string','1','posi
 uicontrol('parent',pnlSwitch,'style','text','HorizontalAlignment', 'left','String','switch ','position',[0 40 50 20]);
 txtSelectedWorm = uicontrol('parent',pnlSwitch,'style','text','String','< n/a >','position',[45 40 60 20]);
 uicontrol('parent',pnlSwitch,'style','text','HorizontalAlignment', 'left','String','and','position',[0 20 40 20]);
-popWormSwitch = uicontrol('parent',pnlSwitch,'style','popupmenu','String',{'< n/a >'},'value',idxOtherWorm,'position',[25 20 100 20],'callback',@setWormSwitch);
+popWormSwitch = uicontrol('parent',pnlSwitch,'style','popupmenu','String',{'< n/a >'},'value',idxOtherWorm,'position',[25 22 90 20],'callback',@setWormSwitch);
 uicontrol('parent',pnlSwitch,'style','pushbutton','String','Switch','position',[0 0 120 20],'callback', @switchWorms);
 % ----------
 % Switch head and tail
 % ----------
-pnlSwitchHeadTail = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [380 yFilters-filterH-240 2*filterW 50]);
+pnlSwitchHeadTail = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [380 yFilters-335 2*filterW 50]);
 uicontrol('parent',pnlSwitchHeadTail,'style','text','HorizontalAlignment', 'left','String','From ','position',[0 0 40 20]);
-editFrameSwitchHTStart = uicontrol('parent',pnlSwitchHeadTail,'style','edit','string','1','position',[40 0 50 25]);
+editFrameSwitchHTStart = uicontrol('parent',pnlSwitchHeadTail,'style','edit','string','1','position',[40 2 50 25]);
 uicontrol('parent',pnlSwitchHeadTail,'style','text','HorizontalAlignment', 'left','String','to ','position',[90 00 20 20]);
-editFrameSwitchHTEnd = uicontrol('parent',pnlSwitchHeadTail,'style','edit','string','544','position',[110 0 50 25]);
-uicontrol('parent',pnlSwitchHeadTail,'style','pushbutton','String','Switch H / T','position',[160 0 120 25],'callback', @switchHeadTail);
+editFrameSwitchHTEnd = uicontrol('parent',pnlSwitchHeadTail,'style','edit','string','544','position',[110 2 50 25]);
+uicontrol('parent',pnlSwitchHeadTail,'style','pushbutton','String','Switch H / T','position',[160 2 120 25],'callback', @switchHeadTail);
 % ----------
 % Video of all field
 % ----------
@@ -181,76 +181,87 @@ axis('image','ij')
 % ----------
 hAxeCurrentWorm = axes('parent', mainPanel, 'units','pixels','position',[4*filterW+120 yFilters-filterH-190 410 275],'xtick',[],'ytick',[],'color',[.5 .5 .5]);
 axis('image','ij')
+
 % ----------
 % Navigation through the frames
 % ----------
-pnlNavigate = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [4*filterW+100 yFilters-335 450 35]);
+pnlNavigate = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [4*filterW+100 yFilters-335 450 40]);
 uicontrol('parent',pnlNavigate,'style','text','HorizontalAlignment', 'left','string','1','position',[5 6 10 20]);
-btnFirstFrame = uicontrol('parent',pnlNavigate,'style','pushbutton','string','<<<','position',[15 0 40 35],'callback',@selectFrameByClick);
-editStartFrame = uicontrol('parent',pnlNavigate,'style','edit','string','-','position',[55 0 40 35],'callback',@selectFrameByClick);
-btnRewindFrame = uicontrol('parent',pnlNavigate,'style','pushbutton','string','<<','position',[95 0 40 35],'callback',@selectFrameByClick);
-btnPrevFrame = uicontrol('parent',pnlNavigate,'style','pushbutton','string','<','position',[135 0 40 35],'callback',@selectFrameByClick);
-editCurrentFrame = uicontrol('parent',pnlNavigate,'style','edit','string','-','position',[175 0 40 35],'callback',@selectFrameByClick);
-btnNextFrame = uicontrol('parent',pnlNavigate,'style','pushbutton','string','>','position',[275 0 40 35],'callback',@selectFrameByClick);
-btnForwardFrame = uicontrol('parent',pnlNavigate,'style','pushbutton','string','>>','position',[315 0 40 35],'callback',@selectFrameByClick);
-editEndFrame = uicontrol('parent',pnlNavigate,'style','edit','string','-','position',[355 0 40 35],'callback',@selectFrameByClick);
-btnLastFrame = uicontrol('parent',pnlNavigate,'style','pushbutton','string','>>>','position',[395 0 40 35],'callback',@selectFrameByClick);
+btnFirstFrame = uicontrol('parent',pnlNavigate,'style','pushbutton','string','<<<','position',[15 1 40 35],'callback',@selectFrameByClick);
+editStartFrame = uicontrol('parent',pnlNavigate,'style','edit','string','-','position',[55 1 40 35],'callback',@selectFrameByClick);
+btnRewindFrame = uicontrol('parent',pnlNavigate,'style','pushbutton','string','<<','position',[95 1 40 35],'callback',@selectFrameByClick);
+btnPrevFrame = uicontrol('parent',pnlNavigate,'style','pushbutton','string','<','position',[135 1 40 35],'callback',@selectFrameByClick);
+editCurrentFrame = uicontrol('parent',pnlNavigate,'style','edit','string','-','position',[175 1 40 35],'callback',@selectFrameByClick);
+btnNextFrame = uicontrol('parent',pnlNavigate,'style','pushbutton','string','>','position',[275 1 40 35],'callback',@selectFrameByClick);
+btnForwardFrame = uicontrol('parent',pnlNavigate,'style','pushbutton','string','>>','position',[315 1 40 35],'callback',@selectFrameByClick);
+editEndFrame = uicontrol('parent',pnlNavigate,'style','edit','string','-','position',[355 1 40 35],'callback',@selectFrameByClick);
+btnLastFrame = uicontrol('parent',pnlNavigate,'style','pushbutton','string','>>>','position',[395 1 40 35],'callback',@selectFrameByClick);
 txtMaxFrame = uicontrol('parent',pnlNavigate,'style','text','HorizontalAlignment', 'left','string','-','position',[435 6 40 20]);
-btnPlayVideo = uicontrol('parent',pnlNavigate,'style','togglebutton','string','Play','position',[215 0 60 35],'callback',@playPauseVideo);
+btnPlayVideo = uicontrol('parent',pnlNavigate,'style','togglebutton','string','Play','position',[215 1 60 35],'callback',@playPauseVideo);
+
+
 % ----------
 % Panel for validity
 % ----------
-% Make the axes directly children of mainPanel, otherwise they are not properly placed when the window is scrolled or resized
-% ----------
-pnlValidity = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 480 3*544+25 80]);
-hAxeValid = axes('parent', mainPanel, 'units','pixels','position',[25+1 20+480 3*544 30],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
+pnlValidity = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 525 3*544+25 90]);
+hAxeValid = axes('parent', pnlValidity, 'units','pixels','position',[25 10 3*544 30],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
 uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Validity of the segmented body: ','position',[25 55 200 20]);
 txtValid = uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Valid frames: - / - = - %','position',[225 55 220 20], 'foregroundcolor', [0.1 0.5 0.1]);
 txtReject = uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Rejected frames: - / - = - %','position',[445 55 230 20], 'foregroundcolor' , [0.7 0 0]);
-uicontrol('parent',pnlValidity,'style','pushbutton','string','Next block','position',[875 52 100 35],'callback',@selectNextBlock);
-uicontrol('parent',pnlValidity,'style','pushbutton','string','Switch validity (right click)','position',[1015 52 190 35],'callback',@switchValidity);
-uicontrol('parent',pnlValidity,'style','pushbutton','string','Split block (double click)','position',[1215 52 190 35],'callback',@splitBlock);
-uicontrol('parent',pnlValidity,'style','pushbutton','string','Isolate frame (triple click)','position',[1415 52 190 35],'callback',@isolateFrame);
+uicontrol('parent',pnlValidity,'style','pushbutton','string','Next block','position',[875 55 100 35],'callback',@selectNextBlock);
+uicontrol('parent',pnlValidity,'style','pushbutton','string','Switch validity (right click)','position',[1015 55 190 35],'callback',@switchValidity);
+uicontrol('parent',pnlValidity,'style','pushbutton','string','Split block (double click)','position',[1215 55 190 35],'callback',@splitBlock);
+uicontrol('parent',pnlValidity,'style','pushbutton','string','Isolate frame (triple click)','position',[1415 55 190 35],'callback',@isolateFrame);
+
+
 % ----------
 % Panel for glare zones
-% ----------
-pnlGlase = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 430 3*544+25 50]);
-hAxeGlare = axes('parent', mainPanel, 'units','pixels','position',[25+1 20+430 3*544 20],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
+% ---------- 
+pnlGlase = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 460 3*544+25 60]);
+hAxeGlare = axes('parent', pnlGlase, 'units','pixels','position',[25 10 3*544 30],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
 uicontrol('parent',pnlGlase,'style','text','HorizontalAlignment', 'left','string','Within glare zones: ','position',[25 42 200 20]);
+
+
 % ----------
 % Panel for lost
-% ----------
-pnlLost = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 380 3*544+25 50]);
-hAxeLost = axes('parent', mainPanel, 'units','pixels','position',[25+1 20+380 3*544 20],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
+% ---------- 
+pnlLost = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 395 3*544+25 60]);
+hAxeLost = axes('parent', pnlLost, 'units','pixels','position',[25 10 3*544 30],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
 uicontrol('parent',pnlLost,'style','text','HorizontalAlignment', 'left','string','Lost during tracking: ','position',[25 42 200 20]);
+
+
 % ----------
 % Panel for overlap
 % ----------
-pnlOverlap = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 330 3*544+25 50]);
-hAxeOverlap = axes('parent', mainPanel, 'units','pixels','position',[25+1 20+330 3*544 20],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
+pnlOverlap = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 330 3*544+25 60]);
+hAxeOverlap = axes('parent', pnlOverlap, 'units','pixels','position',[25 10 3*544 30],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
 uicontrol('parent',pnlOverlap,'style','text','HorizontalAlignment', 'left','string','Overlap with other worm: ','position',[25 42 200 20]);
+
 % ----------
 % Panel for self-overlap
 % ----------
-pnlSelfOverlap = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 280 3*544+25 50]);
-hAxeSelfOverlap = axes('parent', mainPanel, 'units','pixels','position',[25+1 20+280 3*544 20],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
+pnlSelfOverlap = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 265 3*544+25 60]);
+hAxeSelfOverlap = axes('parent', pnlSelfOverlap, 'units','pixels','position',[25 10 3*544 30],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
 uicontrol('parent',pnlSelfOverlap,'style','text','HorizontalAlignment', 'left','string','End of self-overlap: ','position',[25 42 200 20]);
+
 % ----------
 % Panel for prev overlap
 % ----------
-pnlPrevOverlap = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 180 3*544+25 90]);
-hAxePrevOverlap = axes('parent', mainPanel, 'units','pixels','position',[25+1 20+180 3*544 60],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
+pnlPrevOverlap = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 160 3*544+25 110]);
+hAxePrevOverlap = axes('parent', pnlPrevOverlap, 'units','pixels','position',[25 20 3*544 60],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
 uicontrol('parent',pnlPrevOverlap,'style','text','HorizontalAlignment', 'left','string','Self-overlap with previous frame (in %): ','position',[25 82 250 20]);
 uicontrol('parent',pnlPrevOverlap,'style','text','HorizontalAlignment', 'right','string','Threshold: ','position',[275 82 90 20]);
 btnPrevThrUp = uicontrol('parent',pnlPrevOverlap,'style','pushbutton','string','^','position',[365 82 40 25],'callback',@selectThreshold);
 editPrevThr = uicontrol('parent',pnlPrevOverlap,'style','edit','string','25','position',[405 82 45 25],'callback',@selectThreshold);
 btnPrevThrDown = uicontrol('parent',pnlPrevOverlap,'style','pushbutton','string','v','position',[450 82 40 25],'callback',@selectThreshold);
 btnPrevThrDefault = uicontrol('parent',pnlPrevOverlap,'style','pushbutton','string','X','position',[490 82 40 25],'callback',@selectThreshold);
+
+
 % ----------
 % Panel for body length
 % ----------
-pnlBodyLength = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 50 3*544+25 120]);
-hAxeLength = axes('parent', mainPanel, 'units','pixels','position',[25+1 20+50 3*544 60],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
+pnlBodyLength = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [0 40 3*544+25 130]);
+hAxeLength = axes('parent', pnlBodyLength, 'units','pixels','position',[25 20 3*544 60],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
 uicontrol('parent',pnlBodyLength,'style','text','HorizontalAlignment', 'left','string','Length of the segmented body: ','position',[25 80 200 20]);
 uicontrol('parent',pnlBodyLength,'style','text','HorizontalAlignment', 'right','string','High threshold: ','position',[225 106 140 20]);
 btnHighThrUp = uicontrol('parent',pnlBodyLength,'style','pushbutton','string','^','position',[365 106 40 25],'callback',@selectThreshold);
@@ -262,6 +273,9 @@ btnLowThrUp = uicontrol('parent',pnlBodyLength,'style','pushbutton','string','^'
 editLowThr = uicontrol('parent',pnlBodyLength,'style','edit','string','0','position',[405 82 45 25],'callback',@selectThreshold);
 btnLowThrDown = uicontrol('parent',pnlBodyLength,'style','pushbutton','string','v','position',[450 82 40 25],'callback',@selectThreshold);
 btnLowThrDefault = uicontrol('parent',pnlBodyLength,'style','pushbutton','string','X','position',[490 82 40 25],'callback',@selectThreshold);
+
+
+
 % ============
 % SHOW THE INTERFACE
 % ============
@@ -269,7 +283,6 @@ populateFilters
 set(mainFigure,'visible','on')
 setMainPanelPositionBySliders
 pause(0.1)
-
 
 
 if flagShowCurvaturePlots
