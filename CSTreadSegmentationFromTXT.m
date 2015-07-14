@@ -40,7 +40,8 @@ listDouble = {'lengthWorms'};
 if flagVersion29
     listBoolean = [listBoolean, 'valid', 'outOfLengths', 'outOfPrevious', 'inGlareZone', 'selfOverlap', 'manualInvalid', 'manualValid'];
     listCell = [listCell, 'cblSubSampled'];
-    listDouble = [listDouble, 'positionCenterX', 'positionCenterY', 'widthCenter', 'angleHead', 'angleTail', 'I', 'J', 'C', 'S', 'O', 'overlapPrev', 'headThrashCount'];
+    listDouble = [listDouble, 'positionCenterX', 'positionCenterY', 'widthCenter', 'overlapPrev', 'headThrashCount'];
+%         'angleHead', 'angleTail', 'I', 'J', 'C', 'S', 'O',...
 end
 for field = 1:length(listBoolean)
     listOfWorms.(listBoolean{field}) = false(nbOfWorms, nbOfFrames);
@@ -93,18 +94,18 @@ if strcmp(line1{1}{1}, 'format') && strcmp(line2{1}{1}, 'block')
                 listOfWorms.positionCenterY(ww,ff) = str2double(sscanf(fgetl(fid),'b %s'))/factor;
                 listOfWorms.widthCenter(ww,ff) = str2double(sscanf(fgetl(fid),'c %s'))/factor;
                 listOfWorms.cblSubSampled{ww}{ff} = [str2num(sscanf(fgetl(fid),'d %s'));str2num(sscanf(fgetl(fid),'e %s'))]/factor; %#ok<ST2NM>
-                listOfWorms.angleHead(ww,ff) = str2double(sscanf(fgetl(fid),'f %s'))/factor;
-                listOfWorms.angleTail(ww,ff) = str2double(sscanf(fgetl(fid),'q %s'))/factor;
-                listOfWorms.I(ww,ff) = str2double(sscanf(fgetl(fid),'I %s'))/factor;
-                listOfWorms.J(ww,ff) = str2double(sscanf(fgetl(fid),'J %s'))/factor;
-                listOfWorms.C(ww,ff) = str2double(sscanf(fgetl(fid),'C %s'))/factor;
-                listOfWorms.S(ww,ff) = str2double(sscanf(fgetl(fid),'S %s'))/factor;
-                listOfWorms.O(ww,ff) = str2double(sscanf(fgetl(fid),'O %s'))/factor;
+%                 listOfWorms.angleHead(ww,ff) = str2double(sscanf(fgetl(fid),'f %s'))/factor;
+%                 listOfWorms.angleTail(ww,ff) = str2double(sscanf(fgetl(fid),'q %s'))/factor;
+%                 listOfWorms.I(ww,ff) = str2double(sscanf(fgetl(fid),'I %s'))/factor;
+%                 listOfWorms.J(ww,ff) = str2double(sscanf(fgetl(fid),'J %s'))/factor;
+%                 listOfWorms.C(ww,ff) = str2double(sscanf(fgetl(fid),'C %s'))/factor;
+%                 listOfWorms.S(ww,ff) = str2double(sscanf(fgetl(fid),'S %s'))/factor;
+%                 listOfWorms.O(ww,ff) = str2double(sscanf(fgetl(fid),'O %s'))/factor;
                 listOfWorms.overlapPrev(ww,ff) = str2double(sscanf(fgetl(fid),'k %s'))/factor;
                 listOfWorms.manualInvalid(ww,ff) = (str2double(sscanf(fgetl(fid),'n %s')) > 0);
                 listOfWorms.manualValid(ww,ff) = (str2double(sscanf(fgetl(fid),'r %s')) > 0);
                 listOfWorms.headThrashCount(ww,ff) = str2double(sscanf(fgetl(fid),'u %s'))/factor;
-                listOfWorms.tailThrashCount(ww,ff) = str2double(sscanf(fgetl(fid),'U %s'))/factor;
+%                 listOfWorms.tailThrashCount(ww,ff) = str2double(sscanf(fgetl(fid),'U %s'))/factor;
             end
         tline = fgetl(fid);
     end
