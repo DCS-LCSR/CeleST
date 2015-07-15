@@ -521,6 +521,7 @@ waitfor(mainFigure,'BeingDeleted','on');
         end
 
         function measSel(ha, hb)
+            
             flagNew = false;
             val1 = get(hXMeasure, 'value');
             if val1 > 0 && val1 ~= statToShow(1)
@@ -686,6 +687,19 @@ waitfor(mainFigure,'BeingDeleted','on');
                             hold(hPlot2D,'on');
                         end
                     end
+                end
+                if maxValue(1)==0 || maxValue(2)==0
+                    
+                    axis(hPlot2D,[0 1 0 1])
+                    hPlot2D.Color = 'none'
+                    grid(hPlot2D, 'on')
+                    set(get(hPlot2D,'XLabel'),'String',listOfLabels{statToShow(1)})
+                    set(get(hPlot2D,'yLabel'),'String',listOfLabels{statToShow(2)})
+                    
+                    
+                    
+                    errordlg('One of the entered axis parameters has insufficient data','Axes error');
+                    return
                 end
                 axis(hPlot2D,[0 maxValue(1) 0 maxValue(2)])
                 grid(hPlot2D, 'on')

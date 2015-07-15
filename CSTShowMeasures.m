@@ -119,7 +119,6 @@ waitfor(mainFigure,'BeingDeleted','on');
         listOfFiltered = get(listVideosFiltered,'string');
         listOfSelection = get(listVideosFiltered,'value');
         samplesDef = get(tableSamples, 'data');
-        disp(samplesDef)
         newCol = 1 + size(samplesDef,2);
         samplesIdx{newCol} = num2cell(listVideosFilteredIdx(listOfSelection));
         totWorms = 0;
@@ -136,7 +135,6 @@ waitfor(mainFigure,'BeingDeleted','on');
         
         if (any(strcmp(properties(selectedCellsData), 'Indices')) && ~isempty(selectedCellsData.Indices))
             colToAdd = selectedCellsData.Indices(1,2);
-            
             listOfFiltered = get(listVideosFiltered,'string');
             listOfSelection = get(listVideosFiltered,'value');
             samplesDef = get(tableSamples, 'data');
@@ -145,10 +143,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             while (idxToAdd <= size(samplesDef,1)) && ~isempty(samplesDef{idxToAdd,colToAdd})
                 idxToAdd = idxToAdd + 1;
             end
-            for name = 1:length(namesToAdd)
-                disp(namesToAdd{name})
-                disp(samplesDef(:,colToAdd))
-                
+            for name = 1:length(namesToAdd)                
                 if ~any(strcmp(namesToAdd{name}, samplesDef(:,colToAdd)))
                     samplesDef{idxToAdd, colToAdd} = namesToAdd{name};
                     samplesIdx{colToAdd}{idxToAdd-2} = listVideosFilteredIdx(listOfSelection(name));
