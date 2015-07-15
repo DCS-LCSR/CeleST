@@ -792,7 +792,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             listBoolean = {'missed', 'lost', 'overlapped', 'valid', 'outOfLengths', 'outOfPrevious', 'inGlareZone', 'selfOverlap', 'manualInvalid', 'manualValid'};
             listCell = {'skel', 'width', 'cblSubSampled'};
             listCellSingle = {'localthreshold'};
-            listDouble = {'lengthWorms', 'positionCenterX', 'positionCenterY', 'widthCenter', 'angleHead', 'angleTail', 'I', 'J', 'C', 'S', 'O', 'overlapPrev', 'headThrashCount'};
+            listDouble = {'lengthWorms', 'positionCenterX', 'positionCenterY', 'widthCenter', 'overlapPrev', 'headThrashCount'};
             if worm2 < 0
                 disp('create new worm ')
                 % ---------
