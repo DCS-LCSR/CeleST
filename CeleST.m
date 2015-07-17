@@ -142,7 +142,8 @@ filterW = 150;
 hFilters = filterH + 20;
 yFilters = mainPnlH - hFilters - 5 - 70;
 uicontrol('parent',mainPanel,'style','pushbutton','string','Add one video...','position',[10 yFilters+hFilters+40 150 30],'callback',@addOneVideo);
-btnEdit = uicontrol('parent',mainPanel,'style','togglebutton','string','Toggle Edit Table','position',[10 yFilters+hFilters+10 150 30],'callback',@editTable);
+uicontrol('parent',mainPanel,'style','pushbutton','string','Add a list of videos...','position',[10 yFilters+hFilters+10 150 30],'callback',@addListVideos);
+btnEdit = uicontrol('parent',mainPanel,'style','togglebutton','string','Toggle Edit Table','position',[310 yFilters+hFilters+40 150 30],'callback',@editTable);
 uicontrol('parent',mainPanel,'style','pushbutton','string','Delete videos...','position',[160 yFilters+hFilters+10 150 30],'callback',@deleteVideos);
 uicontrol('parent',mainPanel,'style','pushbutton','string','Check consistency','position',[160 yFilters+hFilters+40 150 30],'callback',@checkSequences);
 
@@ -157,17 +158,9 @@ uicontrol('parent',mainPanel,'style','pushbutton','string','Quit','position',[11
 % ----------
 pnlFilters = uipanel('parent', mainPanel,'BorderType', 'none','units','pixels', 'position', [1 yFilters mainPnlW hFilters]);
 listFilters = fieldnames(fileDB);
-idxtmp = 1;
-while idxtmp <= length(listFilters)
-    if strcmp(listFilters{idxtmp},'name') || strcmp(listFilters{idxtmp},'directory') || strcmp(listFilters{idxtmp},'format')...
-            || strcmp(listFilters{idxtmp},'frames_per_second') || strcmp(listFilters{idxtmp},'mm_per_pixel') || strcmp(listFilters{idxtmp},'set')...
-            || strcmp(listFilters{idxtmp},'duration') || strcmp(listFilters{idxtmp},'images') || strcmp(listFilters{idxtmp},'glareZones')...
-            || strcmp(listFilters{idxtmp},'note') || strcmp(listFilters{idxtmp},'worms') || strcmp(listFilters{idxtmp},'well')...
-            || strcmp(listFilters{idxtmp},'month') || strcmp(listFilters{idxtmp},'day') || strcmp(listFilters{idxtmp},'year')
-        listFilters(idxtmp) =[];
-    else
-        idxtmp = idxtmp + 1;
-    end
+allFilters = {'name','directory','format','frames_per_second','mm_per_pixel','set','duration','images','glareZones','note','worms','well','month','day','year'};
+for idxtmp=1:length(allFilters)
+    listFilters(strcmp(allFilters{idxtmp},listFilters)) = [];
 end
 for idxtmp = 0:length(listFilters)-1
     uicontrol('parent',pnlFilters,'style','text','string',listFilters{idxtmp+1},'position',[idxtmp*filterW filterH filterW 20])
