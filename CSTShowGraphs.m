@@ -691,7 +691,13 @@ waitfor(mainFigure,'BeingDeleted','on');
                 if maxValue(1)==0 || maxValue(2)==0
                     
                     axis(hPlot2D,[0 1 0 1])
-                    hPlot2D.Color = 'none'
+                    
+                    if verLessThan('matlab','8.4.0')
+                        set(hPlot2D,'color','none');
+                    else
+                      hPlot2D.Color = 'none'
+                    end
+                    
                     grid(hPlot2D, 'on')
                     set(get(hPlot2D,'XLabel'),'String',listOfLabels{statToShow(1)})
                     set(get(hPlot2D,'yLabel'),'String',listOfLabels{statToShow(2)})

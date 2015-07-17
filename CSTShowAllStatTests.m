@@ -9,6 +9,20 @@ global samplesIdx mainPnlW samplesDef measures listOfMeasures listOfButtons;
 
 
 % ============
+% Validation that notifies the user if nothing will show up
+% ============
+
+if length(samplesIdx) < 2
+    choice = questdlg('There is nothing to compare your one sample to, would you like to continue?', ...
+        'Comparison Warning','Continue','Exit','Exit');
+end
+% Handle response
+if strcmp(choice,'Exit')
+    return
+end
+
+
+% ============
 % CREATE THE INTERFACE
 % ============
 mainPnlH = 800;
@@ -31,6 +45,7 @@ nbOfMeasures = length(listOfMeasures);
 nbOfSamples = length(samplesIdx);
 tableData = cell(2+(nbOfMeasures+1)*(nbOfSamples-1)-2, 1+4*(nbOfSamples-1));
 tableData{1,1} = 'p values';
+    
 for head = 2:nbOfSamples
     tableData{1,4*(head-1)-1} = samplesDef{1,head};
 end
