@@ -477,8 +477,10 @@ if fileToLog > 1; fclose(fileToLog); end
             % Check for images
             % ------------
             fileDB(seq).images = length(dir(fullfile(fileDB(seq).directory,['*.',fileDB(seq).format])));
-            if fileDB(seq).images > 0 && fileDB(seq).duration > 0
-                fileDB(seq).frames_per_second = fileDB(seq).images / fileDB(seq).duration;
+            if ~isempty(fileDB(seq).images) && ~isempty(fileDB(seq).duration)
+                if fileDB(seq).images > 0 && fileDB(seq).duration > 0
+                    fileDB(seq).frames_per_second = fileDB(seq).images / fileDB(seq).duration;
+                end
             end
         end
         close(h)
