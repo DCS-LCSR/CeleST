@@ -116,8 +116,13 @@ waitfor(mainFigure,'BeingDeleted','on');
         setRowNames
     end
 
+     % ------------
+     % Workaround implemented using strcmp for below if statements because isField can no longer be used on
+     % user defined classes
+     % ------------
+
     function addVideosExisting(hObject,eventdata)
-        
+       
         if (any(strcmp(properties(selectedCellsData), 'Indices')) && ~isempty(selectedCellsData.Indices))
             colToAdd = selectedCellsData.Indices(1,2);
             listOfFiltered = get(listVideosFiltered,'string');
@@ -136,7 +141,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                 end
             end
             set(tableSamples, 'data', samplesDef);
-            setRowNames;
+            setRowNames
         end
     end
 

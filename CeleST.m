@@ -143,8 +143,7 @@ filterW = 150;
 hFilters = filterH + 20;
 yFilters = mainPnlH - hFilters - 5 - 70;
 uicontrol('parent',mainPanel,'style','pushbutton','string','Add one video...','position',[10 yFilters+hFilters+40 150 30],'callback',@addOneVideo);
-uicontrol('parent',mainPanel,'style','pushbutton','string','Add a list of videos...','position',[10 yFilters+hFilters+10 150 30],'callback',@addListVideos);
-btnEdit = uicontrol('parent',mainPanel,'style','togglebutton','string','Toggle Edit Table','position',[310 yFilters+hFilters+40 150 30],'callback',@editTable);
+btnEdit = uicontrol('parent',mainPanel,'style','togglebutton','string','Toggle Edit Table','position',[10 yFilters+hFilters+10 150 30],'callback',@editTable);
 uicontrol('parent',mainPanel,'style','pushbutton','string','Delete videos...','position',[160 yFilters+hFilters+10 150 30],'callback',@deleteVideos);
 uicontrol('parent',mainPanel,'style','pushbutton','string','Check consistency','position',[160 yFilters+hFilters+40 150 30],'callback',@checkSequences);
 
@@ -471,9 +470,14 @@ if fileToLog > 1; fclose(fileToLog); end
             % ------------
             % Check for images
             % ------------
-            fileDB(seq).images = length(dir(fullfile(fileDB(seq).directory,['*.',fileDB(seq).format])));
-            if fileDB(seq).images > 0 && fileDB(seq).duration > 0
-                fileDB(seq).frames_per_second = fileDB(seq).images / fileDB(seq).duration;
+            
+            fileDB(seq).images = length(dir(fullfile(fileDB(seq).directory,['*.',fileDB(seq).format])));            
+            if isempty(fileDB(seq).images) || isempty(fileDB(seq).duration)
+                errordlg('Database error encountered. Video may be missing, if so please just re-add it.','Database Error');
+            else
+                if fileDB(seq).images > 0 && fileDB(seq).duration > 0
+                    fileDB(seq).frames_per_second = fileDB(seq).images / fileDB(seq).duration;
+                end
             end
         end
         close(h)

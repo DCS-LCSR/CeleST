@@ -781,6 +781,8 @@ waitfor(mainFigure,'BeingDeleted','on');
             listCell = {'skel', 'width', 'cblSubSampled'};
             listCellSingle = {'localthreshold'};
             listDouble = {'lengthWorms', 'positionCenterX', 'positionCenterY', 'widthCenter', 'overlapPrev', 'headThrashCount'};
+            % Removed deprecated fields from listDouble: 'angleHead', 'angleTail', 'I', 'J', 'C', 'S', 'O'
+            
             if worm2 < 0
                 disp('create new worm ')
                 % ---------

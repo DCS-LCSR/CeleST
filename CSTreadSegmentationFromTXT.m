@@ -41,7 +41,7 @@ if flagVersion29
     listBoolean = [listBoolean, 'valid', 'outOfLengths', 'outOfPrevious', 'inGlareZone', 'selfOverlap', 'manualInvalid', 'manualValid'];
     listCell = [listCell, 'cblSubSampled'];
     listDouble = [listDouble, 'positionCenterX', 'positionCenterY', 'widthCenter', 'overlapPrev', 'headThrashCount'];
-%         'angleHead', 'angleTail', 'I', 'J', 'C', 'S', 'O',...
+    % Removed deprecated fields from listDouble: 'angleHead', 'angleTail', 'I', 'J', 'C', 'S', 'O'
 end
 for field = 1:length(listBoolean)
     listOfWorms.(listBoolean{field}) = false(nbOfWorms, nbOfFrames);
