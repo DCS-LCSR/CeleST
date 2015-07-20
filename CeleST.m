@@ -5,7 +5,7 @@ function CeleST
 % THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 clear('global')
-global filenames fileDB traceOn timingOn timings timingsLabel timingsTime plotAllOn flagRobustness fileToLog flagAutomation flagInterfaceFreeze filterSelection colFtlWell mainPnlW mainPnlH fieldsIni listVideosIdx tableVideos;
+global filenames fileDB traceOn timingOn timings timingsLabel timingsTime plotAllOn flagRobustness fileToLog flagAutomation flagInterfaceFreeze filterNames filterSelection colFtlWell mainPnlW mainPnlH fieldsIni listVideosIdx tableVideos;
 
 
 % ===============
@@ -15,9 +15,10 @@ traceOn = true;
 timingOn = true;
 plotAllOn = false;
 flagRobustness = true;
-logToFile = false;
+logToFile = true;
 flagAutomation = false;
 flagInterfaceFreeze = true;
+filterNames = {'author','date','gene','trial','age','segmented','measured','experiment','class'};
 timingsLabel = {'load image', 'preprocess', 'find borders', 'compute appearance', 'compute cbl', 'store data', 'check missed regions', 'check quality', 'supersample', 'tracking', 'merging',...
     'detect overlap risk', 'track cbl', 'adjust model'};
 timings = zeros(1,length(timingsLabel));
@@ -157,16 +158,11 @@ uicontrol('parent',mainPanel,'style','pushbutton','string','Quit','position',[11
 % Filters
 % ----------
 pnlFilters = uipanel('parent', mainPanel,'BorderType', 'none','units','pixels', 'position', [1 yFilters mainPnlW hFilters]);
-listFilters = fieldnames(fileDB);
-allFilters = {'name','directory','format','frames_per_second','mm_per_pixel','set','duration','images','glareZones','note','worms','well','month','day','year'};
-for idxtmp=1:length(allFilters)
-    listFilters(strcmp(allFilters{idxtmp},listFilters)) = [];
+for idxtmp = 0:length(filterNames)-1
+    uicontrol('parent',pnlFilters,'style','text','string',filterNames{idxtmp+1},'position',[idxtmp*filterW filterH filterW 20])
+    flt.(filterNames{idxtmp+1}) = uicontrol('parent',pnlFilters,'style','listbox','String',{''},'max',2,'min',0,'position',[idxtmp*filterW 0 filterW filterH],'callback',@setFilteredList);
 end
-for idxtmp = 0:length(listFilters)-1
-    uicontrol('parent',pnlFilters,'style','text','string',listFilters{idxtmp+1},'position',[idxtmp*filterW filterH filterW 20])
-    flt.(listFilters{idxtmp+1}) = uicontrol('parent',pnlFilters,'style','listbox','String',{''},'max',2,'min',0,'position',[idxtmp*filterW 0 filterW filterH],'callback',@setFilteredList);
-end
-colFtlWell = find(strcmp('well', listFilters));
+colFtlWell = find(strcmp('well', filterNames));
 
 % ----------
 % List of videos
@@ -269,7 +265,6 @@ if fileToLog > 1; fclose(fileToLog); end
             populateFilters
         end
     end
-
 
 % ============
 % GET ALL THE DISTINCT VALUES TO DISPLAY IN EVERY FILTER LIST
@@ -477,10 +472,8 @@ if fileToLog > 1; fclose(fileToLog); end
             % Check for images
             % ------------
             fileDB(seq).images = length(dir(fullfile(fileDB(seq).directory,['*.',fileDB(seq).format])));
-            if ~isempty(fileDB(seq).images) && ~isempty(fileDB(seq).duration)
-                if fileDB(seq).images > 0 && fileDB(seq).duration > 0
-                    fileDB(seq).frames_per_second = fileDB(seq).images / fileDB(seq).duration;
-                end
+            if fileDB(seq).images > 0 && fileDB(seq).duration > 0
+                fileDB(seq).frames_per_second = fileDB(seq).images / fileDB(seq).duration;
             end
         end
         close(h)
@@ -637,246 +630,6 @@ if fileToLog > 1; fclose(fileToLog); end
         close(h)
     end
 
-
-%     function addListVideos(hObject,eventdata) %#ok<INUSD>
-%         figureAdd = figure('Visible','on','Position',[50,100,720,170],'Name','CeleST: add a video', 'numbertitle','off','menubar','none'); %, 'windowstyle', 'modal','resize','off'
-%         set(figureAdd, 'color', get(mainPanel,'backgroundcolor'));
-%         movegui(figureAdd,'center');
-%         uicontrol('parent', figureAdd, 'style','text','string', sprintf(['Select a directory which contains the following subdirectories:\n\n',...
-%             '<directory_to_select> \\ <date> \\ Trial <n> \\ Day <n> \\ <gene> \\ Set <n> \\ *.bmp, tif or tiff\n']), 'Position', [10 90 700 60], 'HorizontalAlignment', 'left');
-%         uicontrol('parent', figureAdd, 'style','pushbutton', 'string', 'Browse...', 'position', [10,70,100,20],'callback',@listBrowse);
-%         listDirect = uicontrol('parent', figureAdd, 'style','edit', 'string', '', 'position', [120,70,590,20]);
-%         uicontrol('parent', figureAdd, 'style','text', 'string', 'Author: ', 'position', [10,48,100,20]);
-%         editAuthor = uicontrol('parent', figureAdd, 'style','edit', 'string', '', 'position', [120,50,250,20]);
-%         uicontrol('parent', figureAdd, 'style','text', 'string', 'Duration: ', 'position', [400,48,100,20]);
-%         editDuration = uicontrol('parent', figureAdd, 'style','edit', 'string', '', 'position', [500,50,200,20]);
-%         uicontrol('parent', figureAdd, 'style','pushbutton', 'string', 'Add the list of videos', 'position', [10,10,200,30],'callback',@addOK);
-%         uicontrol('parent', figureAdd, 'style','pushbutton', 'string', 'Cancel', 'position', [230,10,80,30],'callback',@addCancel );
-%         waitfor(figureAdd,'BeingDeleted','on');
-%         function listBrowse(hObject,eventdata) %#ok<INUSD>
-%             newDir = uigetdir('');
-%             if newDir ~= 0
-%                 set(listDirect, 'String', newDir);
-%             end
-%         end
-%         
-%         
-%         function addOKCarolina(hObject,eventdata) %#ok<INUSD>
-%             added = 0;
-%             hTmp = waitbar(0,'Building the list of videos: 0 videos added');
-%             currentDir = get(listDirect,'string');
-%             % ------------
-%             % List the subdirectories with Day
-%             % ------------
-%             listOfGenes = dir(fullfile(currentDir,'*'));
-%             idxtmp = 1;
-%             while idxtmp <= length(listOfGenes)
-%                 if listOfGenes(idxtmp).name(1) ~= '.'
-%                     idxtmp = idxtmp + 1;
-%                 else
-%                     listOfGenes(idxtmp) = [];
-%                 end
-%             end
-%             nbGenes = length(listOfGenes);
-%             for geneIdx = 1:nbGenes
-%                 if ~listOfGenes(geneIdx).isdir ; continue; end
-%                 % ------------
-%                 % Extract the gene
-%                 % ------------
-%                 gene = listOfGenes(geneIdx).name;
-%                 % ------------
-%                 % List all subdirectories with Tif Images
-%                 % ------------
-%                 listOfAges = dir(fullfile(currentDir, gene, 'day*'));
-%                 nbAges = length(listOfAges);
-%                 for ageIdx = 1:nbAges
-%                     if ~listOfAges(ageIdx).isdir ; continue; end
-%                     % ------------
-%                     % Extract the age
-%                     % ------------
-%                     ageText = listOfAges(ageIdx).name;
-%                     ageLabel = textscan(ageText,'day %d');
-%                     % ------------
-%                     % List all subdirectories with a day
-%                     % ------------
-%                     listOfSamples = dir(fullfile(currentDir, gene, ageText, 'Sample *'));
-%                     nbSamples = length(listOfSamples);
-%                     for sampleIdx = 1:nbSamples
-%                         waitbar((geneIdx-1 + (ageIdx - 1 + sampleIdx/nbSamples)/nbAges)/nbGenes, hTmp,['Building the list of videos: ',num2str(added) ,' videos added']);
-%                         if ~listOfSamples(sampleIdx).isdir ; continue ; end
-%                         % ------------
-%                         % Extract the set
-%                         % ------------
-%                         setText = listOfSamples(sampleIdx).name;
-%                         setLabel = textscan(setText, 'Sample %d');
-%                         % ------------
-%                         % List all pictures
-%                         % ------------
-%                         dirName = fullfile(currentDir, gene, ageText, setText);
-%                         ext = 0;
-%                         nbOfImages = 0;
-%                         while ext < length(filenames.listOfExtensions) && nbOfImages == 0
-%                             ext = ext + 1;
-%                             nbOfImages = length(dir(fullfile(dirName, ['*.',filenames.listOfExtensions{ext}])));
-%                         end
-%                         if nbOfImages > 0; formatName = filenames.listOfExtensions{ext}; else formatName = 'no image'; end
-%                         % ------------
-%                         % Create a new record with all the extracted information
-%                         % ------------
-%                         newIndex = 1 + length(fileDB);
-%                         added = added + 1;
-%                         fileDB(newIndex).name = [ gene, ' ', ageText,' ', setText];
-%                         fileDB(newIndex).date = 'May 2010';
-%                         fileDB(newIndex).gene = gene;
-%                         fileDB(newIndex).age = num2str(ageLabel{1});
-%                         fileDB(newIndex).set = num2str(setLabel{1});
-%                         fileDB(newIndex).note = '1st trial';
-%                         fileDB(newIndex).author = get(editAuthor,'string');
-%                         fileDB(newIndex).directory = dirName;
-%                         fileDB(newIndex).images = nbOfImages;
-%                         fileDB(newIndex).duration = 29.95;%num2double(get(editDuration,'string'));
-%                         fileDB(newIndex).frames_per_second = 18.13;%str2double(fileDB(newIndex).images) / str2double(fileDB(newIndex).duration);
-%                         fileDB(newIndex).mm_per_pixel = 1;
-%                         fileDB(newIndex).well = [];
-%                         fileDB(newIndex).segmented = false;
-%                         fileDB(newIndex).worms = 0;
-%                         fileDB(newIndex).measured = false;
-%                         fileDB(newIndex).mean_usability = 0;
-%                         fileDB(newIndex).format = formatName;
-%                     end
-%                 end
-%             end
-%             close(hTmp);
-%             close(figureAdd);
-%             ensureUniqueNames
-%             populateFilters
-%         end
-%         function addCancel(hObject,eventdata) %#ok<INUSD>
-%             close(figureAdd);
-%         end
-%         %end
-%         function addOK(hObject,eventdata) %#ok<INUSD>
-%             added = 0;
-%             hTmp = waitbar(0,'Building the list of videos: 0 videos added');
-%             currentDir = get(listDirect,'string');
-%             % ------------
-%             % List the subdirectories with month and year
-%             % ------------
-%             listOfMonths = dir(fullfile(currentDir,'*0*'));
-%             nbMonth = length(listOfMonths);
-%             for monthNb = 1:nbMonth
-%                 if ~listOfMonths(monthNb).isdir ; continue; end
-%                 % ------------
-%                 % Extract the month of aquisition
-%                 % ------------
-%                 monthLabel = listOfMonths(monthNb).name;
-%                 % ------------
-%                 % List all subdirectories with Trial
-%                 % ------------
-%                 listOfTrials = dir(fullfile(currentDir,monthLabel,'*Trial*'));
-%                 nbTr = length(listOfTrials);
-%                 for trialNb = 1:nbTr
-%                     waitbar((monthNb-1+trialNb/nbTr)/nbMonth, hTmp,['Building the list of videos: ',num2str(added) ,' videos added']);
-%                     if ~listOfTrials(trialNb).isdir ; continue; end
-%                     % ------------
-%                     % Extract the trial name
-%                     % ------------
-%                     trialLabel = listOfTrials(trialNb).name;
-%                     % ------------
-%                     % List all subdirectories with a day
-%                     % ------------
-%                     listOfDays = dir(fullfile(currentDir,monthLabel,trialLabel,'*Day*'));
-%                     for dayNb = 1:length(listOfDays)
-%                         if ~listOfDays(dayNb).isdir ; continue ; end
-%                         % ------------
-%                         % Extract the day name
-%                         % ------------
-%                         dayLabel = listOfDays(dayNb).name;
-%                         ageLabels = textscan(dayLabel,'Day %d %s'); % %d-%d-%d
-%                         if isempty(ageLabels); ageLabels = textscan(dayLabel,'day %d %s'); end
-%                         if isempty(ageLabels); break; end
-%                         age = ageLabels{1};
-%                         % ------------
-%                         % List all subdirectories with a gene
-%                         % ------------
-%                         listOfGenes = dir(fullfile(currentDir,monthLabel,trialLabel,dayLabel, '*'));
-%                         for geneNb = 1:length(listOfGenes)
-%                             if ~listOfGenes(geneNb).isdir ; continue ; end
-%                             % ------------
-%                             % Extract the gene name
-%                             % ------------
-%                             geneLabel = listOfGenes(geneNb).name;
-%                             % ------------
-%                             % List all subdirectories with a set
-%                             % ------------
-%                             listOfSets = dir(fullfile(currentDir,monthLabel,trialLabel,dayLabel,geneLabel, 'Set*'));
-%                             for setNb = 1:length(listOfSets)
-%                                 if ~listOfSets(setNb).isdir ; continue ; end
-%                                 % ------------
-%                                 % Extract the gene name
-%                                 % ------------
-%                                 setLabel = listOfSets(setNb).name;
-%                                 setLabels = textscan(setLabel,'Set %d %s'); % %d-%d-%d
-%                                 if isempty(setLabels); setLabels = textscan(setLabel,'set %d %s'); end
-%                                 if isempty(setLabels); break; end
-%                                 % % % %  setNb = setLabels{1};
-%                                 % ------------
-%                                 % List all pictures
-%                                 % ------------
-%                                 dirName = fullfile(currentDir,monthLabel,trialLabel,dayLabel,geneLabel,setLabel);
-%                                 ext = 0;
-%                                 nbOfImages = 0;
-%                                 while ext < length(filenames.listOfExtensions) && nbOfImages == 0
-%                                     ext = ext + 1;
-%                                     nbOfImages = length(dir(fullfile(dirName, ['*.',filenames.listOfExtensions{ext}])));
-%                                 end
-%                                 if nbOfImages > 0; formatName = filenames.listOfExtensions{ext}; else formatName = 'no image'; end
-%                                 % ------------
-%                                 % Create a new record with all the extracted information
-%                                 % ------------
-%                                 newIndex = 1 + length(fileDB);
-%                                 added = added + 1;
-%                                 fileDB(newIndex).name = [geneLabel, ' ', dayLabel,' ', setLabel];
-%                                 fileDB(newIndex).date = monthLabel;
-%                                 fileDB(newIndex).gene = geneLabel;
-%                                 fileDB(newIndex).age = age;
-%                                 fileDB(newIndex).set = setLabels{1};
-%                                 fileDB(newIndex).note = trialLabel;
-%                                 fileDB(newIndex).author = get(editAuthor,'string');
-%                                 fileDB(newIndex).directory = dirName;
-%                                 fileDB(newIndex).images = nbOfImages;
-%                                 fileDB(newIndex).duration = str2double(get(editDuration,'string'));
-%                                 fileDB(newIndex).frames_per_second = str2double(fileDB(newIndex).images) / str2double(fileDB(newIndex).duration);
-%                                 fileDB(newIndex).mm_per_pixel = 1;
-%                                 fileDB(newIndex).well = [];
-%                                 fileDB(newIndex).segmented = false;
-%                                 fileDB(newIndex).worms = 0;
-%                                 fileDB(newIndex).measured = false;
-%                                 fileDB(newIndex).mean_usability = 0;
-%                                 fileDB(newIndex).format = formatName;
-%                                 %                                 fileDB(newIndex).groundTruth = false;
-%                             end
-%                         end
-%                     end
-%                 end
-%             end
-%             close(hTmp);
-%             close(figureAdd);
-%             ensureUniqueNames
-%             populateFilters
-%         end
-% %         function addCancel(hObject,eventdata) %#ok<INUSD>
-% %             close(figureAdd);
-% %         end
-%     end
-
-
-
-
-
-
-
-
     function wormFileXMLwrite(xmlFileName,precision)
         % ---------
         % Create an XML root node
@@ -887,37 +640,41 @@ if fileToLog > 1; fclose(fileToLog); end
         factor = 10^precision;
         h = waitbar(0,'Saving the database...');
         nb = length(fileDB);
-        for seq=1:nb
+        seq = 1;
+        while seq < nb
             if floor(seq/10) == seq/10
                 waitbar((seq-1)/nb,h)
             end
-            % ---------
-            % create a new node for the sequence
-            % ---------
-            seqNode = docNode.createElement('sequence');
-            seqNode.setAttribute('number', int2str(seq));
-            % ---------
-            % retrieve the labels for the elements stored
-            % ---------
-            labels = fieldnames(fileDB(seq));
-            for lbl = 1:length(labels)
-                if strcmp(labels{lbl}, 'glareZones')
-                    for item = 1:length(fileDB(seq).(labels{lbl}))
-                        currentValue = fileDB(seq).(labels{lbl}){item};
+            if any(structfun(@isempty, fileDB(seq)))
+                % ---------
+                % create a new node for the sequence
+                % ---------
+                seqNode = docNode.createElement('sequence');
+                seqNode.setAttribute('number', int2str(seq));
+                % ---------
+                % retrieve the labels for the elements stored
+                % ---------
+                labels = fieldnames(fileDB(seq));
+                for lbl = 1:length(labels)
+                    if strcmp(labels{lbl}, 'glareZones')
+                        for item = 1:length(fileDB(seq).(labels{lbl}))
+                            currentValue = fileDB(seq).(labels{lbl}){item};
+                            currentNode = docNode.createElement('feature');
+                            currentNode.setAttribute('cell', 'true');
+                            writeNode
+                        end
+                    else
+                        currentValue = fileDB(seq).(labels{lbl});
                         currentNode = docNode.createElement('feature');
-                        currentNode.setAttribute('cell', 'true');
                         writeNode
                     end
-                else
-                    currentValue = fileDB(seq).(labels{lbl});
-                    currentNode = docNode.createElement('feature');
-                    writeNode
                 end
+                % ---------
+                % add the sequence node to the root
+                % ---------
+                docRootNode.appendChild(seqNode);
             end
-            % ---------
-            % add the sequence node to the root
-            % ---------
-            docRootNode.appendChild(seqNode);
+            seq = seq + 1;
         end
         % ---------
         % Save the sample XML document.

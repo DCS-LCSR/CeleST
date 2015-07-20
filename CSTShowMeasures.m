@@ -6,7 +6,7 @@ function CSTShowMeasures
 
 % This function creates a window displaying measures.
 
-global fileDB filterSelection samplesDef colFtlWell mainPnlW mainPnlH samplesIdx;
+global fileDB filterNames filterSelection samplesDef colFtlWell mainPnlW mainPnlH samplesIdx;
 
 samplesIdx = [];
 samplesDef = [];
@@ -35,25 +35,10 @@ filterW = 150;
 hFilters = filterH + 20;
 yFilters = mainPnlH - hFilters - 5;
 pnlFilters = uipanel('parent', mainPanel,'BorderType', 'none','units','pixels', 'position', [1 yFilters mainPnlW hFilters]);%,'title','Filters'
-listFilters = fieldnames(fileDB);
-idxtmp = 1;
-while idxtmp <= length(listFilters)
-    if strcmp(listFilters{idxtmp},'name') || strcmp(listFilters{idxtmp},'directory') || strcmp(listFilters{idxtmp},'format')...
-            || strcmp(listFilters{idxtmp},'frames_per_second') || strcmp(listFilters{idxtmp},'mm_per_pixel') || strcmp(listFilters{idxtmp},'set')...
-            || strcmp(listFilters{idxtmp},'duration') || strcmp(listFilters{idxtmp},'images') || strcmp(listFilters{idxtmp},'glareZones')...
-            || strcmp(listFilters{idxtmp},'note') || strcmp(listFilters{idxtmp},'worms') || strcmp(listFilters{idxtmp},'well')...
-            || strcmp(listFilters{idxtmp},'month') || strcmp(listFilters{idxtmp},'day') || strcmp(listFilters{idxtmp},'year')
-        listFilters(idxtmp) = [];
-    else
-        idxtmp = idxtmp + 1;
-    end
+for idxtmp = 0:length(filterNames)-1
+    uicontrol('parent',pnlFilters,'style','text','string',filterNames{idxtmp+1},'position',[idxtmp*filterW filterH filterW 20])
+    flt.(filterNames{idxtmp+1}) = uicontrol('parent',pnlFilters,'style','listbox','String',{''},'max',2,'min',0,'position',[idxtmp*filterW 0 filterW filterH],'callback',@setFilteredList);
 end
-        
-for idxtmp = 0:length(listFilters)-1
-    uicontrol('parent',pnlFilters,'style','text','string',listFilters{idxtmp+1},'position',[idxtmp*filterW filterH filterW 20])
-    flt.(listFilters{idxtmp+1}) = uicontrol('parent',pnlFilters,'style','listbox','String',{''},'max',2,'min',0,'position',[idxtmp*filterW 0 filterW filterH],'callback',@setFilteredList);
-end
-
 
 % ----------
 % List of videos filtered
