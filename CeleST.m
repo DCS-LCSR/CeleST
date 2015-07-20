@@ -640,7 +640,7 @@ if fileToLog > 1; fclose(fileToLog); end
         close(h)
     end
 
-
+ 
     function wormFileXMLwrite(xmlFileName,precision)
         % ---------
         % Create an XML root node
