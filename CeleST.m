@@ -471,7 +471,7 @@ if fileToLog > 1; fclose(fileToLog); end
             % Check for images
             % ------------
             
-            fileDB(seq).images = length(dir(fullfile(fileDB(seq).directory,['*.',fileDB(seq).format])));            
+            fileDB(seq).images = length(dir(fullfile(fileDB(seq).directory,['*.',fileDB(seq).format])));
             if isempty(fileDB(seq).images) || isempty(fileDB(seq).duration)
                 errordlg('Database error encountered. Video may be missing, if so please just re-add it.','Database Error');
             else
@@ -644,41 +644,37 @@ if fileToLog > 1; fclose(fileToLog); end
         factor = 10^precision;
         h = waitbar(0,'Saving the database...');
         nb = length(fileDB);
-        seq = 1;
-        while seq < nb
+        for seq=1:nb
             if floor(seq/10) == seq/10
                 waitbar((seq-1)/nb,h)
             end
-            if any(structfun(@isempty, fileDB(seq)))
-                % ---------
-                % create a new node for the sequence
-                % ---------
-                seqNode = docNode.createElement('sequence');
-                seqNode.setAttribute('number', int2str(seq));
-                % ---------
-                % retrieve the labels for the elements stored
-                % ---------
-                labels = fieldnames(fileDB(seq));
-                for lbl = 1:length(labels)
-                    if strcmp(labels{lbl}, 'glareZones')
-                        for item = 1:length(fileDB(seq).(labels{lbl}))
-                            currentValue = fileDB(seq).(labels{lbl}){item};
-                            currentNode = docNode.createElement('feature');
-                            currentNode.setAttribute('cell', 'true');
-                            writeNode
-                        end
-                    else
-                        currentValue = fileDB(seq).(labels{lbl});
+            % ---------
+            % create a new node for the sequence
+            % ---------
+            seqNode = docNode.createElement('sequence');
+            seqNode.setAttribute('number', int2str(seq));
+            % ---------
+            % retrieve the labels for the elements stored
+            % ---------
+            labels = fieldnames(fileDB(seq));
+            for lbl = 1:length(labels)
+                if strcmp(labels{lbl}, 'glareZones')
+                    for item = 1:length(fileDB(seq).(labels{lbl}))
+                        currentValue = fileDB(seq).(labels{lbl}){item};
                         currentNode = docNode.createElement('feature');
+                        currentNode.setAttribute('cell', 'true');
                         writeNode
                     end
+                else
+                    currentValue = fileDB(seq).(labels{lbl});
+                    currentNode = docNode.createElement('feature');
+                    writeNode
                 end
-                % ---------
-                % add the sequence node to the root
-                % ---------
-                docRootNode.appendChild(seqNode);
             end
-            seq = seq + 1;
+            % ---------
+            % add the sequence node to the root
+            % ---------
+            docRootNode.appendChild(seqNode);
         end
         % ---------
         % Save the sample XML document.
