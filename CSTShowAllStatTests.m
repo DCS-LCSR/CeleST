@@ -9,14 +9,13 @@ global samplesIdx mainPnlW samplesDef measures listOfMeasures listOfButtons;
 
 
 % ============
-% Validation that notifies the user if nothing will show up
+% Validation that notifies the user if nothing will show up due to lack of samples
 % ============
-
 if length(samplesIdx) < 2
     choice = questdlg('There is nothing to compare your one sample to, would you like to continue?', ...
         'Comparison Warning','Continue','Exit','Exit');
 end
-% Handle response
+
 if strcmp(choice,'Exit')
     return
 end

@@ -688,6 +688,9 @@ waitfor(mainFigure,'BeingDeleted','on');
                         end
                     end
                 end
+                % ============
+                % Validates input parameters for 2D histograms to 
+                % ============
                 if maxValue(1)==0 || maxValue(2)==0
                     
                     axis(hPlot2D,[0 1 0 1])
@@ -695,18 +698,19 @@ waitfor(mainFigure,'BeingDeleted','on');
                     if verLessThan('matlab','8.4.0')
                         set(hPlot2D,'color','none');
                     else
-                      hPlot2D.Color = 'none'
+                      hPlot2D.Color = 'none';
                     end
                     
                     grid(hPlot2D, 'on')
                     set(get(hPlot2D,'XLabel'),'String',listOfLabels{statToShow(1)})
-                    set(get(hPlot2D,'yLabel'),'String',listOfLabels{statToShow(2)})
-                    
-                    
-                    
+                    set(get(hPlot2D,'yLabel'),'String',listOfLabels{statToShow(2)})                     
                     errordlg('One of the entered axis parameters has insufficient data','Axes error');
                     return
                 end
+                
+                % ============
+                % Continue showing graphs 
+                % ============
                 axis(hPlot2D,[0 maxValue(1) 0 maxValue(2)])
                 grid(hPlot2D, 'on')
                 set(get(hPlot2D,'XLabel'),'String',listOfLabels{statToShow(1)})
@@ -1047,7 +1051,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                             uimenu(hcmenu, 'Label', [fileDB(namesHisto{samp}{samHist}{idxMenu}{1}).name , ' : worm ',  num2str(namesHisto{samp}{samHist}{idxMenu}{2})]);
                         end
                         fill([x,x,xNext,xNext],[0 1 1 0],colorsHisto(value,:),'parent', hSamples.plotHisto(samp), 'edgecolor', 'c');
-%                         fill([x,x,xNext,xNext],[0 1 1 0],colorsHisto(value,:),'parent', hSamples.plotHisto(samp), 'UIContextMenu', hcmenu, 'edgecolor', 'c');
+                        % Removed broken property 'UIContextMenu'
                     end
                 end
                 axis(hSamples.plotHisto(samp), [xAxisCommon(1), xAxisCommon(2), 0, 1]);
