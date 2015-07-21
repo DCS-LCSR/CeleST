@@ -32,7 +32,7 @@ scrsz = get(0,'ScreenSize');
 mainW = min(mainPnlW, scrsz(3) - 10);
 mainH = min(mainPnlH, scrsz(4) - 70);
 mainPanelPosition = [2 , mainH-mainPnlH-2 , mainPnlW , mainPnlH];
-mainFigure = figure('Visible','off','Position',[5,40,mainW,mainH],'Name','CeleST: Video Processing - Choose the videos to process, define the swimming zones, launch the processing','numbertitle','off', 'menubar', 'none', 'resizefcn', @resizeMainFigure);
+mainFigure = figure('Visible','off','Position',[1000,800,mainW,mainH],'Name','CeleST: Video Processing - Choose the videos to process, define the swimming zones, launch the processing','numbertitle','off', 'menubar', 'none', 'resizefcn', @resizeMainFigure);
 mainPanel = uipanel('parent', mainFigure,'BorderType', 'none','units','pixels', 'position', mainPanelPosition);
 sliderHoriz = uicontrol('parent',mainFigure,'style','slider','position',[0 0 mainW-20 20],'max', 1,'min',0, 'value',0,'callback',@setMainPanelPositionBySliders);
 sliderVert = uicontrol('parent',mainFigure,'style','slider','position',[mainW-20 20 20 mainH-20],'max', max(1,-mainPanelPosition(2)),'min',0, 'value',max(1,-mainPanelPosition(2)),'callback',@setMainPanelPositionBySliders);
@@ -104,7 +104,7 @@ listVideosWellIdx = [];
 % Image
 % ------------
 uicontrol('parent',mainPanel,'style','text','HorizontalAlignment', 'left','String','Left click = add a point on the border of the well  --- Right click = remove the latest point','position',[5*filterW yVideos-30+2*filterH defaultImSize(1) 20]);
-axesImage = axes('parent',mainPanel,'units','normalized','Position',[5*filterW yVideos-30+2*filterH-defaultImSize(2) defaultImSize(1) defaultImSize(2)],'XTick',[],'YTick',[]);
+axesImage = axes('parent',mainPanel,'units','pixels','Position',[5*filterW yVideos-30+2*filterH-defaultImSize(2) defaultImSize(1) defaultImSize(2)],'XTick',[],'YTick',[]);
 
 % ------------
 % Handle deprecated method
