@@ -183,7 +183,12 @@ waitfor(mainFigure,'BeingDeleted','on');
 if ~isempty(fileDB)
     if traceOn; fprintf(fileToLog, ['Saving sequences database file', '\n']); end
     wormFileXMLwrite(fileDBFile);
+else
+    if exist(filenames.data)
+        rmdir(filenames.file_management,'s');
+    end
 end
+
 if fileToLog > 1; fclose(fileToLog); end
 
 % ===============
