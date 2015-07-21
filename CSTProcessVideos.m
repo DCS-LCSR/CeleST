@@ -104,7 +104,7 @@ listVideosWellIdx = [];
 % Image
 % ------------
 uicontrol('parent',mainPanel,'style','text','HorizontalAlignment', 'left','String','Left click = add a point on the border of the well  --- Right click = remove the latest point','position',[5*filterW yVideos-30+2*filterH defaultImSize(1) 20]);
-axesImage = axes('parent',mainPanel,'units','pixels','Position',[5*filterW yVideos-30+2*filterH-defaultImSize(2) defaultImSize(1) defaultImSize(2)],'XTick',[],'YTick',[]);
+axesImage = axes('parent',mainPanel,'units','normalized','Position',[5*filterW yVideos-30+2*filterH-defaultImSize(2) defaultImSize(1) defaultImSize(2)],'XTick',[],'YTick',[]);
 
 % ------------
 % Handle deprecated method
