@@ -14,11 +14,13 @@ global samplesIdx mainPnlW samplesDef measures listOfMeasures listOfButtons;
 if length(samplesIdx) < 2
     choice = questdlg('There is nothing to compare your one sample to, would you like to continue?', ...
         'Comparison Warning','Continue','Exit','Exit');
+    
+    if strcmp(choice,'Exit')
+        return
+    end
 end
 
-if strcmp(choice,'Exit')
-    return
-end
+
 
 
 % ============
