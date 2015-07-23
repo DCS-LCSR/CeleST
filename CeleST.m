@@ -516,11 +516,11 @@ if fileToLog > 1; fclose(fileToLog); end
                     end
                 end
             end
-            if ~errorCheck
-                msgbox('Data is consistent','Success');
-            end
         end
-        if flagConsistentButton; close(h); end
+        if flagConsistentButton
+            close(h)
+            if ~errorCheck; msgbox('Data is consistent','Success'); end
+        end
         flagConsistentButton = true;
     end
 
