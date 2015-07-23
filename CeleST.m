@@ -526,8 +526,8 @@ if fileToLog > 1; fclose(fileToLog); end
             msgbox('Data is consistent','Success');
         end
         close(h)
+    errordlg(errorstring,dlgname)
     end
-
 % ------------
 % Check that names are unique, and modify them if necessary
 % ------------
@@ -559,7 +559,7 @@ if fileToLog > 1; fclose(fileToLog); end
             uicontrol('parent', figureAdd, 'style', 'text', 'string', fieldsIni{tmpFF}, 'position', [0, 500-20*tmpFF, 120, 20]);
             tmpfield.(fieldsIni{tmpFF}) = uicontrol('parent', figureAdd, 'style', 'edit', 'string', '', 'position', [140, 500-20*tmpFF, 180, 20]);
         end
-        uicontrol('parent',figureAdd,'style','pushbutton', 'string', 'Browse...', 'position', [320, 500-20*8, 80,20],'callback',@addBrowse);
+        uicontrol('parent',figureAdd,'style','pushbutton', 'string', 'Browse...', 'position', [320, 500-22.5*8, 80,20],'callback',@addBrowse);
         for tmpFF = [9,12:20]
             uicontrol('parent', figureAdd, 'style', 'text', 'string', fieldsIni{tmpFF}, 'position', [0, 500-20*tmpFF, 120, 20]);
             tmpfield.(fieldsIni{tmpFF}) = uicontrol('parent', figureAdd, 'style', 'text', 'string', '', 'position', [140, 500-20*tmpFF, 180, 20]);
@@ -602,28 +602,33 @@ if fileToLog > 1; fclose(fileToLog); end
             end
         end
         function addOK(hObject,eventdata) %#ok<INUSD>
-            tmpNewVideo = struct(fileDB);
-            tmpNewVideo(1).name = get(tmpfield.name,'string');
-            tmpNewVideo(1).date = get(tmpfield.date,'string');
-            tmpNewVideo(1).gene = get(tmpfield.gene,'string');
-            tmpNewVideo(1).age = str2double(get(tmpfield.age,'string'));
-            tmpNewVideo(1).set = str2double(get(tmpfield.set,'string'));
-            tmpNewVideo(1).trial = str2double(get(tmpfield.trial,'string'));
-            tmpNewVideo(1).note = get(tmpfield.note,'string');
-            tmpNewVideo(1).author = get(tmpfield.author,'string');
-            tmpNewVideo(1).directory = get(tmpfield.directory,'string');
-            tmpNewVideo(1).images = str2double(get(tmpfield.images,'string'));
-            tmpNewVideo(1).duration = str2double(get(tmpfield.duration,'string'));
-            tmpNewVideo(1).frames_per_second = tmpNewVideo(1).images / tmpNewVideo(1).duration;
-            tmpNewVideo(1).mm_per_pixel = 1;
-            tmpNewVideo(1).well = [];
-            tmpNewVideo(1).segmented = false;
-            tmpNewVideo(1).worms = 0;
-            tmpNewVideo(1).measured = false;
-            tmpNewVideo(1).format = get(tmpfield.format,'string');
-            tmpNewVideo(1).glareZones = cell(1,0);
-            fileDB(end+1) = tmpNewVideo(1);
-            flagOK = true;
+            if strcmp(get(tmpfield.name,'string'),'') || strcmp(get(tmpfield.directory,'string'),'')
+                errordlg('Missing one or more required field','Input Error')
+            else
+            
+                tmpNewVideo = struct(fileDB);
+                tmpNewVideo(1).name = get(tmpfield.name,'string');
+                tmpNewVideo(1).date = get(tmpfield.date,'string');
+                tmpNewVideo(1).gene = get(tmpfield.gene,'string');
+                tmpNewVideo(1).age = str2double(get(tmpfield.age,'string'));
+                tmpNewVideo(1).set = str2double(get(tmpfield.set,'string'));
+                tmpNewVideo(1).trial = str2double(get(tmpfield.trial,'string'));
+                tmpNewVideo(1).note = get(tmpfield.note,'string');
+                tmpNewVideo(1).author = get(tmpfield.author,'string');
+                tmpNewVideo(1).directory = get(tmpfield.directory,'string');
+                tmpNewVideo(1).images = str2double(get(tmpfield.images,'string'));
+                tmpNewVideo(1).duration = str2double(get(tmpfield.duration,'string'));
+                tmpNewVideo(1).frames_per_second = tmpNewVideo(1).images / tmpNewVideo(1).duration;
+                tmpNewVideo(1).mm_per_pixel = 1;
+                tmpNewVideo(1).well = [];
+                tmpNewVideo(1).segmented = false;
+                tmpNewVideo(1).worms = 0;
+                tmpNewVideo(1).measured = false;
+                tmpNewVideo(1).format = get(tmpfield.format,'string');
+                tmpNewVideo(1).glareZones = cell(1,0);
+                fileDB(end+1) = tmpNewVideo(1);
+                flagOK = true;
+            end
             close(figureAdd);
         end
         function addCancel(hObject,eventdata) %#ok<INUSD>
