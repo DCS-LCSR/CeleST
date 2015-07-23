@@ -60,7 +60,7 @@ showGraphsBtn = uicontrol('parent',mainPanel,'style','pushbutton', 'string', 'Sh
 
 uicontrol('parent',mainPanel,'style','text', 'HorizontalAlignment', 'left','String','Double-click on a sample name (first line) to change it.','position',[4*filterW+80 yVideos+3*filterH+35 500 20]);
 tableSamples = uitable('parent',mainPanel,'position',[4*filterW-100 50 mainPnlW-4*filterW yVideos+3*filterH-10],'RearrangeableColumn','on','ColumnEditable',[],'CellEditCallback', @tableEdit, 'CellSelectionCallback', @tableSelect,'rowstriping','off');
-selectedCellsData = [];
+selectedCellsData = struct;
 
 if isempty(samplesDef)
     samplesDef = {};
@@ -124,7 +124,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 
     function addVideosExisting(hObject,eventdata)
        
-        if (any(strcmp(properties(selectedCellsData), 'Indices')) && ~isempty(selectedCellsData.Indices))
+        if (any(strcmp(fieldnames(selectedCellsData), 'Indices')) && ~isempty(selectedCellsData.Indices))
             colToAdd = selectedCellsData.Indices(1,2);
             listOfFiltered = get(listVideosFiltered,'string');
             listOfSelection = get(listVideosFiltered,'value');
@@ -147,7 +147,7 @@ waitfor(mainFigure,'BeingDeleted','on');
     end
 
     function removeVideos(hObject,eventdata)
-        if any(strcmp(properties(selectedCellsData), 'Indices')) && ~isempty(selectedCellsData.Indices)
+        if any(strcmp(fieldnames(selectedCellsData), 'Indices')) && ~isempty(selectedCellsData.Indices)
             samplesDef = get(tableSamples, 'data');
             for item = size(selectedCellsData.Indices,1):-1:1
                 row = selectedCellsData.Indices(item,1);
@@ -164,7 +164,7 @@ waitfor(mainFigure,'BeingDeleted','on');
     end
 
     function removeSample(hObject,eventdata)
-        if any(strcmp(properties(selectedCellsData), 'Indices')) && ~isempty(selectedCellsData.Indices)
+        if any(strcmp(fieldnames(selectedCellsData), 'Indices')) && ~isempty(selectedCellsData.Indices)
             samplesDef = get(tableSamples, 'data');
             colToDelete = selectedCellsData.Indices(1,2);
             button = questdlg(['Are you sure you want to delete sample ', samplesDef{1,colToDelete}, '?'],'CeleST','Delete','Cancel','Cancel');
@@ -173,6 +173,9 @@ waitfor(mainFigure,'BeingDeleted','on');
                 set(tableSamples, 'data', samplesDef);
                 samplesIdx(colToDelete) = [];
                 trimEmptyLines
+            end
+            if isempty(samplesIdx)
+                set(showGraphsBtn,'Enable','on');
             end
         end
     end
