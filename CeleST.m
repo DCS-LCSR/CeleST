@@ -5,7 +5,7 @@ function CeleST
 % THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 clear('global')
-global filenames fileDB traceOn timingOn timings timingsLabel timingsTime plotAllOn flagRobustness fileToLog flagAutomation flagInterfaceFreeze filterNames filterSelection colFtlWell mainPnlW mainPnlH fieldsIni listVideosIdx tableVideos;
+global filenames fileDB traceOn timingOn timings timingsLabel timingsTime plotAllOn flagRobustness fileToLog flagAutomation flagInterfaceFreeze flagConsistentButton filterNames filterSelection colFtlWell mainPnlW mainPnlH fieldsIni listVideosIdx tableVideos;
 
 
 % ===============
@@ -18,6 +18,7 @@ flagRobustness = true;
 logToFile = true;
 flagAutomation = false;
 flagInterfaceFreeze = true;
+flagConsistentButton = true;
 filterNames = {'author','date','gene','trial','age','segmented','measured','experiment','class'};
 timingsLabel = {'load image', 'preprocess', 'find borders', 'compute appearance', 'compute cbl', 'store data', 'check missed regions', 'check quality', 'supersample', 'tracking', 'merging',...
     'detect overlap risk', 'track cbl', 'adjust model'};
@@ -145,7 +146,7 @@ yFilters = mainPnlH - hFilters - 5 - 70;
 uicontrol('parent',mainPanel,'style','pushbutton','string','Add one video...','position',[10 yFilters+hFilters+40 150 30],'callback',@addOneVideo);
 btnEdit = uicontrol('parent',mainPanel,'style','togglebutton','string','Toggle Edit Table','position',[10 yFilters+hFilters+10 150 30],'callback',@editTable);
 uicontrol('parent',mainPanel,'style','pushbutton','string','Delete videos...','position',[160 yFilters+hFilters+10 150 30],'callback',@deleteVideos);
-uicontrol('parent',mainPanel,'style','pushbutton','string','Check consistency','position',[160 yFilters+hFilters+40 150 30],'callback',@checkSequencesButton);
+uicontrol('parent',mainPanel,'style','pushbutton','string','Check consistency','position',[160 yFilters+hFilters+40 150 30],'callback',@checkSequences);
 
 uicontrol('parent',mainPanel,'style','pushbutton','string','1. Process videos...','position',[500 yFilters+hFilters+10 170 60],'callback',@processVideo);
 uicontrol('parent',mainPanel,'style','pushbutton','string','2. Compute measures...','position',[700 yFilters+hFilters+10 170 60],'callback',@checkResults);
@@ -186,7 +187,6 @@ if ~isempty(fileDB)
 else
     if exist(fileDBFile, 'file')
         delete(fileDBFile)
-        disp(fileDBFile)
     end
 end
 
@@ -215,6 +215,7 @@ if fileToLog > 1; fclose(fileToLog); end
         set(mainFigure,'Visible','off');
         CSTProcessVideos
         set(mainFigure,'Visible','on');
+        flagConsistentButton = false;
         checkSequences
         populateFilters
     end
@@ -223,6 +224,7 @@ if fileToLog > 1; fclose(fileToLog); end
         set(mainFigure,'Visible','off');
         CSTCheckResults
         set(mainFigure,'Visible','on');
+        flagConsistentButton = false;
         checkSequences
         populateFilters
     end
@@ -231,6 +233,7 @@ if fileToLog > 1; fclose(fileToLog); end
         set(mainFigure,'Visible','off');
         CSTShowMeasures
         set(mainFigure,'Visible','on');
+        flagConsistentButton = false;
         checkSequences
         populateFilters
     end
@@ -241,29 +244,29 @@ if fileToLog > 1; fclose(fileToLog); end
         listNames = tmpData(:,1);
         [selection,ok] = listdlg('ListString',listNames, 'name', 'CeleST: delete videos','promptstring', 'Videos to remove from the database:',...
             'okstring','Remove', 'listsize',[400 300]);
-          
+        
         if ok == 1
-            word = '';
+            word = cell(1,selection);
             for select = 1:length(selection)
-                 
-                 if select ~= length(selection)
-                     word = [word, fileDB(listVideosIdx(select)).name, ', ' ];
-                 else 
-                     if select ~= 1
-                        word = [word, ' and ', fileDB(listVideosIdx(select)).name, '?' ];
-                     else
-                     	word =  [fileDB(listVideosIdx(select)).name, '?' ];
-                     end
-                 end
-                     
+
+                if select ~= length(selection)
+                    word{select} = [ fileDB(listVideosIdx(select)).name, ', ' ];
+                else
+                    if select ~= 1
+                        word{select} = [ ' and ', fileDB(listVideosIdx(select)).name, '?' ];
+                    else
+                        word{select} =  [fileDB(listVideosIdx(select)).name, '?' ];
+                    end
+                end
+                
             end
             
-            choice = questdlg(['Are you sure you want to delete: ',  word],'Warning Deletion','Yes','Cancel','Cancel');
+            choice = questdlg(['Are you sure you want to delete: ',  strjoin(word)],'Warning Deletion','Yes','Cancel','Cancel');
             if strcmp(choice,'Yes')
                 fileDB(listVideosIdx(selection)) = [];
                 fields = fieldnames(flt);
-
-
+                
+                
                 for field = 1:length(fields)
                     set(flt.(fields{field}),'value',1)
                 end
@@ -288,6 +291,7 @@ if fileToLog > 1; fclose(fileToLog); end
             set(tableVideos, 'ColumnEditable',editable);
         else
             set(tableVideos, 'ColumnEditable',false(1,length(fieldsIni)));
+            flagConsistentButton = false;
             checkSequences
             populateFilters
         end
@@ -475,58 +479,49 @@ if fileToLog > 1; fclose(fileToLog); end
 % ------------
 % Check the flags for the videos
 % ------------
-    
-    function checkSequencesButton(hObject, event)     
-        nb = length(fileDB);
-        
-        if nb==0
-            msgbox('There are no samples to check');
-        else
-            checkSequences(hObject, event);
-        end   
-    end
 
     function checkSequences(hObject, event) %#ok<INUSD>
-        h = waitbar(0,'Checking the consistency of the data...');
+        if flagConsistentButton; h = waitbar(0,'Checking the consistency of the data...'); end
         ensureUniqueNames
-        nb = length(fileDB);
+
         errorCheck = false;
-        
-        for seq = 1:nb
-            if floor(seq/10) == seq/10
-                waitbar(seq/nb,h);
-            end
-            % ------------
-            % Check for segmented worms
-            % ------------
-            test_segm = fopen(fullfile(filenames.segmentation,['wormSegm_',fileDB(seq).name,'.txt']));
-            fileDB(seq).segmented = (test_segm >= 0);
-            if fileDB(seq).segmented; fclose(test_segm); end
-            % ------------
-            % Check for measures
-            % ------------
-            test_meas = fopen(fullfile(filenames.measures,['wormMeas_',fileDB(seq).name,'.txt']));
-            fileDB(seq).measured = (test_meas >= 0);
-            if fileDB(seq).measured; fclose(test_meas); end
-            % ------------
-            % Check for images
-            % ------------
-            
-            fileDB(seq).images = length(dir(fullfile(fileDB(seq).directory,['*.',fileDB(seq).format])));
-            if isempty(fileDB(seq).images) || isempty(fileDB(seq).duration)
-                errordlg('Database error encountered. Video may be missing, if so please just re-add it.','Database Error');
-                errorCheck = true;
-            else
-                if fileDB(seq).images > 0 && fileDB(seq).duration > 0
-                    fileDB(seq).frames_per_second = fileDB(seq).images / fileDB(seq).duration;
+        if isempty(fileDB)
+            msgbox('There are no samples to check');
+        else
+            for seq = 1:length(fileDB)
+                if floor(seq/10) == seq/10 && flagConsistentButton; waitbar(seq/nb,h); end
+                % ------------
+                % Check for segmented worms
+                % ------------
+                test_segm = fopen(fullfile(filenames.segmentation,['wormSegm_',fileDB(seq).name,'.txt']));
+                fileDB(seq).segmented = (test_segm >= 0);
+                if fileDB(seq).segmented; fclose(test_segm); end
+                % ------------
+                % Check for measures
+                % ------------
+                test_meas = fopen(fullfile(filenames.measures,['wormMeas_',fileDB(seq).name,'.txt']));
+                fileDB(seq).measured = (test_meas >= 0);
+                if fileDB(seq).measured; fclose(test_meas); end
+                % ------------
+                % Check for images
+                % ------------
+                
+                fileDB(seq).images = length(dir(fullfile(fileDB(seq).directory,['*.',fileDB(seq).format])));
+                if isempty(fileDB(seq).images) || isempty(fileDB(seq).duration)
+                    errordlg('Database error encountered. Video may be missing, if so please just re-add it.','Database Error');
+                    errorCheck = true;
+                else
+                    if fileDB(seq).images > 0 && fileDB(seq).duration > 0
+                        fileDB(seq).frames_per_second = fileDB(seq).images / fileDB(seq).duration;
+                    end
                 end
             end
+            if ~errorCheck
+                msgbox('Data is consistent','Success');
+            end
         end
-        if ~errorCheck
-            msgbox('Data is consistent','Success');
-        end
-        close(h)
-    errordlg(errorstring,dlgname)
+        if flagConsistentButton; close(h); end
+        flagConsistentButton = true;
     end
 % ------------
 % Check that names are unique, and modify them if necessary
