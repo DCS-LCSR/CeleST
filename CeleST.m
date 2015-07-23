@@ -145,7 +145,7 @@ yFilters = mainPnlH - hFilters - 5 - 70;
 uicontrol('parent',mainPanel,'style','pushbutton','string','Add one video...','position',[10 yFilters+hFilters+40 150 30],'callback',@addOneVideo);
 btnEdit = uicontrol('parent',mainPanel,'style','togglebutton','string','Toggle Edit Table','position',[10 yFilters+hFilters+10 150 30],'callback',@editTable);
 uicontrol('parent',mainPanel,'style','pushbutton','string','Delete videos...','position',[160 yFilters+hFilters+10 150 30],'callback',@deleteVideos);
-uicontrol('parent',mainPanel,'style','pushbutton','string','Check consistency','position',[160 yFilters+hFilters+40 150 30],'callback',@checkSequences);
+uicontrol('parent',mainPanel,'style','pushbutton','string','Check consistency','position',[160 yFilters+hFilters+40 150 30],'callback',@checkSequencesButton);
 
 uicontrol('parent',mainPanel,'style','pushbutton','string','1. Process videos...','position',[500 yFilters+hFilters+10 170 60],'callback',@processVideo);
 uicontrol('parent',mainPanel,'style','pushbutton','string','2. Compute measures...','position',[700 yFilters+hFilters+10 170 60],'callback',@checkResults);
@@ -184,8 +184,9 @@ if ~isempty(fileDB)
     if traceOn; fprintf(fileToLog, ['Saving sequences database file', '\n']); end
     wormFileXMLwrite(fileDBFile);
 else
-    if exist(filenames.data)
-        rmdir(filenames.file_management,'s');
+    if exist(fileDBFile, 'file')
+        delete(fileDBFile)
+        disp(fileDBFile)
     end
 end
 
@@ -235,15 +236,37 @@ if fileToLog > 1; fclose(fileToLog); end
     end
 
     function deleteVideos(hObject,eventdata) %#ok<INUSD>
+        
         tmpData = get(tableVideos,'data');
         listNames = tmpData(:,1);
         [selection,ok] = listdlg('ListString',listNames, 'name', 'CeleST: delete videos','promptstring', 'Videos to remove from the database:',...
             'okstring','Remove', 'listsize',[400 300]);
+          
         if ok == 1
-            fileDB(listVideosIdx(selection)) = [];
-            fields = fieldnames(flt);
-            for field = 1:length(fields)
-                set(flt.(fields{field}),'value',1)
+            word = '';
+            for select = 1:length(selection)
+                 
+                 if select ~= length(selection)
+                     word = [word, fileDB(listVideosIdx(select)).name, ', ' ];
+                 else 
+                     if select ~= 1
+                        word = [word, ' and ', fileDB(listVideosIdx(select)).name, '?' ];
+                     else
+                     	word =  [fileDB(listVideosIdx(select)).name, '?' ];
+                     end
+                 end
+                     
+            end
+            
+            choice = questdlg(['Are you sure you want to delete: ',  word],'Warning Deletion','Yes','Cancel','Cancel');
+            if strcmp(choice,'Yes')
+                fileDB(listVideosIdx(selection)) = [];
+                fields = fieldnames(flt);
+
+
+                for field = 1:length(fields)
+                    set(flt.(fields{field}),'value',1)
+                end
             end
         end
         populateFilters
@@ -452,10 +475,23 @@ if fileToLog > 1; fclose(fileToLog); end
 % ------------
 % Check the flags for the videos
 % ------------
+    
+    function checkSequencesButton(hObject, event)     
+        nb = length(fileDB);
+        
+        if nb==0
+            msgbox('There are no samples to check');
+        else
+            checkSequences(hObject, event);
+        end   
+    end
+
     function checkSequences(hObject, event) %#ok<INUSD>
         h = waitbar(0,'Checking the consistency of the data...');
         ensureUniqueNames
         nb = length(fileDB);
+        errorCheck = false;
+        
         for seq = 1:nb
             if floor(seq/10) == seq/10
                 waitbar(seq/nb,h);
@@ -479,11 +515,15 @@ if fileToLog > 1; fclose(fileToLog); end
             fileDB(seq).images = length(dir(fullfile(fileDB(seq).directory,['*.',fileDB(seq).format])));
             if isempty(fileDB(seq).images) || isempty(fileDB(seq).duration)
                 errordlg('Database error encountered. Video may be missing, if so please just re-add it.','Database Error');
+                errorCheck = true;
             else
                 if fileDB(seq).images > 0 && fileDB(seq).duration > 0
                     fileDB(seq).frames_per_second = fileDB(seq).images / fileDB(seq).duration;
                 end
             end
+        end
+        if ~errorCheck
+            msgbox('Data is consistent','Success');
         end
         close(h)
     end
@@ -634,6 +674,11 @@ if fileToLog > 1; fclose(fileToLog); end
                     end
                     fileDB(idxVideo).(featName){end+1} = currentVariable;
                 end
+            end
+        end
+        for curr_file=1:length(fileDB)
+            if isempty(fileDB(curr_file).name)
+                fileDB(curr_file).name = '';
             end
         end
         close(h)
