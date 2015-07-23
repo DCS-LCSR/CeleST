@@ -56,7 +56,7 @@ uicontrol('parent',mainPanel,'style','pushbutton', 'string', '>>      Add to a n
 uicontrol('parent',mainPanel,'style','pushbutton', 'string', '>>  Add to the selected sample  >>', 'position', [2*filterW yVideos+3*filterH-90 200 50], 'callback', @addVideosExisting);
 uicontrol('parent',mainPanel,'style','pushbutton', 'string', '<<  Remove the selected videos  <<', 'position', [2*filterW yVideos+3*filterH-170 200 50], 'callback', @removeVideos);
 uicontrol('parent',mainPanel,'style','pushbutton', 'string', '<<  Remove the selected sample  <<', 'position', [2*filterW yVideos+3*filterH-220 200 50], 'callback', @removeSample);
-uicontrol('parent',mainPanel,'style','pushbutton', 'string', 'Show graphs for these samples',        'position', [2*filterW yVideos+3*filterH-300 200 50], 'callback', @showGraphs);
+showGraphsBtn = uicontrol('parent',mainPanel,'style','pushbutton', 'string', 'Show graphs for these samples', 'position', [2*filterW yVideos+3*filterH-300 200 50], 'enable', 'off', 'callback', @showGraphs);
 
 uicontrol('parent',mainPanel,'style','text', 'HorizontalAlignment', 'left','String','Double-click on a sample name (first line) to change it.','position',[4*filterW+80 yVideos+3*filterH+35 500 20]);
 tableSamples = uitable('parent',mainPanel,'position',[4*filterW-100 50 mainPnlW-4*filterW yVideos+3*filterH-10],'RearrangeableColumn','on','ColumnEditable',[],'CellEditCallback', @tableEdit, 'CellSelectionCallback', @tableSelect,'rowstriping','off');
@@ -114,6 +114,7 @@ waitfor(mainFigure,'BeingDeleted','on');
         samplesDef(1:length(selectedNames),newCol) = selectedNames;
         set(tableSamples, 'data', samplesDef);
         setRowNames
+        set(showGraphsBtn,'Enable','on');
     end
 
      % ------------
