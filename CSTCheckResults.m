@@ -193,8 +193,8 @@ btnPlayVideo = uicontrol('parent',pnlNavigate,'style','togglebutton','string','P
 % ----------
 pnlValidity = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 525 3*544+25 90]);
 hAxeValid = axes('parent', pnlValidity, 'units','pixels','position',[25 10 3*544 30],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
-uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Validity of the segmented body: ','position',[25 55 200 20]);
-txtValid = uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Valid frames: - / - = - %','position',[225 55 220 20], 'foregroundcolor', [0.1 0.5 0.1]);
+uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Validity of the segmented body: ','position',[25 55 250 20]);
+txtValid = uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Valid frames: - / - = - %','position',[275 55 220 20], 'foregroundcolor', [0.1 0.5 0.1]);
 txtReject = uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Rejected frames: - / - = - %','position',[445 55 230 20], 'foregroundcolor' , [0.7 0 0]);
 uicontrol('parent',pnlValidity,'style','pushbutton','string','Next block','position',[875 55 100 35],'callback',@selectNextBlock);
 uicontrol('parent',pnlValidity,'style','pushbutton','string','Switch validity (right click)','position',[1015 55 190 35],'callback',@switchValidity);
