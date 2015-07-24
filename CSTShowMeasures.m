@@ -175,7 +175,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                 trimEmptyLines
             end
             if isempty(samplesIdx)
-                set(showGraphsBtn,'Enable','on');
+                set(showGraphsBtn,'Enable','off');
             end
         end
     end
