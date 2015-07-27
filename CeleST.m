@@ -144,7 +144,7 @@ hFilters = filterH + 20;
 yFilters = mainPnlH - hFilters - 5 - 70;
 uicontrol('parent',mainPanel,'style','pushbutton','string','Add one video...','position',[10 yFilters+hFilters+40 150 30],'callback',@addOneVideo);
 btnEdit = uicontrol('parent',mainPanel,'style','togglebutton','string','Toggle Edit Table','position',[10 yFilters+hFilters+10 150 30],'callback',@editTable);
-uicontrol('parent',mainPanel,'style','pushbutton','string','Delete videos...','position',[160 yFilters+hFilters+10 150 30],'callback',@deleteVideos);
+uicontrol('parent',mainPanel,'style','pushbutton','string','Remove videos...','position',[160 yFilters+hFilters+10 150 30],'callback',@removeVideos);
 uicontrol('parent',mainPanel,'style','pushbutton','string','Check consistency','position',[160 yFilters+hFilters+40 150 30],'callback',@checkSequences);
 
 uicontrol('parent',mainPanel,'style','pushbutton','string','1. Process videos...','position',[500 yFilters+hFilters+10 170 60],'callback',@processVideo);
@@ -234,19 +234,38 @@ if fileToLog > 1; fclose(fileToLog); end
         populateFilters
     end
 
-    function deleteVideos(hObject,eventdata) %#ok<INUSD>
+    function removeVideos(hObject,eventdata) %#ok<INUSD>
         tmpData = get(tableVideos,'data');
         listNames = tmpData(:,1);
-        [selection,ok] = listdlg('ListString',listNames, 'name', 'CeleST: delete videos','promptstring', 'Videos to remove from the database:',...
+        [selection,ok] = listdlg('ListString',listNames, 'name', 'CeleST: remove videos','promptstring', 'Videos to remove from the database:',...
             'okstring','Remove', 'listsize',[400 300]);
         if ok == 1
-            fileDB(listVideosIdx(selection)) = [];
-            fields = fieldnames(flt);
-            for field = 1:length(fields)
-                set(flt.(fields{field}),'value',1)
+            word = cell(1,length(selection));
+            for select = 1:length(selection)
+                
+                if select ~= length(selection)
+                    word{select} = [ fileDB(listVideosIdx(select)).name, ', ' ];
+                else
+                    if select ~= 1
+                        word{select} = [ ' and ', fileDB(listVideosIdx(select)).name, '?' ];
+                    else
+                        word{select} =  [fileDB(listVideosIdx(select)).name, '?' ];
+                    end
+                end
+                
             end
+            
+            choice = questdlg(['Are you sure you want to remove: ',  strjoin(word)],'Warning Deletion','Yes','Cancel','Cancel');
+            if strcmp(choice,'Yes')
+                fileDB(listVideosIdx(selection)) = [];
+                fields = fieldnames(flt);
+                for field = 1:length(fields)
+                    set(flt.(fields{field}),'value',1)
+                end
+                
+            end
+            populateFilters
         end
-        populateFilters
     end
 
     function tableEdit(hObject,eventdata) %#ok<INUSL>
@@ -503,6 +522,7 @@ if fileToLog > 1; fclose(fileToLog); end
                 end
             end
             if ~strcmp(newName, entryName)
+                warndlg(['This video name already exists. Renaming to: ' newName],'Warning')
                 if traceOn; fprintf(fileToLog, ['  changing name ', entryName, ' -> ', newName, '\n']); end
                 fileDB(entry).name = newName;
             end
