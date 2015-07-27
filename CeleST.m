@@ -277,6 +277,7 @@ if fileToLog > 1; fclose(fileToLog); end
             fileDB(listVideosIdx(eventdata.Indices(1))).(fieldsIni{eventdata.Indices(2)}) = eventdata.NewData;
             populateFilters
         else
+            warndlg('Field is not editable or data is faulty','Data Change Error')
             tmpData = get(tableVideos,'data');
             tmpData{eventdata.Indices(1),eventdata.Indices(2)} = fileDB(listVideosIdx(eventdata.Indices(1))).(fieldsIni{eventdata.Indices(2)});
             set(tableVideos, 'data', tmpData);
