@@ -21,7 +21,7 @@ mainW = min(mainPnlW, scrsz(3) - 10);
 mainH = min(mainPnlH, scrsz(4) - 70);
 mainPanelPosition = [2, mainH-mainPnlH-2, mainPnlW, mainPnlH];
 mainFigure = figure('Visible','off','Position',[5,40,mainW,mainH],'Name','CeleST: Statistics sample definition - Define the samples by grouping videos, launch the graph display','numbertitle','off', 'menubar', 'none', 'resizefcn', @resizeMainFigure);
-mainPanel = uipanel('parent', mainFigure,'BorderType', 'none','units','pixels', 'position', mainPanelPosition);
+mainPanel = uipanel('parent', mainFigure,'BorderType','none','units','pixels', 'position', mainPanelPosition);
 sliderHoriz = uicontrol('parent',mainFigure,'style','slider','position',[0 0 mainW-20 20],'max', 1,'min',0, 'value',0,'callback',@setMainPanelPositionBySliders);
 sliderVert = uicontrol('parent',mainFigure,'style','slider','position',[mainW-20 20 20 mainH-20],'max', max(1,-mainPanelPosition(2)),'min',0, 'value',max(1,-mainPanelPosition(2)),'callback',@setMainPanelPositionBySliders);
 set(mainFigure, 'color', get(mainPanel,'backgroundcolor'));
@@ -34,7 +34,7 @@ filterH = 100;
 filterW = 150;
 hFilters = filterH + 20;
 yFilters = mainPnlH - hFilters - 5;
-pnlFilters = uipanel('parent', mainPanel,'BorderType', 'none','units','pixels', 'position', [1 yFilters mainPnlW hFilters]);%,'title','Filters'
+pnlFilters = uipanel('parent', mainPanel,'BorderType','none','pixels', 'position', [1 yFilters mainPnlW hFilters]);%,'title','Filters'
 for idxtmp = 0:length(filterNames)-1
     uicontrol('parent',pnlFilters,'style','text','string',filterNames{idxtmp+1},'position',[idxtmp*filterW filterH filterW 20])
     flt.(filterNames{idxtmp+1}) = uicontrol('parent',pnlFilters,'style','listbox','String',{''},'max',2,'min',0,'position',[idxtmp*filterW 0 filterW filterH],'callback',@setFilteredList);

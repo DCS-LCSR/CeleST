@@ -112,7 +112,7 @@ axesImage = axes('parent',mainPanel,'units','pixels','Position',[5*filterW yVide
 if verLessThan('matlab','8.4.0')
     set(axesImage,'drawmode','fast');
 else
-   axesImage.SortMethod = 'childorder';
+    axesImage.SortMethod = 'childorder';
 end
 
 
@@ -203,9 +203,9 @@ waitfor(mainFigure,'BeingDeleted','on');
             maxX = fileDB(videoBeingProcessed).well(1);
             maxY = fileDB(videoBeingProcessed).well(2);
             newRayon = fileDB(videoBeingProcessed).well(3);
-
+            
             disp(['Process sequence: ', num2str(maxX), ' - ' , num2str(maxY), ' - ' , num2str(newRayon) ]);
-
+            
             zoneOkForCompleteWorms = (  repmat((1-maxX:imWidth-maxX).^2,imHeight,1) + repmat((1-maxY:imHeight-maxY)'.^2, 1, imWidth) <= (newRayon - wellMarginSize).^2 );
             zoneOkForStartingWorms = (  repmat((1-maxX:imWidth-maxX).^2,imHeight,1) + repmat((1-maxY:imHeight-maxY)'.^2, 1, imWidth) <= (newRayon - wellMarginSize).^2 );
         end
@@ -292,12 +292,19 @@ waitfor(mainFigure,'BeingDeleted','on');
 
 
     function launchProcessing(hObject,eventdata)
+        flagProcessAll = true;
         if ~isempty(listVideosToProcIdx)
             % if some videos have no well, ask for confirmation
             if ~isempty(get(listVideosNoWell, 'string'))
                 button = questdlg('Some videos have no defined swim well. Processing them might take longer and be less reliable. Process all videos anyway?','CeleST','Process','Cancel','Cancel');
                 if strcmp(button, 'Cancel')
                     return
+                end
+            end
+            if any([fileDB(listVideosToProcIdx).segmented])
+                process = questdlg('Some videos have already been processed and segmented. Old segmentation data may be lose. Process all videos anyway?','CeleST','Process','Cancel','Cancel');
+                if strcmp(process, 'Cancel')
+                    flagProcessAll = false;
                 end
             end
             listToDisable = {btnAddVideos, btnRemoveVideos, btnClose, listVideosNoWell, listVideosWell, btnProcess};
@@ -308,10 +315,11 @@ waitfor(mainFigure,'BeingDeleted','on');
             end
             try
                 for currentVideoIdx = 1:length(listVideosToProcIdx)
+                    omega=[];
                     videoBeingProcessed = listVideosToProcIdx(currentVideoIdx);
                     set(txtProcTotal, 'string' , ['Videos processed: ',num2str(currentVideoIdx),' / ', num2str(length(listVideosToProcIdx))]);
                     % if already processed, move on
-                    if ~fileDB(videoBeingProcessed).segmented
+                    if ~fileDB(videoBeingProcessed).segmented || flagProcessAll
                         imageFiles = dir(fullfile(fileDB(videoBeingProcessed).directory,['*.',fileDB(videoBeingProcessed).format]));
                         totalFrames = length(imageFiles);
                         if ~isempty(totalFrames)
@@ -336,7 +344,11 @@ waitfor(mainFigure,'BeingDeleted','on');
                             set(txtProcCurrent, 'string', fileDB(videoBeingProcessed).name);
                             set(txtProcFrame, 'string', ['Frames processed: 0 / ', num2str(totalFrames)]);
                             pause(0.001)
-                            disp(['Launch processing: ', num2str(omega(1)), ' - ' , num2str(omega(2)), ' - ' , num2str(radius) ]);
+                            if ~isempty(omega)
+                                disp(['Launch processing: ', num2str(omega(1)), ' - ' , num2str(omega(2)), ' - ' , num2str(radius) ]);
+                            else
+                                disp('Launch processing: No Well');
+                            end
                             processSequence
                         end
                     end
@@ -401,9 +413,9 @@ waitfor(mainFigure,'BeingDeleted','on');
                 set(axesImage,'XTick',[],'YTick',[]);
                 axis(axesImage, 'equal');
                 [yImage, xImage] = size(currentImageForDisplay);
-                axis(axesImage, [1,xImage, 1,yImage]);        
+                axis(axesImage, [1,xImage, 1,yImage]);
             else
-                imagesc(blankImage,'parent', axesImage);            
+                imagesc(blankImage,'parent', axesImage);
             end
         else
             imagesc(blankImage,'parent', axesImage);
@@ -422,9 +434,9 @@ waitfor(mainFigure,'BeingDeleted','on');
     end
 
 
-    % ------------
-    % Mouse button down
-    % ------------
+% ------------
+% Mouse button down
+% ------------
     function downMouse(hObject,eventdata)
         if (get(get(mainFigure,'CurrentObject'), 'parent') == axesImage) && (~isempty(idxVideo)) && flagOkToDrawWell
             if strcmp(get(hObject,'SelectionType'),'normal')
@@ -501,9 +513,9 @@ waitfor(mainFigure,'BeingDeleted','on');
         end
     end
 
-    % -------------------
-    % Compute the center of the circumscribed circle from three points
-    % -------------------
+% -------------------
+% Compute the center of the circumscribed circle from three points
+% -------------------
     function omega = getCenterFrom3Points(p1, p2, p3)
         delta = ( p2(1)-p3(1) ) * ( p2(2)-p1(2) ) - ( p2(2)-p3(2) ) * ( p2(1)-p1(1) );
         len = ( p2(1)^2 + p2(2)^2 ) - ( p3(1)^2 + p3(2)^2 ) - ( p1(1)+p2(1) )*( p2(1)-p3(1) ) - ( p1(2)+p2(2) )*( p2(2)-p3(2) );
@@ -513,9 +525,9 @@ waitfor(mainFigure,'BeingDeleted','on');
         omega = omega / 2;
     end
 
-    % -------------------
-    % Compute the center and radius of the averaged circumscribed circle from more than three points
-    % -------------------
+% -------------------
+% Compute the center and radius of the averaged circumscribed circle from more than three points
+% -------------------
     function [omega,radius] = getCenterFromManyPoints(p)
         nbPoints = size(p,2);
         omegaAll = zeros(2,nchoosek(nbPoints,3));
@@ -630,9 +642,9 @@ waitfor(mainFigure,'BeingDeleted','on');
         set(txtListVideosNoWell, 'string', ['No swim well defined: (', num2str(length(get(listVideosNoWell,'string'))),' remaining)']);
     end
 
-    % ============
-    % GET ALL THE DISTINCT VALUES TO DISPLAY IN EVERY FILTER LIST
-    % ============
+% ============
+% GET ALL THE DISTINCT VALUES TO DISPLAY IN EVERY FILTER LIST
+% ============
     function populateFilters
         listToShow = 1:length(fileDB);
         fields = fieldnames(flt);
@@ -668,9 +680,9 @@ waitfor(mainFigure,'BeingDeleted','on');
         setFilteredList
     end
 
-    % ============
-    % BUILD THE LIST OF VIDEOS TO SHOW, BASED ON THE SELECTED FILTERS
-    % ============
+% ============
+% BUILD THE LIST OF VIDEOS TO SHOW, BASED ON THE SELECTED FILTERS
+% ============
     function setFilteredList(hObject,eventdata) %#ok<*INUSD>
         result = cell(length(fileDB),1);
         currentVal = 0;
@@ -716,24 +728,24 @@ waitfor(mainFigure,'BeingDeleted','on');
         set(txtListVideosFiltered,'string', ['Videos to choose from: (',num2str(length(listVideosFilteredIdx)),' filtered)']);
     end
 
-    % ============
-    % DISPLAY THE AXIS AND THE SLIDER
-    % ============
+% ============
+% DISPLAY THE AXIS AND THE SLIDER
+% ============
 
-    % ------------
-    % Set the position of the main panel based on the sliders values
-    % ------------
-    function setMainPanelPositionBySliders(hObject,eventdata) 
+% ------------
+% Set the position of the main panel based on the sliders values
+% ------------
+    function setMainPanelPositionBySliders(hObject,eventdata)
         newPos = get(mainPanel,'position');
         newPos(1) = 5 - get(sliderHoriz,'value');
         newPos(2) = -5 - get(sliderVert,'value');
         set(mainPanel,'position',newPos);
     end
 
-    % ------------
-    % Update the sliders positions when the main figure is resized
-    % ------------
-    function resizeMainFigure(hObject,eventdata) 
+% ------------
+% Update the sliders positions when the main figure is resized
+% ------------
+    function resizeMainFigure(hObject,eventdata)
         % -------
         % Update the size and position of the sliders
         % -------

@@ -522,6 +522,9 @@ if fileToLog > 1; fclose(fileToLog); end
             if ~errorCheck; msgbox('Data is consistent','Success'); end
         end
         flagConsistentButton = true;
+        if errorCheck
+            
+        end
     end
 % ------------
 % Check that names are unique, and modify them if necessary
