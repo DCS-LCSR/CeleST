@@ -34,7 +34,7 @@ filterH = 100;
 filterW = 150;
 hFilters = filterH + 20;
 yFilters = mainPnlH - hFilters - 5;
-pnlFilters = uipanel('parent', mainPanel,'BorderType','none','pixels', 'position', [1 yFilters mainPnlW hFilters]);%,'title','Filters'
+pnlFilters = uipanel('parent', mainPanel,'BorderType','none','units','pixels', 'position', [1 yFilters mainPnlW hFilters]);%,'title','Filters'
 for idxtmp = 0:length(filterNames)-1
     uicontrol('parent',pnlFilters,'style','text','string',filterNames{idxtmp+1},'position',[idxtmp*filterW filterH filterW 20])
     flt.(filterNames{idxtmp+1}) = uicontrol('parent',pnlFilters,'style','listbox','String',{''},'max',2,'min',0,'position',[idxtmp*filterW 0 filterW filterH],'callback',@setFilteredList);

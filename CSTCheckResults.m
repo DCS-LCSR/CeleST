@@ -140,7 +140,7 @@ uicontrol('parent', pnlLoad, 'style', 'pushbutton', 'string', 'Glare zones','pos
 % ----------
 % Switch trajectories
 % ----------
-pnlSwitch = uipanel('parent',pnlLoad,'BorderType', 'none','units','pixels', 'position', [180 50 120 filterH+5]);
+pnlSwitch = uipanel('parent',pnlLoad,'BorderType', 'none','units','pixels', 'position', [180 50 120 filterH+15]);
 uicontrol('parent',pnlSwitch,'style','text','HorizontalAlignment', 'left','String','From frame','position',[0 80 80 20]);
 editFrameCutStart = uicontrol('parent',pnlSwitch,'style','edit','string','1','position',[70 80 50 25]);
 uicontrol('parent',pnlSwitch,'style','text','HorizontalAlignment', 'left','String','to frame','position',[0 60 80 20]);
@@ -148,8 +148,8 @@ editFrameCutEnd = uicontrol('parent',pnlSwitch,'style','edit','string','1','posi
 uicontrol('parent',pnlSwitch,'style','text','HorizontalAlignment', 'left','String','switch ','position',[0 40 50 20]);
 txtSelectedWorm = uicontrol('parent',pnlSwitch,'style','text','String','< n/a >','position',[45 40 60 20]);
 uicontrol('parent',pnlSwitch,'style','text','HorizontalAlignment', 'left','String','and','position',[0 20 40 20]);
-popWormSwitch = uicontrol('parent',pnlSwitch,'style','popupmenu','String',{'< n/a >'},'value',idxOtherWorm,'position',[25 22 90 20],'callback',@setWormSwitch);
-uicontrol('parent',pnlSwitch,'style','pushbutton','String','Switch','position',[0 0 120 20],'callback', @switchWorms);
+popWormSwitch = uicontrol('parent',pnlSwitch,'style','popupmenu','String',{'< n/a >'},'value',idxOtherWorm,'position',[25 25 90 20],'callback',@setWormSwitch);
+uicontrol('parent',pnlSwitch,'style','pushbutton','String','Switch','position',[1 1 120 20],'callback', @switchWorms);
 % ----------
 % Switch head and tail
 % ----------
@@ -157,7 +157,7 @@ pnlSwitchHeadTail = uipanel('parent',mainPanel,'BorderType', 'none','units','pix
 uicontrol('parent',pnlSwitchHeadTail,'style','text','HorizontalAlignment', 'left','String','From ','position',[0 0 40 20]);
 editFrameSwitchHTStart = uicontrol('parent',pnlSwitchHeadTail,'style','edit','string','1','position',[40 2 50 25]);
 uicontrol('parent',pnlSwitchHeadTail,'style','text','HorizontalAlignment', 'left','String','to ','position',[90 00 20 20]);
-editFrameSwitchHTEnd = uicontrol('parent',pnlSwitchHeadTail,'style','edit','string','544','position',[110 2 50 25]);
+editFrameSwitchHTEnd = uicontrol('parent',pnlSwitchHeadTail,'style','edit','string','-','position',[110 2 50 25]);
 uicontrol('parent',pnlSwitchHeadTail,'style','pushbutton','String','Switch H / T','position',[160 2 120 25],'callback', @switchHeadTail);
 % ----------
 % Video of all field
@@ -242,7 +242,7 @@ uicontrol('parent',pnlPrevOverlap,'style','text','HorizontalAlignment', 'right',
 btnPrevThrUp = uicontrol('parent',pnlPrevOverlap,'style','pushbutton','string','^','position',[365 82 40 25],'callback',@selectThreshold);
 editPrevThr = uicontrol('parent',pnlPrevOverlap,'style','edit','string','25','position',[405 82 45 25],'callback',@selectThreshold);
 btnPrevThrDown = uicontrol('parent',pnlPrevOverlap,'style','pushbutton','string','v','position',[450 82 40 25],'callback',@selectThreshold);
-btnPrevThrDefault = uicontrol('parent',pnlPrevOverlap,'style','pushbutton','string','X','position',[490 82 40 25],'callback',@selectThreshold);
+btnPrevThrDefault = uicontrol('parent',pnlPrevOverlap,'style','pushbutton','string','Undo','position',[490 82 40 25],'callback',@selectThreshold);
 
 
 % ----------
@@ -250,17 +250,17 @@ btnPrevThrDefault = uicontrol('parent',pnlPrevOverlap,'style','pushbutton','stri
 % ----------
 pnlBodyLength = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [0 40 3*544+25 130]);
 hAxeLength = axes('parent', pnlBodyLength, 'units','pixels','position',[25 20 3*544 60],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
-uicontrol('parent',pnlBodyLength,'style','text','HorizontalAlignment', 'left','string','Length of the segmented body: ','position',[25 80 200 20]);
+uicontrol('parent',pnlBodyLength,'style','text','HorizontalAlignment', 'left','string','Length of the segmented body: ','position',[25 81 200 20]);
 uicontrol('parent',pnlBodyLength,'style','text','HorizontalAlignment', 'right','string','High threshold: ','position',[225 106 140 20]);
 btnHighThrUp = uicontrol('parent',pnlBodyLength,'style','pushbutton','string','^','position',[365 106 40 25],'callback',@selectThreshold);
 editHighThr = uicontrol('parent',pnlBodyLength,'style','edit','string','0','position',[405 106 45 25],'callback',@selectThreshold);
 btnHighThrDown = uicontrol('parent',pnlBodyLength,'style','pushbutton','string','v','position',[450 106 40 25],'callback',@selectThreshold);
-btnHighThrDefault = uicontrol('parent',pnlBodyLength,'style','pushbutton','string','X','position',[490 106 40 25],'callback',@selectThreshold);
+btnHighThrDefault = uicontrol('parent',pnlBodyLength,'style','pushbutton','string','Undo','position',[490 106 40 25],'callback',@selectThreshold);
 uicontrol('parent',pnlBodyLength,'style','text','HorizontalAlignment', 'right','string','Low threshold: ','position',[225 82 140 20]);
 btnLowThrUp = uicontrol('parent',pnlBodyLength,'style','pushbutton','string','^','position',[365 82 40 25],'callback',@selectThreshold);
 editLowThr = uicontrol('parent',pnlBodyLength,'style','edit','string','0','position',[405 82 45 25],'callback',@selectThreshold);
 btnLowThrDown = uicontrol('parent',pnlBodyLength,'style','pushbutton','string','v','position',[450 82 40 25],'callback',@selectThreshold);
-btnLowThrDefault = uicontrol('parent',pnlBodyLength,'style','pushbutton','string','X','position',[490 82 40 25],'callback',@selectThreshold);
+btnLowThrDefault = uicontrol('parent',pnlBodyLength,'style','pushbutton','string','Undo','position',[490 82 40 25],'callback',@selectThreshold);
 
 
 
@@ -929,7 +929,10 @@ waitfor(mainFigure,'BeingDeleted','on');
         end
         tmpRange = find(measures.separators{currentWorm} > currentFrame);
         % Select current block
-        idxBlock = 1;
+        idxBlock = 2;
+        if(length(tmpRange)<2)
+            return
+        end
         prevSeparator = measures.separators{currentWorm}(tmpRange(idxBlock) - 1);
         nextSeparator = measures.separators{currentWorm}(tmpRange(idxBlock)) - 1;
         if (prevSeparator == valueStartFrame) && (nextSeparator == valueEndFrame) && (length(tmpRange) >= 2)
@@ -1313,6 +1316,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             valueEndFrame = nbOfFrames;
             set(editStartFrame, 'string', num2str(valueStartFrame));
             set(editEndFrame, 'string', num2str(valueEndFrame));
+            set(editFrameSwitchHTEnd, 'string', num2str(valueEndFrame));
             % ------------
             % Check the presence of segmentation results
             % ------------

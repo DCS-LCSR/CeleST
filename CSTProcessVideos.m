@@ -293,6 +293,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 
     function launchProcessing(hObject,eventdata)
         flagProcessAll = true;
+        flagFinishedProcessing = false;
         if ~isempty(listVideosToProcIdx)
             % if some videos have no well, ask for confirmation
             if ~isempty(get(listVideosNoWell, 'string'))
@@ -350,6 +351,8 @@ waitfor(mainFigure,'BeingDeleted','on');
                                 disp('Launch processing: No Well');
                             end
                             processSequence
+                            disp('processing finished')
+                            flagFinishedProcessing = true;
                         end
                     end
                 end
@@ -361,9 +364,11 @@ waitfor(mainFigure,'BeingDeleted','on');
                     rethrow(em)
                 end
             end
-            set(txtProcStatus, 'string', 'Processing: finished');
-            for item = 1:length(listToDisable)
-                set(listToDisable{item}, 'enable', 'on');
+            if flagFinishedProcessing
+                set(txtProcStatus, 'string', 'Processing: finished');
+                for item = 1:length(listToDisable)
+                    set(listToDisable{item}, 'enable', 'on');
+                end
             end
         end
     end

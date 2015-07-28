@@ -248,12 +248,12 @@ if fileToLog > 1; fclose(fileToLog); end
             for select = 1:length(selection)
                 
                 if select ~= length(selection)
-                    word{select} = [ fileDB(listVideosIdx(select)).name, ', ' ];
+                    word{select} = [ fileDB(listVideosIdx(selection(select))).name, ', ' ];
                 else
                     if select ~= 1
-                        word{select} = [ ' and ', fileDB(listVideosIdx(select)).name, '?' ];
+                        word{select} = [ ' and ', fileDB(listVideosIdx(selection(select))).name, '?' ];
                     else
-                        word{select} =  [fileDB(listVideosIdx(select)).name, '?' ];
+                        word{select} =  [fileDB(listVideosIdx(selection(select))).name, '?' ];
                     end
                 end
                 
