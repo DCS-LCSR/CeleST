@@ -481,12 +481,12 @@ if fileToLog > 1; fclose(fileToLog); end
     function checkSequences(hObject, event) %#ok<INUSD>
         if flagConsistentButton; h = waitbar(0,'Checking the consistency of the data...'); end
         ensureUniqueNames
-
+        nb = length(fileDB);
         errorCheck = false;
         if isempty(fileDB)
             msgbox('There are no samples to check');
         else
-            for seq = 1:length(fileDB)
+            for seq = 1:nb
                 if floor(seq/10) == seq/10 && flagConsistentButton; waitbar(seq/nb,h); end
                 % ------------
                 % Check for segmented worms
