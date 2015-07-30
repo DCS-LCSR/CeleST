@@ -291,7 +291,7 @@ waitfor(mainFigure,'BeingDeleted','on');
     end
 
 
-       function launchProcessing(hObject,eventdata)
+    function launchProcessing(hObject,eventdata)
         flagFinishedProcessing = false;
         if ~isempty(listVideosToProcIdx)
             % if some videos have no well, ask for confirmation
