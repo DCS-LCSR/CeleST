@@ -291,8 +291,7 @@ waitfor(mainFigure,'BeingDeleted','on');
     end
 
 
-    function launchProcessing(hObject,eventdata)
-        flagProcessAll = true;
+       function launchProcessing(hObject,eventdata)
         flagFinishedProcessing = false;
         if ~isempty(listVideosToProcIdx)
             % if some videos have no well, ask for confirmation
@@ -302,10 +301,12 @@ waitfor(mainFigure,'BeingDeleted','on');
                     return
                 end
             end
-            if any([fileDB(listVideosToProcIdx).segmented])
+            if any([fileDB(listVideosToProcIdx).segmented]);
                 process = questdlg('Some videos have already been processed and segmented. Old segmentation data may be lose. Process all videos anyway?','CeleST','Process','Cancel','Cancel');
-                if strcmp(process, 'Cancel')
-                    flagProcessAll = false;
+                if strcmp(process, 'Process')
+                    for seg=1:length(listVideosToProcIdx)
+                        fileDB(listVideosToProcIdx(seg)).segmented = 0;
+                    end
                 end
             end
             listToDisable = {btnAddVideos, btnRemoveVideos, btnClose, listVideosNoWell, listVideosWell, btnProcess};
@@ -320,7 +321,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     videoBeingProcessed = listVideosToProcIdx(currentVideoIdx);
                     set(txtProcTotal, 'string' , ['Videos processed: ',num2str(currentVideoIdx),' / ', num2str(length(listVideosToProcIdx))]);
                     % if already processed, move on
-                    if ~fileDB(videoBeingProcessed).segmented || flagProcessAll
+                    if ~fileDB(videoBeingProcessed).segmented
                         imageFiles = dir(fullfile(fileDB(videoBeingProcessed).directory,['*.',fileDB(videoBeingProcessed).format]));
                         totalFrames = length(imageFiles);
                         if ~isempty(totalFrames)
