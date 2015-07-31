@@ -204,7 +204,7 @@ uicontrol('parent',pnlValidity,'style','pushbutton','string','Isolate frame (tri
 
 % ----------
 % Panel for glare zones
-% ---------- 
+% ----------
 pnlGlase = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 460 3*544+25 60]);
 hAxeGlare = axes('parent', pnlGlase, 'units','pixels','position',[25 10 3*544 30],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
 uicontrol('parent',pnlGlase,'style','text','HorizontalAlignment', 'left','string','Within glare zones: ','position',[25 42 200 20]);
@@ -212,7 +212,7 @@ uicontrol('parent',pnlGlase,'style','text','HorizontalAlignment', 'left','string
 
 % ----------
 % Panel for lost
-% ---------- 
+% ----------
 pnlLost = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 395 3*544+25 60]);
 hAxeLost = axes('parent', pnlLost, 'units','pixels','position',[25 10 3*544 30],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
 uicontrol('parent',pnlLost,'style','text','HorizontalAlignment', 'left','string','Lost during tracking: ','position',[25 42 200 20]);
@@ -328,7 +328,7 @@ waitfor(mainFigure,'BeingDeleted','on');
         allMeasures.('Curling_All') = NaN(nbOfWorms, nbOfFrames);
         allMeasures.usability = NaN(1,nbOfWorms);
         negativeThreshold = -1;
-        oldNames = {'status', 'highThr', 'lowThr', 'prevThr', 'highThrDef', 'lowThrDef', 'prevThrDef', 'usability', 'manualSeparators', 'separators'};
+        oldNames = {'status','highThr', 'lowThr', 'prevThr', 'highThrDef', 'lowThrDef', 'prevThrDef', 'usability', 'manualSeparators', 'separators'};
         for oldIdx = 1:length(oldNames)
             allMeasures.(oldNames{oldIdx}) = measures.(oldNames{oldIdx});
         end
@@ -1539,7 +1539,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                 %-------------------
                 % Use existing measures files in older format to extract the validity of the worms
                 %-------------------
-                fidTmp = fopen(fullfile([filenames.measures, ' copy'], ['wormMeas_',fileDB(currentVideo).name,'.txt']),'r');
+                fidTmp = fopen(fullfile(filenames.measures, ['wormMeas_',fileDB(currentVideo).name,'.txt']),'r');
                 if fidTmp >= 3
                     sscanf(fgetl(fidTmp), 'fields %d');
                     nbOfWormsTmp = sscanf(fgetl(fidTmp), 'worms %d');
@@ -1622,10 +1622,10 @@ waitfor(mainFigure,'BeingDeleted','on');
             newListTmp = {};
             wormSwitchIdx = [];
             for otherWorm = [1:currentWorm-1 , currentWorm+1:nbOfWorms]
-                if ~strcmp('rejected', measures.status{otherWorm})
-                    newListTmp{end+1} = ['Worm ', num2str(otherWorm)]; %#ok<AGROW>
-                    wormSwitchIdx(end+1) = otherWorm; %#ok<AGROW>
-                end
+                %                 if ~strcmp('rejected', measures.status{otherWorm})
+                newListTmp{end+1} = ['Worm ', num2str(otherWorm)]; %#ok<AGROW>
+                wormSwitchIdx(end+1) = otherWorm; %#ok<AGROW>
+                %                 end
             end
             newListTmp{end+1} = 'new worm';
             wormSwitchIdx(end+1) = -1;

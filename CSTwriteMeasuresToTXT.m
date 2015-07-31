@@ -20,14 +20,16 @@ if fid >= 3
     % Header
     fprintf(fid,['fields ', num2str(nbOfFields),'\n']);
     fprintf(fid,['worms ', num2str(nbOfWorms),'\n']);
-    for ff = 1:nbOfFields
+    fprintf(fid,'status\n');
+    for ww=1:nbOfWorms
+        fprintf(fid,[listOfMeasures.status{ww},'\n']);
+    end
+    listOfMeasures = rmfield(listOfMeasures, 'status');
+    listOfFields = listOfFields(~strcmp('status',listOfFields));
+    for ff = 1:nbOfFields-1
         field = listOfFields{ff};
         fprintf(fid,[field,'\n']);
-        if strcmp(field, 'status')
-            for ww = 1:length(listOfMeasures.(field))
-                fprintf(fid, [listOfMeasures.(field){ww},'\n']);
-            end
-        elseif strcmp(field, 'manualSeparators') || strcmp(field, 'separators')
+        if strcmp(field, 'manualSeparators') || strcmp(field, 'separators')
             for ww = 1:length(listOfMeasures.(field))
                 fprintf(fid, [num2str(listOfMeasures.(field){ww}),'\n']);
             end
