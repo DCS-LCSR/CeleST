@@ -302,7 +302,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                 end
             end
             if any([fileDB(listVideosToProcIdx).segmented]);
-                process = questdlg('Some videos have already been processed and segmented. Old segmentation data may be lose. Process all videos anyway?','CeleST','Process','Cancel','Cancel');
+                process = questdlg('Some videos have already been processed and segmented. Old segmentation data may be lost. Process all videos anyway?','CeleST','Process','Cancel','Cancel');
                 if strcmp(process, 'Process')
                     for seg=1:length(listVideosToProcIdx)
                         fileDB(listVideosToProcIdx(seg)).segmented = 0;
@@ -354,6 +354,8 @@ waitfor(mainFigure,'BeingDeleted','on');
                             processSequence
                             disp('processing finished')
                             flagFinishedProcessing = true;
+                            
+                            drawnow
                         end
                     end
                 end
@@ -449,20 +451,22 @@ waitfor(mainFigure,'BeingDeleted','on');
                 % ------------
                 % left click: add a point
                 % ------------
-                newPoint = get(axesImage, 'CurrentPoint');
-                listOfPoints(:,end+1) = [newPoint(1,1) ; newPoint(1,2)];
-                handlesPoints(end+1) = plot(listOfPoints(1,:), listOfPoints(2,:), '*r');
-                if size(listOfPoints,2) >= 3
-                    [omega,radius] = getCenterFromManyPoints(listOfPoints);
-                    omega = fix(omega);
-                    radius = fix(radius);
-                    if ~isempty(handleCircle) && ishandle(handleCircle)
-                        delete(handleCircle);
-                        handleCircle = [];
+                if size(listOfPoints,2) < 3
+                    newPoint = get(axesImage, 'CurrentPoint');
+                    listOfPoints(:,end+1) = [newPoint(1,1) ; newPoint(1,2)];
+                    handlesPoints(end+1) = plot(listOfPoints(1,:), listOfPoints(2,:), '*r');
+                    if size(listOfPoints,2) > 2
+                        [omega,radius] = getCenterFromManyPoints(listOfPoints);
+                        omega = fix(omega);
+                        radius = fix(radius);
+                        if ~isempty(handleCircle) && ishandle(handleCircle)
+                            delete(handleCircle);
+                            handleCircle = [];
+                        end
+                        handleCircle = plot(omega(1) + radius*cos(2*pi*(0:200)/200), omega(2) + radius*sin(2*pi*(0:200)/200), '-r', 'linewidth', 2);
+                        fileDB(idxVideo).well = [omega(1), omega(2), radius];
+                        fileDB(idxVideo).mm_per_pixel = 5/fileDB(idxVideo).well(3);
                     end
-                    handleCircle = plot(omega(1) + radius*cos(2*pi*(0:200)/200), omega(2) + radius*sin(2*pi*(0:200)/200), '-r', 'linewidth', 2);
-                    fileDB(idxVideo).well = [omega(1), omega(2), radius];
-                    fileDB(idxVideo).mm_per_pixel = 5/fileDB(idxVideo).well(3);
                 end
             else
                 % ------------
@@ -477,16 +481,6 @@ waitfor(mainFigure,'BeingDeleted','on');
                     if ~isempty(handleCircle) && ishandle(handleCircle)
                         delete(handleCircle);
                         handleCircle = [];
-                    end
-                    if size(listOfPoints,2) >= 3
-                        [omega,radius] = getCenterFromManyPoints(listOfPoints);
-                        omega = fix(omega);
-                        radius = fix(radius);
-                        handleCircle = plot(omega(1) + radius*cos(2*pi*(0:200)/200), omega(2) + radius*sin(2*pi*(0:200)/200), '-r', 'linewidth', 2);
-                        fileDB(idxVideo).well = [omega(1), omega(2), radius];
-                        fileDB(idxVideo).mm_per_pixel = 5/fileDB(idxVideo).well(3);
-                    else
-                        
                     end
                 end
             end
