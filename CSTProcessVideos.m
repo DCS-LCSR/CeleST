@@ -297,9 +297,9 @@ waitfor(mainFigure,'BeingDeleted','on');
 
 
     function launchProcessing(hObject,eventdata)
-        set(btnProcessInterrupt, 'enable', 'on')
         flagFinishedProcessing = false;
         if ~isempty(listVideosToProcIdx)
+            set(btnProcessInterrupt, 'enable', 'on')
             % if some videos have no well, ask for confirmation
             if ~isempty(get(listVideosNoWell, 'string'))
                 button = questdlg('Some videos have no defined swim well. Processing them might take longer and be less reliable. Process all videos anyway?','CeleST','Process','Cancel','Cancel');
@@ -364,8 +364,6 @@ waitfor(mainFigure,'BeingDeleted','on');
                                 disp('processing finished')
                             end
                             flagFinishedProcessing = true;
-                            
-                            drawnow
                         end
                     end
                 end
