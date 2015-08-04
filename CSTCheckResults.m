@@ -173,7 +173,7 @@ axis('image','ij')
 % ----------
 % Navigation through the frames
 % ----------
-pnlNavigate = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [4*filterW+100 yFilters-335 450 40]);
+pnlNavigate = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [4*filterW+100 yFilters-335 460 40]);
 uicontrol('parent',pnlNavigate,'style','text','HorizontalAlignment', 'left','string','1','position',[5 6 10 20]);
 btnFirstFrame = uicontrol('parent',pnlNavigate,'style','pushbutton','string','<<<','position',[15 1 40 35],'callback',@selectFrameByClick);
 editStartFrame = uicontrol('parent',pnlNavigate,'style','edit','string','-','position',[55 1 40 35],'callback',@selectFrameByClick);
