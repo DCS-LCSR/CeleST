@@ -23,6 +23,7 @@ listOfPoints = [];
 handleCircle = [];
 idxVideo = [];
 flagOkToDrawWell = false;
+flagCancel = false;
 videoBeingProcessed = 0;
 totalFrames = 0;
 wellMarginSize = 6;
@@ -78,12 +79,13 @@ listVideosToProc =  uicontrol('parent',mainPanel,'style','listbox','String',{},'
 listVideosToProcIdx = [];
 uicontrol('parent',mainPanel,'style','pushbutton', 'string', 'Select all', 'position', [3*filterW-20 yVideos+3*filterH filterW-10 30], 'callback', @(a,b) set(listVideosToProc, 'value', 1:length(get(listVideosToProc,'string'))))
 uicontrol('parent',mainPanel,'style','pushbutton', 'string', 'Deselect all', 'position', [3*filterW-20+filterW+10 yVideos+3*filterH filterW-10 30], 'callback', @(a,b) set(listVideosToProc, 'value', []))
-btnProcess = uicontrol('parent',mainPanel,'style','pushbutton', 'string', 'Process all the videos listed above', 'position', [3*filterW-20 yVideos-50 2*filterW 30], 'callback', @launchProcessing);
-txtProcStatus = uicontrol('parent', mainPanel, 'style' ,'text', 'FontWeight', 'bold','HorizontalAlignment', 'left','String','Processing: stopped','position',[3*filterW-20 yVideos-370+280 2*filterW 20]);
-txtProcTotal = uicontrol('parent', mainPanel, 'style' ,'text', 'FontWeight', 'bold','HorizontalAlignment', 'left','String','Videos processed: 0 / 0','position',[3*filterW-20 yVideos-370+260 2*filterW 20]);
-uicontrol('parent', mainPanel, 'style' ,'text', 'FontWeight', 'bold','HorizontalAlignment', 'left','String','Current video:','position',[3*filterW-20 yVideos-370+240 filterW 20]);
-txtProcCurrent = uicontrol('parent', mainPanel, 'style' ,'text', 'FontWeight', 'bold','HorizontalAlignment', 'left','String','< no video >','position',[3*filterW-20 yVideos-370+220 2*filterW 20]);
-txtProcFrame = uicontrol('parent', mainPanel, 'style' ,'text', 'FontWeight', 'bold','HorizontalAlignment', 'left','String','Frames processed: 0 / 0','position',[3*filterW-20 yVideos-370+200 2*filterW 20]);
+btnProcess = uicontrol('parent',mainPanel,'style','pushbutton', 'string', 'Process all the videos listed above', 'position', [3*filterW-20 yVideos-50 2*filterW 30],'Interruptible', 'on', 'callback', @launchProcessing);
+btnProcessInterrupt = uicontrol('parent',mainPanel,'style','pushbutton', 'string', 'Cancel', 'position', [3*filterW-20 yVideos-80 2*filterW 30], 'enable', 'off', 'callback', @launchProcessingInterrupt);
+txtProcStatus = uicontrol('parent', mainPanel, 'style' ,'text', 'FontWeight', 'bold','HorizontalAlignment', 'left','String','Processing: stopped','position',[3*filterW-20 yVideos-100 2*filterW 20]);
+txtProcTotal = uicontrol('parent', mainPanel, 'style' ,'text', 'FontWeight', 'bold','HorizontalAlignment', 'left','String','Videos processed: 0 / 0','position',[3*filterW-20 yVideos-120 2*filterW 20]);
+uicontrol('parent', mainPanel, 'style' ,'text', 'FontWeight', 'bold','HorizontalAlignment', 'left','String','Current video:','position',[3*filterW-20 yVideos-140 filterW 20]);
+txtProcCurrent = uicontrol('parent', mainPanel, 'style' ,'text', 'FontWeight', 'bold','HorizontalAlignment', 'left','String','< no video >','position',[3*filterW-20 yVideos-160 2*filterW 20]);
+txtProcFrame = uicontrol('parent', mainPanel, 'style' ,'text', 'FontWeight', 'bold','HorizontalAlignment', 'left','String','Frames processed: 0 / 0','position',[3*filterW-20 yVideos-180 2*filterW 20]);
 
 
 % ----------
@@ -103,7 +105,7 @@ listVideosWellIdx = [];
 % ------------
 % Image
 % ------------
-uicontrol('parent',mainPanel,'style','text','HorizontalAlignment', 'left','String','Left click = add a point on the border of the well  --- Right click (ctrl+click on Mac) = remove the latest point','position',[5*filterW yVideos-30+2*filterH defaultImSize(1) 20]);
+uicontrol('parent',mainPanel,'style','text','HorizontalAlignment', 'left','String','Left click = add a point on the border of the well | Right click (ctrl+click on Mac) = remove the latest point','position',[5*filterW yVideos-30+2*filterH defaultImSize(1) 20]);
 axesImage = axes('parent',mainPanel,'units','pixels','Position',[5*filterW yVideos-30+2*filterH-defaultImSize(2) defaultImSize(1) defaultImSize(2)],'XTick',[],'YTick',[]);
 
 % ------------
@@ -246,6 +248,9 @@ waitfor(mainFigure,'BeingDeleted','on');
         if timingOn; timings(6) = timings(6) + toc ; timingsTime(6) = timingsTime(6) + 1 ; tic; end
         for iter = 1:nbOfFrames-1
             pause(0.001)
+            if flagCancel
+                return
+            end
             currentFrameForProcessing = currentFrameForProcessing + 1;
             set(txtProcFrame, 'string', ['Frames processed: ', num2str(currentFrameForProcessing), ' / ', num2str(totalFrames)]);
             if timingOn; tic; end
@@ -292,6 +297,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 
 
     function launchProcessing(hObject,eventdata)
+        set(btnProcessInterrupt, 'enable', 'on')
         flagFinishedProcessing = false;
         if ~isempty(listVideosToProcIdx)
             % if some videos have no well, ask for confirmation
@@ -352,7 +358,11 @@ waitfor(mainFigure,'BeingDeleted','on');
                                 disp('Launch processing: No Well');
                             end
                             processSequence
-                            disp('processing finished')
+                            if flagCancel
+                                currentVideoIdx = length(listVideosToProcIdx)+1;
+                            else
+                                disp('processing finished')
+                            end
                             flagFinishedProcessing = true;
                         end
                     end
@@ -365,16 +375,26 @@ waitfor(mainFigure,'BeingDeleted','on');
                     rethrow(em)
                 end
             end
-            if flagFinishedProcessing
-                set(txtProcStatus, 'string', 'Processing: finished');
-                for item = 1:length(listToDisable)
-                    set(listToDisable{item}, 'enable', 'on');
-                end
-            end
         end
+        if flagFinishedProcessing
+            set(txtProcStatus, 'string', 'Processing: finished');
+            for item = 1:length(listToDisable)
+                set(listToDisable{item}, 'enable', 'on');
+            end
+            set(btnProcessInterrupt, 'enable', 'off')
+        end
+        
     end
 
 
+    function launchProcessingInterrupt(hObject,eventdata)
+        response = questdlg('Would you like to cancel your current video processing or wait for it to finish?','Cancel Processing','Cancel','Don''t Cancel','Wait');
+        if strcmp(response, 'Cancel')
+            flagCancel = true;
+        end
+    end
+        
+        
     function selectNoWell(hObject, eventdata)
         tmp = get(listVideosNoWell, 'value');
         if isempty(get(listVideosNoWell,'string'))
