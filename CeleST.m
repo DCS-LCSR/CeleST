@@ -221,7 +221,7 @@ if fileToLog > 1; fclose(fileToLog); end
 % ******************************************
 
     function closeWindow(hObject,eventdata) %#ok<INUSD>
-        set(mainFigure,'Visible','off');t co
+        set(mainFigure,'Visible','off');
         delete(mainFigure);
     end
 
