@@ -108,7 +108,7 @@ set(axeExample,'xtick',[],'ytick',[]);
 set(mainFigure,'visible','on')
 
 for sampTmp = 1:nbOfSamples
-    hSamples.panel(sampTmp) = uipanel('parent', mainPanel,'units','pixels', 'position', [5 mainPnlH-115-sampTmp*150 350 150]);
+    hSamples.panel(sampTmp) = uipanel('parent', mainPanel,'units','pixels', 'position', [5 mainPnlH-125-sampTmp*150 mainW 150]); %,'title','Sample' , 'BorderType', 'none'
     listTmp = samplesDef([1,3:end],sampTmp);
     while isempty(listTmp{end})
         listTmp(end) = [];
@@ -121,7 +121,7 @@ for sampTmp = 1:nbOfSamples
     % -----------
     % Histogram
     % -----------
-    hSamples.plotHisto(sampTmp) = axes('parent', mainPanel, 'units','pixels','position',[375 mainPnlH-100-sampTmp*150+95 mainPnlW-385 20],'xtick',[],'ytick',[],'color',[0.5 0.5 0.5],'XAxisLocation','top');
+    hSamples.plotHisto(sampTmp) = axes('parent', hSamples.panel(sampTmp), 'units','pixels','position',[350 110 mainPnlW-385 20],'xtick',[],'ytick',[],'color',[0.5 0.5 0.5],'XAxisLocation','top');
     uicontrol('parent', hSamples.panel(sampTmp), 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Number of data points:', 'position', [5 75 200 15]);
     hSamples.txtNbWorms(sampTmp) = uicontrol('parent', hSamples.panel(sampTmp), 'style', 'text', 'HorizontalAlignment', 'left', 'string', '000 ', 'position', [200 75 100 15]);
     % -----------
@@ -129,11 +129,11 @@ for sampTmp = 1:nbOfSamples
     % -----------
     uicontrol('parent', hSamples.panel(sampTmp), 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Quartiles:', 'position', [5 60 200 15]);
     hSamples.txtQuartiles(sampTmp) = uicontrol('parent', hSamples.panel(sampTmp), 'style', 'text', 'HorizontalAlignment', 'right', 'string', '0-25-50-75-100 ', 'position', [60 60 275 15]);
-    hSamples.plotQuart(sampTmp) = axes('parent', mainPanel, 'units','pixels','position',[375 mainPnlH-100-sampTmp*150+50 mainPnlW-385 40],'xtick',[],'ytick',[]);
+    hSamples.plotQuart(sampTmp) = axes('parent', hSamples.panel(sampTmp), 'units','pixels','position',[350 60 mainPnlW-385 40],'xtick',[],'ytick',[]);
     % -----------
     % Mean and std
     % -----------
-    hSamples.plotMean(sampTmp)  = axes('parent', mainPanel, 'units','pixels','position',[375 mainPnlH-100-sampTmp*150+5 mainPnlW-385 40],'xtick',[],'ytick',[]);
+    hSamples.plotMean(sampTmp)  = axes('parent', hSamples.panel(sampTmp), 'units','pixels','position',[350 10 mainPnlW-385 40],'xtick',[],'ytick',[]);
     uicontrol('parent', hSamples.panel(sampTmp), 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Mean +/- Standard error:', 'position', [5 35 200 15]);
     hSamples.txtMSE(sampTmp) = uicontrol('parent', hSamples.panel(sampTmp), 'style', 'text', 'HorizontalAlignment', 'left', 'string', '0.000 +/- 0.000 ', 'position', [200 35 125 15]);
     uicontrol('parent', hSamples.panel(sampTmp), 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Mean +/- 95% Conf. Interval:', 'position', [5 20 200 15]);
