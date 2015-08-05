@@ -128,7 +128,6 @@ uicontrol('parent', mainPanel, 'style', 'pushbutton', 'string', 'Close (not savi
 % List of worms
 % ----------
 pnlLoad = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [380-40 yFilters-filterH-185 2*filterW+120 270]);
-btnLoad = uicontrol('parent',pnlLoad,'enable','off','style','pushbutton','string','Load the segmentation results', 'position', [0 240 2*filterW 30],'callback', @loadVideoContents);
 txtVideoLoaded = uicontrol('parent',pnlLoad,'style','text','HorizontalAlignment', 'center','String','<no results loaded>','fontweight','bold','position',[0 210 2*filterW+100 20]);
 listWorms =  uicontrol('parent',pnlLoad,'style','listbox','String',{''},'max',1,'min',0,'position',[1 70 filterW filterH],'callback', @selectWorm);
 uicontrol('parent',pnlLoad,'style','pushbutton','string','Validate', 'position', [0 40 75 30],'callback', @validateWorm);
@@ -1588,15 +1587,9 @@ waitfor(mainFigure,'BeingDeleted','on');
 % CHECK IF THE NEW VIDEO HAS DATA TO LOAD
 % ============
     function checkSelectedVideo(hObject,eventdata) %#ok<INUSD>
-        if ~isempty(listVideosIdx)
-            tmp = listVideosIdx(get(listVideos,'value'));
-            if fileDB(tmp).segmented
-                set(btnLoad,'enable','on');
-            else
-                set(btnLoad,'enable','off');
-            end
-        else
-            set(btnLoad,'enable','off');
+        if ~isempty(listVideosIdx) && strcmp(get(mainFigure, 'Visible'),'on')
+            loadVideoContents(hObject,eventdata)
+            selectWorm
         end
     end
 

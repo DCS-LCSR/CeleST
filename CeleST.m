@@ -84,6 +84,9 @@ end
 % -------------------
 % Prepare the log file if need be
 % -------------------
+
+diary(fullfile(filenames.log,'comWinLog'));
+diary on
 if logToFile
     fileLogID = fullfile(filenames.log, ['logFile', date, '.txt']); %#ok<*UNRCH>
     fileToLog = fopen(fileLogID, 'a');
@@ -123,6 +126,7 @@ end
 % ============
 % CREATE THE INTERFACE
 % ============
+disp(['CeleST starting at ' datestr(datetime)]);
 colWell = find(strcmp('well', fieldsIni));
 % ----------
 % Main figure and sliders
@@ -189,7 +193,8 @@ else
         delete(fileDBFile);
     end
 end
-
+disp(['CeleST ending at ' datestr(datetime)]);
+diary off
 if fileToLog > 1; fclose(fileToLog); end
 
 % ===============
