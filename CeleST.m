@@ -126,7 +126,11 @@ end
 % ============
 % CREATE THE INTERFACE
 % ============
-disp(['CeleST starting at ' datestr(datetime)]);
+if verLessThan('matlab','8.4.0')
+    disp(['CeleST starting at ' datestr(clock)]);
+else
+    disp(['CeleST starting at ' datestr(datetime)]);
+end
 colWell = find(strcmp('well', fieldsIni));
 % ----------
 % Main figure and sliders
@@ -193,7 +197,12 @@ else
         delete(fileDBFile);
     end
 end
-disp(['CeleST ending at ' datestr(datetime)]);
+
+if verLessThan('matlab','8.4.0')
+    disp(['CeleST starting at ' datestr(clock)]);
+else
+    disp(['CeleST starting at ' datestr(datetime)]);
+end
 diary off
 if fileToLog > 1; fclose(fileToLog); end
 
@@ -206,7 +215,7 @@ if fileToLog > 1; fclose(fileToLog); end
 % ******************************************
 % ******************************************
 % **                                      **
-% **           SUBFUNCTIONS               **
+% **             SUBFUNCTIONS             **
 % **                                      **
 % ******************************************
 % ******************************************
@@ -526,86 +535,86 @@ if fileToLog > 1; fclose(fileToLog); end
         end
         flagConsistentButton = true;
     end
-        
-        % ------------
-        % Check that names are unique, and modify them if necessary
-        % ------------
-        function ensureUniqueNames
-            for entry = 2:length(fileDB)
-                entryName = fileDB(entry).name;
-                newName = entryName;
-                count = 1;
-                for before = 1:(entry-1)
-                    if strcmp(newName, fileDB(before).name)
-                        newName = [entryName, '_', num2str(count)];
-                        count = count + 1;
-                    end
+
+% ------------
+% Check that names are unique, and modify them if necessary
+% ------------
+    function ensureUniqueNames
+        for entry = 2:length(fileDB)
+            entryName = fileDB(entry).name;
+            newName = entryName;
+            count = 1;
+            for before = 1:(entry-1)
+                if strcmp(newName, fileDB(before).name)
+                    newName = [entryName, '_', num2str(count)];
+                    count = count + 1;
                 end
-                if ~strcmp(newName, entryName)
-                    warndlg(['This video name already exists. Renaming to: ' newName],'Warning')
-                    if traceOn; fprintf(fileToLog, ['  changing name ', entryName, ' -> ', newName, '\n']); end
-                    fileDB(entry).name = newName;
-                end
+            end
+            if ~strcmp(newName, entryName)
+                warndlg(['This video name already exists. Renaming to: ' newName],'Warning')
+                if traceOn; fprintf(fileToLog, ['  changing name ', entryName, ' -> ', newName, '\n']); end
+                fileDB(entry).name = newName;
             end
         end
-        
-        function addOneVideo(hObject,eventdata) %#ok<INUSD>
-            flagOK = false;
-            figureAdd = figure('Visible','on','Position',[50,100,440,500],'Name','CeleST: add a video', 'numbertitle','off','menubar','none');
-            set(figureAdd, 'color', get(mainPanel,'backgroundcolor'));
-            uicontrol('parent', figureAdd, 'style','pushbutton', 'string', 'Add new video', 'position', [20,0,120,30],'callback',@addOK);
-            uicontrol('parent', figureAdd, 'style','pushbutton', 'string', 'Cancel', 'position', [200,0,80,30],'callback',@addCancel );
-            for tmpFF = [1:8,10,11]
-                uicontrol('parent', figureAdd, 'style', 'text', 'string', fieldsIni{tmpFF}, 'position', [0, 500-20*tmpFF, 120, 20]);
-                tmpfield.(fieldsIni{tmpFF}) = uicontrol('parent', figureAdd, 'style', 'edit', 'string', '', 'position', [140, 500-20*tmpFF, 180, 20]);
+    end
+
+    function addOneVideo(hObject,eventdata) %#ok<INUSD>
+        flagOK = false;
+        figureAdd = figure('Visible','on','Position',[50,100,440,500],'Name','CeleST: add a video', 'numbertitle','off','menubar','none');
+        set(figureAdd, 'color', get(mainPanel,'backgroundcolor'));
+        uicontrol('parent', figureAdd, 'style','pushbutton', 'string', 'Add new video', 'position', [20,0,120,30],'callback',@addOK);
+        uicontrol('parent', figureAdd, 'style','pushbutton', 'string', 'Cancel', 'position', [200,0,80,30],'callback',@addCancel );
+        for tmpFF = [1:8,10,11]
+            uicontrol('parent', figureAdd, 'style', 'text', 'string', fieldsIni{tmpFF}, 'position', [0, 500-20*tmpFF, 120, 20]);
+            tmpfield.(fieldsIni{tmpFF}) = uicontrol('parent', figureAdd, 'style', 'edit', 'string', '', 'position', [140, 500-20*tmpFF, 180, 20]);
+        end
+        uicontrol('parent',figureAdd,'style','pushbutton', 'string', 'Browse...', 'position', [320, 500-22.5*8, 80,20],'callback',@addBrowse);
+        for tmpFF = [9,12:20]
+            uicontrol('parent', figureAdd, 'style', 'text', 'string', fieldsIni{tmpFF}, 'position', [0, 500-20*tmpFF, 120, 20]);
+            tmpfield.(fieldsIni{tmpFF}) = uicontrol('parent', figureAdd, 'style', 'text', 'string', '', 'position', [140, 500-20*tmpFF, 180, 20]);
+        end
+        set(tmpfield.directory,'callback',@addCheckDir);
+        waitfor(figureAdd,'BeingDeleted','on');
+        if flagOK
+            ensureUniqueNames
+            populateFilters
+        end
+        function addBrowse(hObject,eventdata) %#ok<INUSD>
+            newDir = get(tmpfield.directory, 'string');
+            if isempty(newDir) && length(fileDB) >= 1
+                newDir = fileDB(end).directory;
             end
-            uicontrol('parent',figureAdd,'style','pushbutton', 'string', 'Browse...', 'position', [320, 500-22.5*8, 80,20],'callback',@addBrowse);
-            for tmpFF = [9,12:20]
-                uicontrol('parent', figureAdd, 'style', 'text', 'string', fieldsIni{tmpFF}, 'position', [0, 500-20*tmpFF, 120, 20]);
-                tmpfield.(fieldsIni{tmpFF}) = uicontrol('parent', figureAdd, 'style', 'text', 'string', '', 'position', [140, 500-20*tmpFF, 180, 20]);
+            newDir = uigetdir(newDir);
+            if newDir ~= 0
+                [pathstr, name] = fileparts(newDir); %#ok<ASGLU>
+                set(tmpfield.name,'String',name);
+                set(tmpfield.directory, 'String', newDir);
+                addCheckDir;
             end
-            set(tmpfield.directory,'callback',@addCheckDir);
-            waitfor(figureAdd,'BeingDeleted','on');
-            if flagOK
-                ensureUniqueNames
-                populateFilters
-            end
-            function addBrowse(hObject,eventdata) %#ok<INUSD>
-                newDir = get(tmpfield.directory, 'string');
-                if isempty(newDir) && length(fileDB) >= 1
-                    newDir = fileDB(end).directory;
-                end
-                newDir = uigetdir(newDir);
-                if newDir ~= 0
-                    [pathstr, name] = fileparts(newDir); %#ok<ASGLU>
-                    set(tmpfield.name,'String',name);
-                    set(tmpfield.directory, 'String', newDir);
-                    addCheckDir;
-                end
-            end
-            function addCheckDir(hObject,eventdata) %#ok<INUSD>
-                tmpIdx = 1;
-                tmpNbImages = 0;
-                while (tmpIdx <= length(filenames.listOfExtensions)) && (tmpNbImages <= 0)
-                    tmpNbImages = length(dir(fullfile(get(tmpfield.directory,'string'),['*.',filenames.listOfExtensions{tmpIdx}])));
-                    if tmpNbImages <= 0
-                        tmpIdx = tmpIdx + 1;
-                    end
-                end
-                if tmpNbImages > 0
-                    set(tmpfield.images, 'string', tmpNbImages);
-                    set(tmpfield.format, 'string', filenames.listOfExtensions{tmpIdx});
-                    set(tmpfield.duration,'string', '30')
-                else
-                    set(tmpfield.images, 'string', '0');
-                    set(tmpfield.format, 'string', 'no images');
+        end
+        function addCheckDir(hObject,eventdata) %#ok<INUSD>
+            tmpIdx = 1;
+            tmpNbImages = 0;
+            while (tmpIdx <= length(filenames.listOfExtensions)) && (tmpNbImages <= 0)
+                tmpNbImages = length(dir(fullfile(get(tmpfield.directory,'string'),['*.',filenames.listOfExtensions{tmpIdx}])));
+                if tmpNbImages <= 0
+                    tmpIdx = tmpIdx + 1;
                 end
             end
-            function addOK(hObject,eventdata) %#ok<INUSD>
+            if tmpNbImages > 0
+                set(tmpfield.images, 'string', tmpNbImages);
+                set(tmpfield.format, 'string', filenames.listOfExtensions{tmpIdx});
+                set(tmpfield.duration,'string', '30')
+            else
+                set(tmpfield.images, 'string', '0');
+                set(tmpfield.format, 'string', 'no images');
+            end
+        end
+        function addOK(hObject,eventdata) %#ok<INUSD>
             if strcmp(get(tmpfield.name,'string'),'') || strcmp(get(tmpfield.directory,'string'),'')
                 errordlg('Missing one or more required field','Input Error')
             else
-            
+                
                 tmpNewVideo = struct(fileDB);
                 tmpNewVideo(1).name = get(tmpfield.name,'string');
                 tmpNewVideo(1).date = get(tmpfield.date,'string');
@@ -631,131 +640,131 @@ if fileToLog > 1; fclose(fileToLog); end
             end
             close(figureAdd);
         end
-            function addCancel(hObject,eventdata) %#ok<INUSD>
-                close(figureAdd);
-            end
+        function addCancel(hObject,eventdata) %#ok<INUSD>
+            close(figureAdd);
         end
-        
-        function wormFileXMLread(xmlFileName)
-            xDoc = xmlread(xmlFileName);
+    end
+
+    function wormFileXMLread(xmlFileName)
+        xDoc = xmlread(xmlFileName);
+        % ---------
+        % get the list of all the sequences
+        % ---------
+        seqItems = xDoc.getElementsByTagName('sequence');
+        h = waitbar(0,'Loading the database...');
+        nb = seqItems.getLength;
+        for seq = 1:nb
+            seqNode = seqItems.item(seq-1);
             % ---------
-            % get the list of all the sequences
+            % read the sequence index, maybe different from its order on the list
             % ---------
-            seqItems = xDoc.getElementsByTagName('sequence');
-            h = waitbar(0,'Loading the database...');
-            nb = seqItems.getLength;
-            for seq = 1:nb
-                seqNode = seqItems.item(seq-1);
-                % ---------
-                % read the sequence index, maybe different from its order on the list
-                % ---------
-                idxVideo = str2double(seqNode.getAttribute('number'));
-                % ---------
-                % get the list of all features stored
-                % ---------
-                featItems = seqNode.getElementsByTagName('feature');
-                if floor(seq/10) == seq/10
-                    waitbar((seq-1)/nb,h)
-                end
-                for count = 1:featItems.getLength
-                    currentNode = featItems.item(count-1);
-                    featName = char(currentNode.getAttribute('name'));
-                    currentClass = char(currentNode.getAttribute('class'));
-                    switch currentClass
-                        case 'logical'
-                            currentVariable = logical(str2num(currentNode.getTextContent)); %#ok<ST2NM>
-                        case 'char'
-                            currentVariable = char(currentNode.getTextContent);
-                        case 'double'
-                            currentVariable = str2num(currentNode.getTextContent) / 10^str2double(currentNode.getAttribute('precision')); %#ok<ST2NM>
-                        otherwise
-                    end
-                    
-                    if ~strcmp('glareZones',featName)
-                        fileDB(idxVideo).(featName) = currentVariable;
-                    else
-                        if idxVideo > length(fileDB) || ~isfield(fileDB(idxVideo), featName) || ~iscell(fileDB(idxVideo).(featName))
-                            fileDB(idxVideo).(featName) = cell(1,0);
-                        end
-                        fileDB(idxVideo).(featName){end+1} = currentVariable;
-                    end
-                end
+            idxVideo = str2double(seqNode.getAttribute('number'));
+            % ---------
+            % get the list of all features stored
+            % ---------
+            featItems = seqNode.getElementsByTagName('feature');
+            if floor(seq/10) == seq/10
+                waitbar((seq-1)/nb,h)
             end
-            for curr_file=1:length(fileDB)
-                if isempty(fileDB(curr_file).name)
-                    fileDB(curr_file).name = '';
-                end
-            end
-            close(h)
-        end
-        
-        function wormFileXMLwrite(xmlFileName,precision)
-            % ---------
-            % Create an XML root node
-            % ---------
-            docNode = com.mathworks.xml.XMLUtils.createDocument('sequences_database');
-            docRootNode = docNode.getDocumentElement;
-            if nargin < 2; precision = 4; end
-            factor = 10^precision;
-            h = waitbar(0,'Saving the database...');
-            nb = length(fileDB);
-            for seq=1:nb
-                if floor(seq/10) == seq/10
-                    waitbar((seq-1)/nb,h)
-                end
-                % ---------
-                % create a new node for the sequence
-                % ---------
-                seqNode = docNode.createElement('sequence');
-                seqNode.setAttribute('number', int2str(seq));
-                % ---------
-                % retrieve the labels for the elements stored
-                % ---------
-                labels = fieldnames(fileDB(seq));
-                for lbl = 1:length(labels)
-                    if strcmp(labels{lbl}, 'glareZones')
-                        for item = 1:length(fileDB(seq).(labels{lbl}))
-                            currentValue = fileDB(seq).(labels{lbl}){item};
-                            currentNode = docNode.createElement('feature');
-                            currentNode.setAttribute('cell', 'true');
-                            writeNode
-                        end
-                    else
-                        currentValue = fileDB(seq).(labels{lbl});
-                        currentNode = docNode.createElement('feature');
-                        writeNode
-                    end
-                end
-                % ---------
-                % add the sequence node to the root
-                % ---------
-                docRootNode.appendChild(seqNode);
-            end
-            % ---------
-            % Save the sample XML document.
-            % ---------
-            xmlwrite(xmlFileName,docNode);
-            close(h)
-            function writeNode
-                % ---------
-                % create a new node for the feature
-                % ---------
-                currentNode.setAttribute('name', labels(lbl));
-                currentClass = class(currentValue);
-                currentNode.setAttribute('class', currentClass);
+            for count = 1:featItems.getLength
+                currentNode = featItems.item(count-1);
+                featName = char(currentNode.getAttribute('name'));
+                currentClass = char(currentNode.getAttribute('class'));
                 switch currentClass
                     case 'logical'
-                        currentNode.setTextContent(mat2str(int8(currentValue)));
+                        currentVariable = logical(str2num(currentNode.getTextContent)); %#ok<ST2NM>
                     case 'char'
-                        currentNode.setTextContent(currentValue);
+                        currentVariable = char(currentNode.getTextContent);
                     case 'double'
-                        currentNode.setAttribute('precision', num2str(precision));
-                        currentNode.setTextContent(mat2str(round(factor * currentValue)));
+                        currentVariable = str2num(currentNode.getTextContent) / 10^str2double(currentNode.getAttribute('precision')); %#ok<ST2NM>
                     otherwise
                 end
-                seqNode.appendChild(currentNode);
+                
+                if ~strcmp('glareZones',featName)
+                    fileDB(idxVideo).(featName) = currentVariable;
+                else
+                    if idxVideo > length(fileDB) || ~isfield(fileDB(idxVideo), featName) || ~iscell(fileDB(idxVideo).(featName))
+                        fileDB(idxVideo).(featName) = cell(1,0);
+                    end
+                    fileDB(idxVideo).(featName){end+1} = currentVariable;
+                end
             end
-            
+        end
+        for curr_file=1:length(fileDB)
+            if isempty(fileDB(curr_file).name)
+                fileDB(curr_file).name = '';
+            end
+        end
+        close(h)
+    end
+
+    function wormFileXMLwrite(xmlFileName,precision)
+        % ---------
+        % Create an XML root node
+        % ---------
+        docNode = com.mathworks.xml.XMLUtils.createDocument('sequences_database');
+        docRootNode = docNode.getDocumentElement;
+        if nargin < 2; precision = 4; end
+        factor = 10^precision;
+        h = waitbar(0,'Saving the database...');
+        nb = length(fileDB);
+        for seq=1:nb
+            if floor(seq/10) == seq/10
+                waitbar((seq-1)/nb,h)
+            end
+            % ---------
+            % create a new node for the sequence
+            % ---------
+            seqNode = docNode.createElement('sequence');
+            seqNode.setAttribute('number', int2str(seq));
+            % ---------
+            % retrieve the labels for the elements stored
+            % ---------
+            labels = fieldnames(fileDB(seq));
+            for lbl = 1:length(labels)
+                if strcmp(labels{lbl}, 'glareZones')
+                    for item = 1:length(fileDB(seq).(labels{lbl}))
+                        currentValue = fileDB(seq).(labels{lbl}){item};
+                        currentNode = docNode.createElement('feature');
+                        currentNode.setAttribute('cell', 'true');
+                        writeNode
+                    end
+                else
+                    currentValue = fileDB(seq).(labels{lbl});
+                    currentNode = docNode.createElement('feature');
+                    writeNode
+                end
+            end
+            % ---------
+            % add the sequence node to the root
+            % ---------
+            docRootNode.appendChild(seqNode);
+        end
+        % ---------
+        % Save the sample XML document.
+        % ---------
+        xmlwrite(xmlFileName,docNode);
+        close(h)
+        function writeNode
+            % ---------
+            % create a new node for the feature
+            % ---------
+            currentNode.setAttribute('name', labels(lbl));
+            currentClass = class(currentValue);
+            currentNode.setAttribute('class', currentClass);
+            switch currentClass
+                case 'logical'
+                    currentNode.setTextContent(mat2str(int8(currentValue)));
+                case 'char'
+                    currentNode.setTextContent(currentValue);
+                case 'double'
+                    currentNode.setAttribute('precision', num2str(precision));
+                    currentNode.setTextContent(mat2str(round(factor * currentValue)));
+                otherwise
+            end
+            seqNode.appendChild(currentNode);
         end
         
     end
+
+end
