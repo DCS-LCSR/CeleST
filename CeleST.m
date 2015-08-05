@@ -201,7 +201,7 @@ end
 if verLessThan('matlab','8.4.0')
     disp(['CeleST starting at ' datestr(clock)]);
 else
-    disp(['CeleST starting at ' datestr(datetime)]);
+    disp(['CeleST ending at ' datestr(datetime)]);
 end
 diary off
 if fileToLog > 1; fclose(fileToLog); end
@@ -221,7 +221,7 @@ if fileToLog > 1; fclose(fileToLog); end
 % ******************************************
 
     function closeWindow(hObject,eventdata) %#ok<INUSD>
-        set(mainFigure,'Visible','off');
+        set(mainFigure,'Visible','off');t co
         delete(mainFigure);
     end
 
