@@ -215,7 +215,9 @@ waitfor(mainFigure,'BeingDeleted','on');
             
             output = [output, sprintf(',\n\n\n'), 'Statistics , number of data points, mean , standard error of the mean , 95%% confidence interval around the mean , standard deviation , minimum value , first quartile , median , third quartile , maximum value', sprintf('\n\n')];
             % For each measure, list the samples, the videos and the stats
+            wait = waitbar(0, 'Please wait...');
             for idx = 1:nbOfMeasures
+                waitbar(idx / (3*nbOfMeasures))
                 output = [output, sprintf(',\n'), listOfButtons{idx}, sprintf('\n')];
                 for samp = 1:nbOfSamples
                     output = [output, samplesDef{1,samp}];
@@ -242,6 +244,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                 tableData{1,4*(head-1)-1} = samplesDef{1,head};
             end
             for meas = 2:nbOfMeasures
+                waitbar((nbOfMeasures+meas) / (3*nbOfMeasures))
                 rawData = cell(1,nbOfSamples);
                 for samp = 1:nbOfSamples
                     rawData{samp} = [];
@@ -279,6 +282,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             output = [output, sprintf(',\n\n\n\n'), 'Data points', sprintf('\n\n\n')];
             % For each measure, list the samples, the videos and the values
             for idx = 1:nbOfMeasures
+                waitbar((2*nbOfMeasures+idx) / (3*nbOfMeasures))
                 output = [output, listOfButtons{idx}, sprintf('\n')];
                 for samp = 1:nbOfSamples
                     output = [output, samplesDef{1,samp}];
@@ -293,6 +297,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             
             fprintf(fileToWrite,output);
             fclose(fileToWrite);
+            close(wait);
             samplesListSelection = prevSelection;
             statSelected = prevStat;
         catch em
