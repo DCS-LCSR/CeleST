@@ -1587,7 +1587,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % CHECK IF THE NEW VIDEO HAS DATA TO LOAD
 % ============
     function checkSelectedVideo(hObject,eventdata) %#ok<INUSD>
-        if ~isempty(listVideosIdx) && strcmp(get(mainFigure, 'Visible'),'on')
+        if (~isempty(listVideosIdx)) && (strcmp(get(mainFigure, 'Visible'),'on')) && (get(listVideos,'Value')~=currentVideo)
             loadVideoContents(hObject,eventdata)
             selectWorm
         end
