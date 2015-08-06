@@ -257,17 +257,18 @@ if fileToLog > 1; fclose(fileToLog); end
         listNames = tmpData(:,1);
         [selection,ok] = listdlg('ListString',listNames, 'name', 'CeleST: remove videos','promptstring', 'Videos to remove from the database:',...
             'okstring','Remove', 'listsize',[400 300]);
+        vids = {fileDB(selection).name};
         if ok == 1
             word = cell(1,length(selection));
-            for select = 1:length(selection)
+            for tmpSel = 1:length(selection)
                 
-                if select ~= length(selection)
-                    word{select} = [ fileDB(listVideosIdx(selection(select))).name, ', ' ];
+                if tmpSel ~= length(selection)
+                    word{tmpSel} = [ fileDB(listVideosIdx(selection(tmpSel))).name, ', ' ];
                 else
-                    if select ~= 1
-                        word{select} = [ ' and ', fileDB(listVideosIdx(selection(select))).name, '?' ];
+                    if tmpSel ~= 1
+                        word{tmpSel} = [ ' and ', fileDB(listVideosIdx(selection(tmpSel))).name, '?' ];
                     else
-                        word{select} =  [fileDB(listVideosIdx(selection(select))).name, '?' ];
+                        word{tmpSel} =  [fileDB(listVideosIdx(selection(tmpSel))).name, '?' ];
                     end
                 end
                 
@@ -280,7 +281,13 @@ if fileToLog > 1; fclose(fileToLog); end
                 for field = 1:length(fields)
                     set(flt.(fields{field}),'value',1)
                 end
-                
+                for name = 1:length(vids)
+                    disp(['Removing: ' vids{name}])
+                    % Attempt to delete segmentation data
+                    delete(fullfile(filenames.segmentation,['wormSegm_',vids{name},'.txt']));
+                    % Attempt to delete measures data
+                    delete(fullfile(filenames.measures,['wormMeas_',vids{name},'.txt']));
+                end
             end
             populateFilters
         end
