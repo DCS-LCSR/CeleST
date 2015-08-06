@@ -154,7 +154,8 @@ yFilters = mainPnlH - hFilters - 5 - 70;
 uicontrol('parent',mainPanel,'style','pushbutton','string','Add one video...','position',[10 yFilters+hFilters+40 150 30],'callback',@addOneVideo);
 btnEdit = uicontrol('parent',mainPanel,'style','togglebutton','string','Toggle Edit Table','position',[10 yFilters+hFilters+10 150 30],'callback',@editTable);
 uicontrol('parent',mainPanel,'style','pushbutton','string','Remove videos...','position',[160 yFilters+hFilters+10 150 30],'callback',@removeVideos);
-uicontrol('parent',mainPanel,'style','pushbutton','string','Check consistency','position',[160 yFilters+hFilters+40 150 30],'callback',@checkSequences);
+uicontrol('parent',mainPanel,'style','pushbutton','string','Check consistency','position',[310 yFilters+hFilters+40 150 30],'callback',@checkSequences);
+uicontrol('parent',mainPanel,'style','pushbutton','string','Add multiple videos','position',[160 yFilters+hFilters+40 150 30],'callback',@addMultipleVideos);
 
 uicontrol('parent',mainPanel,'style','pushbutton','string','1. Process videos...','position',[500 yFilters+hFilters+10 170 60],'callback',@processVideo);
 uicontrol('parent',mainPanel,'style','pushbutton','string','2. Compute measures...','position',[700 yFilters+hFilters+10 170 60],'callback',@checkResults);
@@ -643,6 +644,82 @@ if fileToLog > 1; fclose(fileToLog); end
         function addCancel(hObject,eventdata) %#ok<INUSD>
             close(figureAdd);
         end
+    end
+
+    function addMultipleVideos(hObject,eventdata)
+        sampleFileDirs = uipickfiles;
+        for i = 1:numel(sampleFileDirs)
+            sampleFileDir = sampleFileDirs{i};
+            if isdir(sampleFileDir)
+                [pathstr, name] = fileparts(sampleFileDir);
+                sampleName = name;
+                samplDir = pathstr;
+
+                tmpIdx = 1;
+                tmpNbImages = 0;
+                while (tmpIdx <= length(filenames.listOfExtensions)) && (tmpNbImages <= 0)
+                    tmpNbImages = length(dir(fullfile(sampleFileDir,['*.',filenames.listOfExtensions{tmpIdx}])));
+                    if tmpNbImages <= 0
+                        tmpIdx = tmpIdx + 1;
+                    end
+                end
+                if tmpNbImages > 0
+                    sampleNbImages = tmpNbImages;
+                    sampleFormat = filenames.listOfExtensions{tmpIdx};
+                    sampleDuration = 30;
+
+                else
+                    sampleNbImages = '0';
+                    sampleFormat = 'no images';
+                end
+
+                tmpNewVideo = struct(fileDB);
+                tmpNewVideo(1).name = sampleName;
+                tmpNewVideo(1).date = '';
+                tmpNewVideo(1).gene = '';
+                tmpNewVideo(1).age = NaN;
+                tmpNewVideo(1).set = NaN;
+                tmpNewVideo(1).trial = NaN;
+                tmpNewVideo(1).note = '';
+                tmpNewVideo(1).author = '';
+                tmpNewVideo(1).directory = sampleFileDir;
+                tmpNewVideo(1).images = sampleNbImages;
+                tmpNewVideo(1).duration = sampleDuration;
+                tmpNewVideo(1).frames_per_second = tmpNewVideo(1).images / tmpNewVideo(1).duration;
+                tmpNewVideo(1).mm_per_pixel = 1;
+                tmpNewVideo(1).well = [];
+                tmpNewVideo(1).segmented = false;
+                tmpNewVideo(1).worms = 0;
+                tmpNewVideo(1).measured = false;
+                tmpNewVideo(1).format = sampleFormat;
+                tmpNewVideo(1).glareZones = cell(1,0);
+                fileDB(end+1) = tmpNewVideo(1);
+            end
+            
+            
+            
+        end
+        flagNameWarning = false;
+        for entry = 2:length(fileDB)
+            entryName = fileDB(entry).name;
+            newName = entryName;
+            count = 1;
+            for before = 1:(entry-1)
+                if strcmp(newName, fileDB(before).name)
+                    newName = [entryName, '_', num2str(count)];
+                    count = count + 1;
+                end
+            end
+            if ~strcmp(newName, entryName)
+                flagNameWarning = true;
+                if traceOn; fprintf(fileToLog, ['  changing name ', entryName, ' -> ', newName, '\n']); end
+                fileDB(entry).name = newName;
+            end
+        end
+        if flagNameWarning
+            warndlg('Some of these video names already exist. They have been automatically renamed.','Warning')
+        end
+        populateFilters
     end
 
     function wormFileXMLread(xmlFileName)
