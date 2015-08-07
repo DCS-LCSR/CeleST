@@ -654,13 +654,14 @@ if fileToLog > 1; fclose(fileToLog); end
     end
 
     function addMultipleVideos(hObject,eventdata)
+        flagInvalidFile = false;
         sampleFileDirs = uipickfiles;
         for i = 1:numel(sampleFileDirs)
             sampleFileDir = sampleFileDirs{i};
             if isdir(sampleFileDir)
                 [pathstr, name] = fileparts(sampleFileDir);
                 sampleName = name;
-                samplDir = pathstr;
+                
 
                 tmpIdx = 1;
                 tmpNbImages = 0;
@@ -678,6 +679,7 @@ if fileToLog > 1; fclose(fileToLog); end
                 else
                     sampleNbImages = '0';
                     sampleFormat = 'no images';
+                    sampleDuration = 0;
                 end
 
                 tmpNewVideo = struct(fileDB);
@@ -701,6 +703,8 @@ if fileToLog > 1; fclose(fileToLog); end
                 tmpNewVideo(1).format = sampleFormat;
                 tmpNewVideo(1).glareZones = cell(1,0);
                 fileDB(end+1) = tmpNewVideo(1);
+            else
+                flagInvalidFile = true;
             end
             
             
@@ -722,6 +726,9 @@ if fileToLog > 1; fclose(fileToLog); end
                 if traceOn; fprintf(fileToLog, ['  changing name ', entryName, ' -> ', newName, '\n']); end
                 fileDB(entry).name = newName;
             end
+        end
+        if flagInvalidFile
+            warndlg('One or more of these videos were not valid. They have been automatically removed.','Warning')
         end
         if flagNameWarning
             warndlg('Some of these video names already exist. They have been automatically renamed.','Warning')
