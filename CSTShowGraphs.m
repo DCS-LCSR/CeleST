@@ -8,14 +8,14 @@ function CSTShowGraphs
 global fileDB samplesIdx mainPnlW samplesDef measures listOfMeasures listOfButtons wormIndices flagRobustness fileToLog filenames;
 
 listColormaps = {'hot', 'jet', 'cool', 'pink', 'copper', 'bone', 'gray', 'spring', 'summer', 'autumn','winter'};
-        
+
 listOfButtons = {'Wave Init Rate', 'Body Wave Number', 'Asymmetry', 'Stretch', 'Attenuation','Reverse Swim', ...
-            'Curling', 'Travel Speed', 'Brush Stroke', 'Activity Index'...
-            };
-        
+    'Curling', 'Travel Speed', 'Brush Stroke', 'Activity Index'...
+    };
+
 listOfMeasures = {'Wave_Initiation_Rate_Median', 'Body_Wave_Number_Median', 'Asymmetry_Median', 'Stretch_Median', 'Attenuation_Median', 'Reverse_Swimming', ...
-            'Curling', 'Traveling_Speed_Mean', 'Brush_Stroke_Median', 'Activity_Index_Median'...
-            };
+    'Curling', 'Traveling_Speed_Mean', 'Brush_Stroke_Median', 'Activity_Index_Median'...
+    };
 
 listOfLabels =listOfButtons;
 
@@ -163,26 +163,26 @@ waitfor(mainFigure,'BeingDeleted','on');
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    % =========
-    % Close this window and exit the function.
-    % =========
+% =========
+% Close this window and exit the function.
+% =========
     function closeWindow(hObject,eventdata) %#ok<*INUSD>
         set(mainFigure,'Visible','off');
         delete(mainFigure);
     end
 
-    % =========
-    % Open the interface to select and display stat tests
-    % =========
+% =========
+% Open the interface to select and display stat tests
+% =========
     function openTests(hObject,eventdata)
         set(mainFigure,'Visible','off');
         CSTShowAllStatTests
-        set(mainFigure,'Visible','on');        
+        set(mainFigure,'Visible','on');
     end
 
-    % =========
-    % Export all data
-    % =========
+% =========
+% Export all data
+% =========
     function exportAll(hObject,eventdata)
         try
             defaultName = fullfile(filenames.export,['worm_data_',date,'.csv']);
@@ -256,18 +256,25 @@ waitfor(mainFigure,'BeingDeleted','on');
                     tableData{2+(nbOfMeasures+1)*(samp1-1), 1} = samplesDef{1,samp1};
                     tableData{2+(nbOfMeasures+1)*(samp1-1)+meas-1, 2} = listOfButtons{meas};
                     for samp2 = (1+samp1):nbOfSamples
-                        tableData{2+(nbOfMeasures+1)*(samp1-1) , 3+4*(samp2-2)} = 'F test';
-                        [~,pFtest] = vartest2(rawData{samp1},rawData{samp2},0.05, 'both');
-                        tableData{2+(nbOfMeasures+1)*(samp1-1)+(meas-1) , 3+4*(samp2-2)} = sprintf('%.4f',pFtest);
-                        
-                        tableData{2+(nbOfMeasures+1)*(samp1-1) , 3+4*(samp2-2)+1} = 't test equal';
-                        [~,pEqual] = ttest2(rawData{samp1},rawData{samp2},0.05, 'both','equal');
-                        tableData{2+(nbOfMeasures+1)*(samp1-1)+(meas-1) , 3+4*(samp2-2)+1} = sprintf('%.4f',pEqual);
-                        
-                        tableData{2+(nbOfMeasures+1)*(samp1-1) , 3+4*(samp2-2)+2} = 't test diff.';
-                        [~,pDiff] = ttest2(rawData{samp1},rawData{samp2},0.05, 'both','unequal');
-                        tableData{2+(nbOfMeasures+1)*(samp1-1)+(meas-1) , 3+4*(samp2-2)+2} = sprintf('%.4f',pDiff);
-                        
+                        if (size(rawData{samp1},1)==size(rawData{samp1},2))
+                            msgbox(['Stat tests could not be run for measure: ' listOfMeasures{meas} 'because data was non-commensurate for: ' samplesDef{3,samp1} '\nContinuing...'])
+                        elseif(size(rawData{samp2},1)==size(rawData{samp2},2))
+                            msgbox(['Stat tests could not be run for measure: ' listOfMeasures{meas} 'because data was non-commensurate for: ' samplesDef{3,samp2} '\nContinuing...'])
+                        else
+                            
+                            tableData{2+(nbOfMeasures+1)*(samp1-1) , 3+4*(samp2-2)} = 'F test';
+                            [~,pFtest] = vartest2(rawData{samp1},rawData{samp2},0.05, 'both');
+                            tableData{2+(nbOfMeasures+1)*(samp1-1)+(meas-1) , 3+4*(samp2-2)} = sprintf('%.4f',pFtest);
+                            
+                            tableData{2+(nbOfMeasures+1)*(samp1-1) , 3+4*(samp2-2)+1} = 't test equal';
+                            [~,pEqual] = ttest2(rawData{samp1},rawData{samp2},0.05, 'both','equal');
+                            tableData{2+(nbOfMeasures+1)*(samp1-1)+(meas-1) , 3+4*(samp2-2)+1} = sprintf('%.4f',pEqual);
+                            
+                            tableData{2+(nbOfMeasures+1)*(samp1-1) , 3+4*(samp2-2)+2} = 't test diff.';
+                            [~,pDiff] = ttest2(rawData{samp1},rawData{samp2},0.05, 'both','unequal');
+                            tableData{2+(nbOfMeasures+1)*(samp1-1)+(meas-1) , 3+4*(samp2-2)+2} = sprintf('%.4f',pDiff);
+                            
+                        end
                     end
                 end
             end
@@ -310,9 +317,9 @@ waitfor(mainFigure,'BeingDeleted','on');
         end
     end
 
-    % =========
-    % Change the colormap of all the window, based on what the user selected
-    % =========
+% =========
+% Change the colormap of all the window, based on what the user selected
+% =========
     function setColormap(hObject,eventdata)
         valueSelected = get(hPopColormap, 'value');
         if valueSelected <= 0
@@ -327,9 +334,9 @@ waitfor(mainFigure,'BeingDeleted','on');
         end
     end
 
-    % =========
-    % Set the number of top worms
-    % =========
+% =========
+% Set the number of top worms
+% =========
     function setNumberOfTopWorms(hObject,eventdata)
         newnumber = round(str2double(get(hEditNumberOfTopWorms, 'string')));
         if ~isnan(newnumber) && newnumber >= 1
@@ -340,9 +347,9 @@ waitfor(mainFigure,'BeingDeleted','on');
         end
     end
 
-    % =========
-    % Check that the number of bins entered by the user is a valid number
-    % =========
+% =========
+% Check that the number of bins entered by the user is a valid number
+% =========
     function setNumberBins(hObject,eventdata)
         newnumber = round(str2double(get(hEditBins, 'string')));
         if ~isnan(newnumber) && newnumber >= 5 && newnumber <= 500
@@ -353,9 +360,9 @@ waitfor(mainFigure,'BeingDeleted','on');
         end
     end
 
-    % =========
-    % Load the raw measures from the txt files, based on the videos selected within the samples
-    % =========
+% =========
+% Load the raw measures from the txt files, based on the videos selected within the samples
+% =========
     function loadRawMeasures(hObject,eventdata)
         if nargin <= 0 || isempty(measures.(listOfMeasures{statSelected}).raw)
             increm = 1/totalVideos;
@@ -379,7 +386,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     nbOfPoints = length(usabilities);
                     allUsab = [allUsab ; usabilities(:) ];
                     allVids = [allVids ; samplesIdx{samp}{vid} * ones(nbOfPoints,1) ];
-                    allIdx  = [ allIdx ; wormIdx(:) ];                   
+                    allIdx  = [ allIdx ; wormIdx(:) ];
                 end
                 % Sort the usabilities
                 [~, idxsorted] = sort(allUsab, 'descend');
@@ -417,7 +424,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                             end
                         end
                         for idx = 1:length(measuresToMultByMmPerPxl)
-                                measures.(measuresToMultByMmPerPxl{idx}).raw{samp}{vid} = measures.(measuresToMultByMmPerPxl{idx}).raw{samp}{vid} .* fileDB(samplesIdx{samp}{vid}).mm_per_pixel;
+                            measures.(measuresToMultByMmPerPxl{idx}).raw{samp}{vid} = measures.(measuresToMultByMmPerPxl{idx}).raw{samp}{vid} .* fileDB(samplesIdx{samp}{vid}).mm_per_pixel;
                         end
                         for idx = 1:length(measuresToMultByFramesPerSec)
                             measures.(measuresToMultByFramesPerSec{idx}).raw{samp}{vid} = measures.(measuresToMultByFramesPerSec{idx}).raw{samp}{vid} .* fileDB(samplesIdx{samp}{vid}).frames_per_second;
@@ -524,7 +531,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                 set(hEditBins, 'string', num2str(histoSteps2D));
             end
         end
-
+        
         function measSel(ha, hb)
             
             flagNew = false;
@@ -587,7 +594,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     % -----------
                     wormSelected = get(hSamples.listWoms(samp), 'value') - 1;
                 end
-
+                
                 % -----------
                 % Second pass: build the histogram
                 % -----------
@@ -694,7 +701,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     end
                 end
                 % ============
-                % Validates input parameters for 2D histograms to 
+                % Validates input parameters for 2D histograms to
                 % ============
                 if maxValue(1)==0 || maxValue(2)==0
                     
@@ -703,18 +710,18 @@ waitfor(mainFigure,'BeingDeleted','on');
                     if verLessThan('matlab','8.4.0')
                         set(hPlot2D,'color','none');
                     else
-                      hPlot2D.Color = 'none';
+                        hPlot2D.Color = 'none';
                     end
                     
                     grid(hPlot2D, 'on')
                     set(get(hPlot2D,'XLabel'),'String',listOfLabels{statToShow(1)})
-                    set(get(hPlot2D,'yLabel'),'String',listOfLabels{statToShow(2)})                     
+                    set(get(hPlot2D,'yLabel'),'String',listOfLabels{statToShow(2)})
                     errordlg('One of the entered axis parameters has insufficient data','Axes error');
                     return
                 end
                 
                 % ============
-                % Continue showing graphs 
+                % Continue showing graphs
                 % ============
                 axis(hPlot2D,[0 maxValue(1) 0 maxValue(2)])
                 grid(hPlot2D, 'on')
@@ -747,9 +754,9 @@ waitfor(mainFigure,'BeingDeleted','on');
     end
 
 
-    % =========
-    % Check if a new measure was selected by the user
-    % =========
+% =========
+% Check if a new measure was selected by the user
+% =========
     function measureSelected(hObject,eventdata)
         idx = find(btnMeas == hObject);
         for otheridx = 1:length(btnMeas)
@@ -762,9 +769,9 @@ waitfor(mainFigure,'BeingDeleted','on');
         end
     end
 
-    % =========
-    % Check if a new video was selected by the user
-    % =========
+% =========
+% Check if a new video was selected by the user
+% =========
     function videoSelected(hObject,eventdata)
         samp = find(hSamples.listVideos == hObject);
         valueSelected = get(hObject, 'value');
@@ -792,9 +799,9 @@ waitfor(mainFigure,'BeingDeleted','on');
         end
     end
 
-    % =========
-    % Check if a new worm was selected by the user
-    % =========
+% =========
+% Check if a new worm was selected by the user
+% =========
     function wormSelected(hObject,eventdata)
         samp = find(hSamples.listWoms == hObject);
         valueSelected = get(hObject, 'value');
@@ -808,9 +815,9 @@ waitfor(mainFigure,'BeingDeleted','on');
         end
     end
 
-    % =========
-    % Display the graphs for the selected measure, corresponding to either all samples, or only the samples selected as an argument
-    % =========
+% =========
+% Display the graphs for the selected measure, corresponding to either all samples, or only the samples selected as an argument
+% =========
     function showMeasures(sampleToShow)
         set(hLabel, 'string', listOfLabels{statSelected});
         if nargin <= 0
@@ -992,7 +999,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             deltaHisto = 1;
         end
         xAxisCommon = [ minValue - deltaHisto/2 ,...
-                        maxValue + deltaHisto/2 ];
+            maxValue + deltaHisto/2 ];
         for samp = sampleToShow
             
             cla(hSamples.plotMean(samp))
@@ -1065,24 +1072,24 @@ waitfor(mainFigure,'BeingDeleted','on');
         end
     end
 
-    % ============
-    % DISPLAY THE AXIS AND THE SLIDER
-    % ============
+% ============
+% DISPLAY THE AXIS AND THE SLIDER
+% ============
 
-    % ------------
-    % Set the position of the main panel based on the sliders values
-    % ------------
-    function setMainPanelPositionBySliders(hObject,eventdata) 
+% ------------
+% Set the position of the main panel based on the sliders values
+% ------------
+    function setMainPanelPositionBySliders(hObject,eventdata)
         newPos = get(mainPanel,'position');
         newPos(1) = 5 - get(sliderHoriz,'value');
         newPos(2) = -5 - get(sliderVert,'value');
         set(mainPanel,'position',newPos);
     end
 
-    % ------------
-    % Update the sliders positions when the main figure is resized
-    % ------------
-    function resizeMainFigure(hObject,eventdata) 
+% ------------
+% Update the sliders positions when the main figure is resized
+% ------------
+    function resizeMainFigure(hObject,eventdata)
         % -------
         % Update the size and position of the sliders
         % -------

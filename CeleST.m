@@ -1,4 +1,5 @@
 function CeleST
+
 % Copyright (c) 2013 Rutgers
 % Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 % The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
@@ -200,7 +201,7 @@ else
 end
 
 if verLessThan('matlab','8.4.0')
-    disp(['CeleST starting at ' datestr(clock)]);
+    disp(['CeleST ending at ' datestr(clock)]);
 else
     disp(['CeleST ending at ' datestr(datetime)]);
 end
@@ -655,6 +656,7 @@ if fileToLog > 1; fclose(fileToLog); end
 
     function addMultipleVideos(hObject,eventdata)
         sampleFileDirs = uipickfiles;
+        if sampleFileDirs == 0; return; end
         for i = 1:numel(sampleFileDirs)
             sampleFileDir = sampleFileDirs{i};
             if isdir(sampleFileDir)
