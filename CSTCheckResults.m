@@ -120,7 +120,7 @@ end
 % List of videos
 % ----------
 txtListVideos = uicontrol('parent',mainPanel,'style','text','HorizontalAlignment', 'left','String','Select a video (0 filtered)','position',[0 yFilters-25 2*filterW 20]);
-listVideos =  uicontrol('parent',mainPanel,'style','listbox','String',{''},'max',1,'min',0,'position',[0 yFilters-2*filterH-25 2*filterW 2*filterH],'callback', @checkSelectedVideo);
+listVideos =  uicontrol('parent',mainPanel,'style','listbox','String',{''},'position',[0 yFilters-2*filterH-25 2*filterW 2*filterH],'callback', @checkSelectedVideo);
 listVideosIdx = [];
 closeBtn = uicontrol('parent', mainPanel, 'style', 'pushbutton', 'string', 'Close (not saving)','position', [0 yFilters-filterH-165 filterW 30],'callback', @closeWindow);
 
@@ -128,7 +128,7 @@ closeBtn = uicontrol('parent', mainPanel, 'style', 'pushbutton', 'string', 'Clos
 % List of worms
 % ----------
 pnlLoad = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [320 yFilters-filterH-185 2*filterW+120 270]);
-txtVideoLoaded = uicontrol('parent',pnlLoad,'style','text','HorizontalAlignment', 'center','String','<Please Load a Video From the List>','fontweight','bold','position',[0 210 2*filterW+100 20]);
+txtVideoLoaded = uicontrol('parent',pnlLoad,'style','text','HorizontalAlignment', 'center','String','< Please Click a Video From the List to Load >','fontweight','bold','position',[0 210 2*filterW+100 20]);
 listWorms =  uicontrol('parent',pnlLoad,'style','listbox','String',{''},'max',1,'min',0,'position',[1 70 filterW filterH],'callback', @selectWorm);
 validateWormBtn = uicontrol('parent',pnlLoad,'style','pushbutton','string','Validate', 'position', [0 40 75 30],'callback', @validateWorm);
 rejectWormBtn = uicontrol('parent',pnlLoad,'style','pushbutton','string','Reject', 'position', [75 40 75 30],'callback', @rejectWorm);
@@ -1286,7 +1286,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             else
                 currentVideo = listVideosIdx(get(listVideos,'value'));
             end
-            
+
             for item = 1:length(listToDisable)
                 set(listToDisable{item}, 'enable', 'off');
             end           
@@ -1595,9 +1595,11 @@ waitfor(mainFigure,'BeingDeleted','on');
             cla(hAxeCurrentWorm); 
             colormap(gray(255))
             selectWorm
+            
             for item = 1:length(listToDisable)
                 set(listToDisable{item}, 'enable', 'on');
             end
+            
         else
             % ------------
             % No existing segmentation results
