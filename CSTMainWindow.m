@@ -649,7 +649,7 @@ if fileToLog > 1; fclose(fileToLog); end
 
     function addMultipleVideos(hObject,eventdata)
         sampleFileDirs = uipickfiles;
-        if sampleFileDirs == 0; return; end
+        if ~iscell(sampleFileDirs); return; end
         for i = 1:numel(sampleFileDirs)
             sampleFileDir = sampleFileDirs{i};
             if isdir(sampleFileDir)
