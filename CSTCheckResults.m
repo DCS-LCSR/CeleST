@@ -120,7 +120,7 @@ end
 % List of videos
 % ----------
 txtListVideos = uicontrol('parent',mainPanel,'style','text','HorizontalAlignment', 'left','String','Select a video (0 filtered)','position',[0 yFilters-25 2*filterW 20]);
-listVideos =  uicontrol('parent',mainPanel,'style','listbox','String',{''},'max',1,'min',0,'position',[0 yFilters-2*filterH-25 2*filterW 2*filterH],'callback', @checkSelectedVideo);
+listVideos =  uicontrol('parent',mainPanel,'style','listbox','String',{''},'position',[0 yFilters-2*filterH-25 2*filterW 2*filterH],'callback', @checkSelectedVideo);
 listVideosIdx = [];
 uicontrol('parent', mainPanel, 'style', 'pushbutton', 'string', 'Close (not saving)','position', [0 yFilters-filterH-165 filterW 30],'callback', @closeWindow);
 
