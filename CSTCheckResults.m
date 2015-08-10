@@ -122,7 +122,7 @@ end
 txtListVideos = uicontrol('parent',mainPanel,'style','text','HorizontalAlignment', 'left','String','Select a video (0 filtered)','position',[0 yFilters-25 2*filterW 20]);
 listVideos =  uicontrol('parent',mainPanel,'style','listbox','String',{''},'max',1,'min',0,'position',[0 yFilters-2*filterH-25 2*filterW 2*filterH],'callback', @checkSelectedVideo);
 listVideosIdx = [];
-uicontrol('parent', mainPanel, 'style', 'pushbutton', 'string', 'Close (not saving)','position', [0 yFilters-filterH-165 filterW 30],'callback', @closeWindow);
+closeBtn = uicontrol('parent', mainPanel, 'style', 'pushbutton', 'string', 'Close (not saving)','position', [0 yFilters-filterH-165 filterW 30],'callback', @closeWindow);
 
 % ----------
 % List of worms
@@ -130,12 +130,12 @@ uicontrol('parent', mainPanel, 'style', 'pushbutton', 'string', 'Close (not savi
 pnlLoad = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [320 yFilters-filterH-185 2*filterW+120 270]);
 txtVideoLoaded = uicontrol('parent',pnlLoad,'style','text','HorizontalAlignment', 'center','String','<Please Load a Video From the List>','fontweight','bold','position',[0 210 2*filterW+100 20]);
 listWorms =  uicontrol('parent',pnlLoad,'style','listbox','String',{''},'max',1,'min',0,'position',[1 70 filterW filterH],'callback', @selectWorm);
-uicontrol('parent',pnlLoad,'style','pushbutton','string','Validate', 'position', [0 40 75 30],'callback', @validateWorm);
-uicontrol('parent',pnlLoad,'style','pushbutton','string','Reject', 'position', [75 40 75 30],'callback', @rejectWorm);
-uicontrol('parent', pnlLoad, 'style', 'pushbutton', 'string', 'Save and Compute measures','position', [0 0 2*filterW 30],'callback', @updateMeasureForCurrentVideo);
+validateWormBtn = uicontrol('parent',pnlLoad,'style','pushbutton','string','Validate', 'position', [0 40 75 30],'callback', @validateWorm);
+rejectWormBtn = uicontrol('parent',pnlLoad,'style','pushbutton','string','Reject', 'position', [75 40 75 30],'callback', @rejectWorm);
+saveAndComputeMeasuresBtn = uicontrol('parent', pnlLoad, 'style', 'pushbutton', 'string', 'Save and Compute measures','position', [0 0 2*filterW 30],'callback', @updateMeasureForCurrentVideo);
 
 
-uicontrol('parent', pnlLoad, 'style', 'pushbutton', 'string', 'Glare zones','position', [180 180 120 20],'callback', @manageGlareZones);
+glareZonesBtn = uicontrol('parent', pnlLoad, 'style', 'pushbutton', 'string', 'Glare zones','position', [180 180 120 20],'callback', @manageGlareZones);
 % ----------
 % Switch trajectories
 % ----------
@@ -148,7 +148,7 @@ uicontrol('parent',pnlSwitch,'style','text','HorizontalAlignment', 'left','Strin
 txtSelectedWorm = uicontrol('parent',pnlSwitch,'style','text','String','< n/a >','position',[45 40 60 20]);
 uicontrol('parent',pnlSwitch,'style','text','HorizontalAlignment', 'left','String','and','position',[0 20 40 20]);
 popWormSwitch = uicontrol('parent',pnlSwitch,'style','popupmenu','String',{'< n/a >'},'value',idxOtherWorm,'position',[25 25 90 20],'callback',@setWormSwitch);
-uicontrol('parent',pnlSwitch,'style','pushbutton','String','Switch','position',[1 1 120 20],'callback', @switchWorms);
+switchWormsBtn = uicontrol('parent',pnlSwitch,'style','pushbutton','String','Switch','position',[1 1 120 20],'callback', @switchWorms);
 % ----------
 % Switch head and tail
 % ----------
@@ -157,7 +157,7 @@ uicontrol('parent',pnlSwitchHeadTail,'style','text','HorizontalAlignment', 'left
 editFrameSwitchHTStart = uicontrol('parent',pnlSwitchHeadTail,'style','edit','string','1','position',[40 2 50 25]);
 uicontrol('parent',pnlSwitchHeadTail,'style','text','HorizontalAlignment', 'left','String','to ','position',[90 00 20 20]);
 editFrameSwitchHTEnd = uicontrol('parent',pnlSwitchHeadTail,'style','edit','string','-','position',[110 2 50 25]);
-uicontrol('parent',pnlSwitchHeadTail,'style','pushbutton','String','Switch H / T','position',[160 2 120 25],'callback', @switchHeadTail);
+switchHTBtn = uicontrol('parent',pnlSwitchHeadTail,'style','pushbutton','String','Switch H / T','position',[160 2 120 25],'callback', @switchHeadTail);
 % ----------
 % Video of all field
 % ----------
@@ -195,10 +195,10 @@ hAxeValid = axes('parent', pnlValidity, 'units','pixels','position',[25 10 3*544
 uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Validity of the segmented body: ','position',[25 55 250 20]);
 txtValid = uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Valid frames: - / - = - %','position',[275 55 220 20], 'foregroundcolor', [0.1 0.5 0.1]);
 txtReject = uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Rejected frames: - / - = - %','position',[445 55 230 20], 'foregroundcolor' , [0.7 0 0]);
-uicontrol('parent',pnlValidity,'style','pushbutton','string','Next block','position',[875 55 100 35],'callback',@selectNextBlock);
-uicontrol('parent',pnlValidity,'style','pushbutton','string','Switch validity (right click)','position',[1015 55 190 35],'callback',@switchValidity);
-uicontrol('parent',pnlValidity,'style','pushbutton','string','Split block (double click)','position',[1215 55 190 35],'callback',@splitBlock);
-uicontrol('parent',pnlValidity,'style','pushbutton','string','Isolate frame (triple click)','position',[1415 55 190 35],'callback',@isolateFrame);
+nextBlockBtn = uicontrol('parent',pnlValidity,'style','pushbutton','string','Next block','position',[875 55 100 35],'callback',@selectNextBlock);
+switchValidityBtn = uicontrol('parent',pnlValidity,'style','pushbutton','string','Switch validity (right click)','position',[1015 55 190 35],'callback',@switchValidity);
+splitBlockBtn = uicontrol('parent',pnlValidity,'style','pushbutton','string','Split block (double click)','position',[1215 55 190 35],'callback',@splitBlock);
+isolateFrameBtn = uicontrol('parent',pnlValidity,'style','pushbutton','string','Isolate frame (triple click)','position',[1415 55 190 35],'callback',@isolateFrame);
 
 
 % ----------
@@ -288,6 +288,13 @@ if nargin >= 2
 end
 
 flagRemoveTempMeasures = true;
+
+% ----------
+% UI elements to block
+% ----------
+listToDisable = {listVideos, validateWormBtn, rejectWormBtn, saveAndComputeMeasuresBtn, glareZonesBtn, switchWormsBtn, switchHTBtn, switchValidityBtn, splitBlockBtn, isolateFrameBtn, nextBlockBtn,...
+            btnFirstFrame, editStartFrame, btnRewindFrame, btnPrevFrame, editCurrentFrame, btnNextFrame, btnForwardFrame, editEndFrame, btnLastFrame, txtMaxFrame, btnPlayVideo, closeBtn};
+
 % ------------
 % Waiting for closure
 % ------------
@@ -309,6 +316,11 @@ waitfor(mainFigure,'BeingDeleted','on');
     end
 
     function updateMeasureForCurrentVideo(hObject, eventdata)
+        
+        for item = 1:length(listToDisable)
+            set(listToDisable{item}, 'enable', 'off');
+        end
+        
         hTmp = waitbar(0,'Saving the results...');
         pause(0.001)
         finalNames = {'Wave_Initiation_Rate_Median', 'Wave_Initiation_Rate_Range', 'Body_Wave_Number_Median', 'Body_Wave_Number_Range', 'Asymmetry_Median', 'Asymmetry_Range', 'Reverse_Swimming', ...
@@ -594,6 +606,10 @@ waitfor(mainFigure,'BeingDeleted','on');
         fileDB(currentVideo).measured = true;
         fileDB(currentVideo).worms = totWorms;
         populateFilters
+        
+        for item = 1:length(listToDisable)
+            set(listToDisable{item}, 'enable', 'on');
+        end
     end
 
 % *****************
@@ -1270,6 +1286,11 @@ waitfor(mainFigure,'BeingDeleted','on');
             else
                 currentVideo = listVideosIdx(get(listVideos,'value'));
             end
+            
+            for item = 1:length(listToDisable)
+                set(listToDisable{item}, 'enable', 'off');
+            end           
+            
             % ------------
             % Check the presence of image files
             % ------------
@@ -1571,9 +1592,12 @@ waitfor(mainFigure,'BeingDeleted','on');
             hMainTextWorms = [];
             hMainBox = [];
             cla(hAxeAllVideo);
-            cla(hAxeCurrentWorm);
+            cla(hAxeCurrentWorm); 
             colormap(gray(255))
             selectWorm
+            for item = 1:length(listToDisable)
+                set(listToDisable{item}, 'enable', 'on');
+            end
         else
             % ------------
             % No existing segmentation results
