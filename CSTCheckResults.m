@@ -1980,7 +1980,7 @@ waitfor(mainFigure,'BeingDeleted','on');
         listVideosIdx = listVideosIdx(1:currentVal);
         set(listVideos, 'string', newListTmp(1:currentVal,:), 'value',1);
         set(txtListVideos,'string', ['Select a video (',num2str(length(listVideosIdx)),' filtered)']);
-        checkSelectedVideo
+        
     end
 
 % ============

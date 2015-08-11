@@ -20,3 +20,20 @@ In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('CSTM
 In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('CeleST', '/home/chr/Documents/CeleST/Master/CeleST/CeleST.m', 4)" style="font-weight:bold">CeleST</a> (<a href="matlab: opentoline('/home/chr/Documents/CeleST/Master/CeleST/CeleST.m',4,0)">line 4</a>)
     CSTMainWindow()} 
 CeleST ending at 10-Aug-2015 16:17:43
+CeleST starting at 11-Aug-2015 14:54:38
+{Error using <a href="matlab:helpUtils.errorDocCallback('CSTCheckResults/checkSelectedVideo', '/.autofs/ilab/ilab_users/jgk86/Desktop/CeleST_Project/CeleST/CSTCheckResults.m', 1617)" style="font-weight:bold">CSTCheckResults/checkSelectedVideo</a> (<a href="matlab: opentoline('/.autofs/ilab/ilab_users/jgk86/Desktop/CeleST_Project/CeleST/CSTCheckResults.m',1617,0)">line 1617</a>)
+Not enough input arguments.
+
+Error in <a href="matlab:helpUtils.errorDocCallback('CSTCheckResults/setFilteredList', '/.autofs/ilab/ilab_users/jgk86/Desktop/CeleST_Project/CeleST/CSTCheckResults.m', 1983)" style="font-weight:bold">CSTCheckResults/setFilteredList</a> (<a href="matlab: opentoline('/.autofs/ilab/ilab_users/jgk86/Desktop/CeleST_Project/CeleST/CSTCheckResults.m',1983,0)">line 1983</a>)
+        checkSelectedVideo
+
+Error in <a href="matlab:helpUtils.errorDocCallback('CSTCheckResults/populateFilters', '/.autofs/ilab/ilab_users/jgk86/Desktop/CeleST_Project/CeleST/CSTCheckResults.m', 1935)" style="font-weight:bold">CSTCheckResults/populateFilters</a> (<a href="matlab: opentoline('/.autofs/ilab/ilab_users/jgk86/Desktop/CeleST_Project/CeleST/CSTCheckResults.m',1935,0)">line 1935</a>)
+        setFilteredList
+
+Error in <a href="matlab:helpUtils.errorDocCallback('CSTCheckResults/updateMeasureForCurrentVideo', '/.autofs/ilab/ilab_users/jgk86/Desktop/CeleST_Project/CeleST/CSTCheckResults.m', 608)" style="font-weight:bold">CSTCheckResults/updateMeasureForCurrentVideo</a> (<a href="matlab: opentoline('/.autofs/ilab/ilab_users/jgk86/Desktop/CeleST_Project/CeleST/CSTCheckResults.m',608,0)">line 608</a>)
+        populateFilters
+} 
+Error using <a href="matlab:helpUtils.errorDocCallback('waitfor')" style="font-weight:bold">waitfor</a>
+Error while evaluating uicontrol Callback
+
+CeleST ending at 11-Aug-2015 14:55:27
