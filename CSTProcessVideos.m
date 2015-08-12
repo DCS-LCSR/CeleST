@@ -359,7 +359,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                             end
                             processSequence
                             if flagCancel
-                                currentVideoIdx = length(listVideosToProcIdx)+1;
+                                break
                             else
                                 disp('processing finished')
                             end
@@ -376,13 +376,17 @@ waitfor(mainFigure,'BeingDeleted','on');
                 end
             end
         end
-        if flagFinishedProcessing
-            set(txtProcStatus, 'string', 'Processing: finished');
+        if flagFinishedProcessing || flagCancel
+            if flagFinishedProcessing
+                set(txtProcStatus, 'string', 'Processing: finished');
+            end
             for item = 1:length(listToDisable)
                 set(listToDisable{item}, 'enable', 'on');
             end
             set(btnProcessInterrupt, 'enable', 'off')
         end
+        
+        flagCancel = false;
         
     end
 
