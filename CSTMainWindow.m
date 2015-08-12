@@ -29,8 +29,12 @@ timingsTime = zeros(1,length(timingsLabel));
 % ===============
 % Directories
 % ===============
-filenames.curr = cd;
-filenames.data = fullfile(filenames.curr, 'data');
+mainDir = strsplit(which('CeleST'),'/');
+mainDir = mainDir(1:(end-2));
+mainDir = strjoin(mainDir,'/');
+
+filenames.curr = mainDir;
+filenames.data = fullfile(filenames.curr, 'Data');
 filenames.log = fullfile(filenames.data, 'log');
 filenames.segmentation = fullfile(filenames.data, 'segmentation');
 filenames.export = fullfile(filenames.data, 'export');

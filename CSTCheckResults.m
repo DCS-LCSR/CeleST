@@ -292,7 +292,7 @@ flagRemoveTempMeasures = true;
 % ----------
 % UI elements to block
 % ----------
-listToDisable = {listVideos, validateWormBtn, rejectWormBtn, saveAndComputeMeasuresBtn, glareZonesBtn, switchWormsBtn, switchHTBtn, switchValidityBtn, splitBlockBtn, isolateFrameBtn, nextBlockBtn,...
+listToDisable = {listVideos,listWorms, validateWormBtn, rejectWormBtn, saveAndComputeMeasuresBtn, glareZonesBtn, switchWormsBtn, switchHTBtn, switchValidityBtn, splitBlockBtn, isolateFrameBtn, nextBlockBtn,...
             btnFirstFrame, editStartFrame, btnRewindFrame, btnPrevFrame, editCurrentFrame, btnNextFrame, btnForwardFrame, editEndFrame, btnLastFrame, txtMaxFrame, btnPlayVideo, closeBtn};
 
 % ------------
