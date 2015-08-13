@@ -313,6 +313,8 @@ waitfor(mainFigure,'BeingDeleted','on');
                     for seg=1:length(listVideosToProcIdx)
                         fileDB(listVideosToProcIdx(seg)).segmented = 0;
                     end
+                elseif strcmp(process, 'Cancel')
+                    return
                 end
             end
             listToDisable = {btnAddVideos, btnRemoveVideos, btnClose, listVideosNoWell, listVideosWell, btnProcess};
