@@ -1976,7 +1976,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     break
                 end
             end
-            if flagKeep
+            if flagKeep && fileDB(vv).segmented
                 currentVal = currentVal + 1;
                 newListTmp{currentVal} = fileDB(vv).name;
                 listVideosIdx(currentVal) = vv;
