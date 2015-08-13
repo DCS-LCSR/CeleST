@@ -66,7 +66,9 @@ if strcmp(line1{1}{1}, 'format') && strcmp(line2{1}{1}, 'block')
         % read the worm and frame indices
         items = sscanf(tline, 'worm %d frame %d');
         if flagShowGUI && ww < items(1)
-            waitbar(items(1)/nbOfWorms, hWaitBar);
+            if ishandle(hWaitBar)
+                waitbar(items(1)/nbOfWorms, hWaitBar);
+            end
         end
         ww = items(1);
         ff = items(2);
@@ -112,7 +114,9 @@ if strcmp(line1{1}{1}, 'format') && strcmp(line2{1}{1}, 'block')
 end
 fclose(fid);
 if flagShowGUI
-    close(hWaitBar)
+    if ishandle(hWaitBar)
+        close(hWaitBar)
+    end
     pause(0.001)
 end
 
