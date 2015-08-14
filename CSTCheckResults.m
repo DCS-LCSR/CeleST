@@ -602,11 +602,12 @@ waitfor(mainFigure,'BeingDeleted','on');
         end
         close(hTmp);
         pause(0.001);
-        CSTwriteMeasuresToTXT(allMeasures, fileDB(currentVideo).name);
-        fileDB(currentVideo).measured = true;
-        fileDB(currentVideo).worms = totWorms;
-        populateFilters
-        
+        if currentVideo~=0  
+            CSTwriteMeasuresToTXT(allMeasures, fileDB(currentVideo).name);
+            fileDB(currentVideo).measured = true;
+            fileDB(currentVideo).worms = totWorms;
+            populateFilters
+        end
         for item = 1:length(listToDisable)
             set(listToDisable{item}, 'enable', 'on');
         end
