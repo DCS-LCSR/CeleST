@@ -1674,13 +1674,15 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
     function checkSelectedVideo(hObject,eventdata) %#ok<INUSD>
         try
-            tmp = listVideosIdx(get(listVideos,'value'));
-            if ~fileDB(tmp).segmented
-                warndlg(sprintf('The chosen file has not been processed. \nPlease process prior the checking its measures.'),'Warning')
-            else
-                if (~isempty(listVideosIdx)) && (strcmp(get(mainFigure, 'Visible'),'on')) && (get(listVideos,'Value')~=currentVideo)
-                    loadVideoContents(hObject,eventdata)
-                    selectWorm
+            if ~isempty([listVideos.String{:}])
+                tmp = listVideosIdx(get(listVideos,'value'));
+                if ~fileDB(tmp).segmented
+                    warndlg(sprintf('The chosen file has not been processed. \nPlease process prior the checking its measures.'),'Warning')
+                else
+                    if (~isempty(listVideosIdx)) && (strcmp(get(mainFigure, 'Visible'),'on')) && (get(listVideos,'Value')~=currentVideo)
+                        loadVideoContents(hObject,eventdata)
+                        selectWorm
+                    end
                 end
             end
         catch exception
@@ -1697,167 +1699,169 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
     function selectWorm(hObject,eventdata) %#ok<INUSD>
         try
-            currentWorm = get(listWorms, 'value');
-            if isempty(currentWorm)
-                cla(hAxeLength)
-            else
-                % -------------------
-                % Find listOfWorms.outOfLengths zones
-                % -------------------
-                set(txtSelectedWorm, 'String', ['Worm ', num2str(currentWorm)]);
-                set(editHighThr, 'string', int2str(measures.highThr(currentWorm)));
-                set(editLowThr, 'string', int2str(measures.lowThr(currentWorm)));
-                set(editPrevThr, 'string', int2str(measures.prevThr(currentWorm)));
-                newListTmp = {};
-                wormSwitchIdx = [];
-                for otherWorm = [1:currentWorm-1 , currentWorm+1:nbOfWorms]
-                    %                 if ~strcmp('rejected', measures.status{otherWorm})
-                    newListTmp{end+1} = ['Worm ', num2str(otherWorm)]; %#ok<AGROW>
-                    wormSwitchIdx(end+1) = otherWorm; %#ok<AGROW>
-                    %                 end
-                end
-                newListTmp{end+1} = 'new worm';
-                wormSwitchIdx(end+1) = -1;
-                set(popWormSwitch, 'string', newListTmp,'value', 1);
-                % -------------------
-                % Display the valid frames
-                % -------------------
-                cla(hAxeValid)
-                hold(hAxeValid, 'on');
-                for ff = 1:nbOfFrames
-                    if listOfWorms.valid(currentWorm,ff)
-                        rectangle('parent',hAxeValid, 'position', [ff, 0, 1, 1], 'FaceColor', colorAccepted, 'edgecolor', colorAccepted, 'hittest', 'off');
-                    else
-                        rectangle('parent',hAxeValid, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+            if ~isempty([listWorms.String{:}])
+                currentWorm = get(listWorms, 'value');
+                if isempty(currentWorm)
+                    cla(hAxeLength)
+                else
+                    % -------------------
+                    % Find listOfWorms.outOfLengths zones
+                    % -------------------
+                    set(txtSelectedWorm, 'String', ['Worm ', num2str(currentWorm)]);
+                    set(editHighThr, 'string', int2str(measures.highThr(currentWorm)));
+                    set(editLowThr, 'string', int2str(measures.lowThr(currentWorm)));
+                    set(editPrevThr, 'string', int2str(measures.prevThr(currentWorm)));
+                    newListTmp = {};
+                    wormSwitchIdx = [];
+                    for otherWorm = [1:currentWorm-1 , currentWorm+1:nbOfWorms]
+                        %                 if ~strcmp('rejected', measures.status{otherWorm})
+                        newListTmp{end+1} = ['Worm ', num2str(otherWorm)]; %#ok<AGROW>
+                        wormSwitchIdx(end+1) = otherWorm; %#ok<AGROW>
+                        %                 end
                     end
-                end
-                for sep = 1:length(measures.separators{currentWorm})
-                    line('parent',hAxeValid, 'xdata', measures.separators{currentWorm}(sep)*[1,1], 'ydata', [0, 1], 'color', 'k', 'hittest', 'off');
-                end
-                axis(hAxeValid,[1 nbOfFrames+1 0 1]);
-                grid(hAxeValid,'on')
-                set(hAxeValid, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
-                % -------------------
-                % Display the overlap with glare zones
-                % -------------------
-                cla(hAxeGlare)
-                hold(hAxeGlare, 'on');
-                for ff = find(listOfWorms.inGlareZone(currentWorm,:))
-                    rectangle('parent',hAxeGlare, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
-                end
-                axis(hAxeGlare,[1 nbOfFrames+1 0 1]);
-                grid(hAxeGlare,'on')
-                set(hAxeGlare, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
-                % -------------------
-                % Display the previous overlap
-                % -------------------
-                cla(hAxePrevOverlap)
-                hold(hAxePrevOverlap, 'on');
-                for ff = find(listOfWorms.outOfPrevious(currentWorm,:))
-                    rectangle('parent',hAxePrevOverlap, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
-                end
-                if (isempty(hLinePrevThr) || ~ishandle(hLinePrevThr))
-                    hLinePrevThr = line('parent',hAxePrevOverlap,'xdata', [1 nbOfFrames+1], 'ydata', 0.01*[measures.prevThr(currentWorm) measures.prevThr(currentWorm)], 'color', 'r', 'hittest', 'off');
-                else
-                    set(hLinePrevThr, 'ydata', 0.01*[measures.prevThr(currentWorm) measures.prevThr(currentWorm)]);
-                end
-                stairs(hAxePrevOverlap, listOfWorms.overlapPrev(currentWorm,:), 'hittest', 'off');
-                axis(hAxePrevOverlap,[1 nbOfFrames+1 0 1]);
-                grid(hAxePrevOverlap,'on')
-                set(hAxePrevOverlap, 'XTickLabel', [], 'TickLength', [0 0], 'YTick',[0 0.5 1],'YTickLabel', ['  0'; ' 50'; '100'], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
-                % -------------------
-                % Display the lost frames
-                % -------------------
-                cla(hAxeLost)
-                hold(hAxeLost, 'on');
-                for ff = find(listOfWorms.lost(currentWorm,:))
-                    rectangle('parent',hAxeLost, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
-                end
-                axis(hAxeLost,[1 nbOfFrames+1 0 1]);
-                grid(hAxeLost,'on')
-                set(hAxeLost, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
-                % -------------------
-                % Display the overlap with other worms
-                % -------------------
-                cla(hAxeOverlap)
-                hold(hAxeOverlap, 'on');
-                for ff = find(listOfWorms.overlapped(currentWorm,:))
-                    rectangle('parent',hAxeOverlap, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
-                end
-                axis(hAxeOverlap,[1 nbOfFrames+1 0 1]);
-                grid(hAxeOverlap,'on')
-                set(hAxeOverlap, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
-                % -------------------
-                % Display the end of self-overlap
-                % -------------------
-                cla(hAxeSelfOverlap)
-                hold(hAxeSelfOverlap, 'on');
-                for ff = find(tmpAfterSelfOverlap(currentWorm,:))
-                    rectangle('parent',hAxeSelfOverlap, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
-                end
-                axis(hAxeSelfOverlap,[1 nbOfFrames+1 0 1]);
-                grid(hAxeSelfOverlap,'on')
-                set(hAxeSelfOverlap, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
-                % -------------------
-                % Display the length
-                % -------------------
-                cla(hAxeLength)
-                stairs(hAxeLength, listOfWorms.lengthWorms(currentWorm,:), 'hittest', 'off');
-                tmp = axis(hAxeLength) + [0 0 0 1];
-                axis(hAxeLength,[1 nbOfFrames+1 0 tmp(4)]);
-                hold(hAxeLength,'on')
-                for ff = find(listOfWorms.outOfLengths(currentWorm,:))
-                    rectangle('parent',hAxeLength, 'position', [ff, 0, 1, tmp(4)], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
-                end
-                if (isempty(hLineHighThr) || ~ishandle(hLineHighThr))
-                    hLineHighThr = line('parent',hAxeLength,'xdata', [tmp(1) tmp(2)], 'ydata', [measures.highThr(currentWorm) measures.highThr(currentWorm)], 'color', 'r', 'hittest', 'off');
-                else
-                    set(hLineHighThr, 'xdata', [tmp(1) tmp(2)], 'ydata', [measures.highThr(currentWorm) measures.highThr(currentWorm)]);
-                end
-                if (isempty(hLineLowThr) || ~ishandle(hLineLowThr))
-                    hLineLowThr = line('parent',hAxeLength,'xdata', [tmp(1) tmp(2)], 'ydata', [measures.lowThr(currentWorm) measures.lowThr(currentWorm)], 'color', 'r', 'hittest', 'off');
-                else
-                    set(hLineLowThr, 'xdata', [tmp(1) tmp(2)], 'ydata', [measures.lowThr(currentWorm) measures.lowThr(currentWorm)]);
-                end
-                stairs(hAxeLength, listOfWorms.lengthWorms(currentWorm,:),'-k', 'hittest', 'off');
-                hold(hAxeLength,'off')
-                grid(hAxeLength,'on')
-                set(hAxeLength, 'TickLength', [0 0], 'ButtonDownFcn', @selectFrameByClick)
-                % -------------------
-                % Display the current frame location on all graphs
-                % -------------------
-                tmp = axis(hAxeLength);
-                hRectCurrentFrame(1) = rectangle('parent',hAxeLength,      'position', [currentFrame, tmp(3), 1, tmp(4)-tmp(3)], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
-                hRectCurrentFrame(2) = rectangle('parent',hAxeOverlap,     'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
-                hRectCurrentFrame(3) = rectangle('parent',hAxeLost,        'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
-                hRectCurrentFrame(4) = rectangle('parent',hAxePrevOverlap, 'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
-                hRectCurrentFrame(5) = rectangle('parent',hAxeValid,       'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
-                hRectCurrentFrame(6) = rectangle('parent',hAxeSelfOverlap, 'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
-                hRectCurrentFrame(7) = rectangle('parent',hAxeGlare,       'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
-                % -------------------
-                % Update the display
-                % -------------------
-                displayCurrentFrame
-                % -------------------
-                % Update the number of valid frames
-                % -------------------
-                totalValid = sum(listOfWorms.valid(currentWorm,:));
-                fracValid = 100*totalValid/nbOfFrames;
-                set(txtValid, 'string', ['Valid frames: ', num2str(totalValid), ' / ', num2str(nbOfFrames), ' = ', sprintf('%.1f', fracValid), ' %']);
-                set(txtReject, 'string', ['Rejected frames: ', num2str(nbOfFrames-totalValid), ' / ', num2str(nbOfFrames), ' = ', sprintf('%.1f', 100-fracValid), ' %']);
-                % -------------------
-                % Display the trajectory of the current worm
-                % -------------------
-                if flagShowTrajectory && ~isempty(centerMovedSignificantly) && ~isempty(listOfWorms.positionCenterX)
-                    hold(hAxeAllVideo,'on')
-                    if isempty(hTraj) || ~ishandle(hTraj)
-                        hTraj = plot(hAxeAllVideo, listOfWorms.positionCenterX(currentWorm,centerMovedSignificantly(currentWorm,:) & listOfWorms.valid(currentWorm,:)),...
-                            listOfWorms.positionCenterY(currentWorm,centerMovedSignificantly(currentWorm,:)& listOfWorms.valid(currentWorm,:)),'-','color',colorTrajectory);
-                    else
-                        set(hTraj,'xdata', listOfWorms.positionCenterX(currentWorm,centerMovedSignificantly(currentWorm,:)& listOfWorms.valid(currentWorm,:)),...
-                            'ydata', listOfWorms.positionCenterY(currentWorm,centerMovedSignificantly(currentWorm,:)& listOfWorms.valid(currentWorm,:)));
+                    newListTmp{end+1} = 'new worm';
+                    wormSwitchIdx(end+1) = -1;
+                    set(popWormSwitch, 'string', newListTmp,'value', 1);
+                    % -------------------
+                    % Display the valid frames
+                    % -------------------
+                    cla(hAxeValid)
+                    hold(hAxeValid, 'on');
+                    for ff = 1:nbOfFrames
+                        if listOfWorms.valid(currentWorm,ff)
+                            rectangle('parent',hAxeValid, 'position', [ff, 0, 1, 1], 'FaceColor', colorAccepted, 'edgecolor', colorAccepted, 'hittest', 'off');
+                        else
+                            rectangle('parent',hAxeValid, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                        end
                     end
-                    hold(hAxeAllVideo,'off')
+                    for sep = 1:length(measures.separators{currentWorm})
+                        line('parent',hAxeValid, 'xdata', measures.separators{currentWorm}(sep)*[1,1], 'ydata', [0, 1], 'color', 'k', 'hittest', 'off');
+                    end
+                    axis(hAxeValid,[1 nbOfFrames+1 0 1]);
+                    grid(hAxeValid,'on')
+                    set(hAxeValid, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
+                    % -------------------
+                    % Display the overlap with glare zones
+                    % -------------------
+                    cla(hAxeGlare)
+                    hold(hAxeGlare, 'on');
+                    for ff = find(listOfWorms.inGlareZone(currentWorm,:))
+                        rectangle('parent',hAxeGlare, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                    end
+                    axis(hAxeGlare,[1 nbOfFrames+1 0 1]);
+                    grid(hAxeGlare,'on')
+                    set(hAxeGlare, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
+                    % -------------------
+                    % Display the previous overlap
+                    % -------------------
+                    cla(hAxePrevOverlap)
+                    hold(hAxePrevOverlap, 'on');
+                    for ff = find(listOfWorms.outOfPrevious(currentWorm,:))
+                        rectangle('parent',hAxePrevOverlap, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                    end
+                    if (isempty(hLinePrevThr) || ~ishandle(hLinePrevThr))
+                        hLinePrevThr = line('parent',hAxePrevOverlap,'xdata', [1 nbOfFrames+1], 'ydata', 0.01*[measures.prevThr(currentWorm) measures.prevThr(currentWorm)], 'color', 'r', 'hittest', 'off');
+                    else
+                        set(hLinePrevThr, 'ydata', 0.01*[measures.prevThr(currentWorm) measures.prevThr(currentWorm)]);
+                    end
+                    stairs(hAxePrevOverlap, listOfWorms.overlapPrev(currentWorm,:), 'hittest', 'off');
+                    axis(hAxePrevOverlap,[1 nbOfFrames+1 0 1]);
+                    grid(hAxePrevOverlap,'on')
+                    set(hAxePrevOverlap, 'XTickLabel', [], 'TickLength', [0 0], 'YTick',[0 0.5 1],'YTickLabel', ['  0'; ' 50'; '100'], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
+                    % -------------------
+                    % Display the lost frames
+                    % -------------------
+                    cla(hAxeLost)
+                    hold(hAxeLost, 'on');
+                    for ff = find(listOfWorms.lost(currentWorm,:))
+                        rectangle('parent',hAxeLost, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                    end
+                    axis(hAxeLost,[1 nbOfFrames+1 0 1]);
+                    grid(hAxeLost,'on')
+                    set(hAxeLost, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
+                    % -------------------
+                    % Display the overlap with other worms
+                    % -------------------
+                    cla(hAxeOverlap)
+                    hold(hAxeOverlap, 'on');
+                    for ff = find(listOfWorms.overlapped(currentWorm,:))
+                        rectangle('parent',hAxeOverlap, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                    end
+                    axis(hAxeOverlap,[1 nbOfFrames+1 0 1]);
+                    grid(hAxeOverlap,'on')
+                    set(hAxeOverlap, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
+                    % -------------------
+                    % Display the end of self-overlap
+                    % -------------------
+                    cla(hAxeSelfOverlap)
+                    hold(hAxeSelfOverlap, 'on');
+                    for ff = find(tmpAfterSelfOverlap(currentWorm,:))
+                        rectangle('parent',hAxeSelfOverlap, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                    end
+                    axis(hAxeSelfOverlap,[1 nbOfFrames+1 0 1]);
+                    grid(hAxeSelfOverlap,'on')
+                    set(hAxeSelfOverlap, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
+                    % -------------------
+                    % Display the length
+                    % -------------------
+                    cla(hAxeLength)
+                    stairs(hAxeLength, listOfWorms.lengthWorms(currentWorm,:), 'hittest', 'off');
+                    tmp = axis(hAxeLength) + [0 0 0 1];
+                    axis(hAxeLength,[1 nbOfFrames+1 0 tmp(4)]);
+                    hold(hAxeLength,'on')
+                    for ff = find(listOfWorms.outOfLengths(currentWorm,:))
+                        rectangle('parent',hAxeLength, 'position', [ff, 0, 1, tmp(4)], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                    end
+                    if (isempty(hLineHighThr) || ~ishandle(hLineHighThr))
+                        hLineHighThr = line('parent',hAxeLength,'xdata', [tmp(1) tmp(2)], 'ydata', [measures.highThr(currentWorm) measures.highThr(currentWorm)], 'color', 'r', 'hittest', 'off');
+                    else
+                        set(hLineHighThr, 'xdata', [tmp(1) tmp(2)], 'ydata', [measures.highThr(currentWorm) measures.highThr(currentWorm)]);
+                    end
+                    if (isempty(hLineLowThr) || ~ishandle(hLineLowThr))
+                        hLineLowThr = line('parent',hAxeLength,'xdata', [tmp(1) tmp(2)], 'ydata', [measures.lowThr(currentWorm) measures.lowThr(currentWorm)], 'color', 'r', 'hittest', 'off');
+                    else
+                        set(hLineLowThr, 'xdata', [tmp(1) tmp(2)], 'ydata', [measures.lowThr(currentWorm) measures.lowThr(currentWorm)]);
+                    end
+                    stairs(hAxeLength, listOfWorms.lengthWorms(currentWorm,:),'-k', 'hittest', 'off');
+                    hold(hAxeLength,'off')
+                    grid(hAxeLength,'on')
+                    set(hAxeLength, 'TickLength', [0 0], 'ButtonDownFcn', @selectFrameByClick)
+                    % -------------------
+                    % Display the current frame location on all graphs
+                    % -------------------
+                    tmp = axis(hAxeLength);
+                    hRectCurrentFrame(1) = rectangle('parent',hAxeLength,      'position', [currentFrame, tmp(3), 1, tmp(4)-tmp(3)], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
+                    hRectCurrentFrame(2) = rectangle('parent',hAxeOverlap,     'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
+                    hRectCurrentFrame(3) = rectangle('parent',hAxeLost,        'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
+                    hRectCurrentFrame(4) = rectangle('parent',hAxePrevOverlap, 'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
+                    hRectCurrentFrame(5) = rectangle('parent',hAxeValid,       'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
+                    hRectCurrentFrame(6) = rectangle('parent',hAxeSelfOverlap, 'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
+                    hRectCurrentFrame(7) = rectangle('parent',hAxeGlare,       'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
+                    % -------------------
+                    % Update the display
+                    % -------------------
+                    displayCurrentFrame
+                    % -------------------
+                    % Update the number of valid frames
+                    % -------------------
+                    totalValid = sum(listOfWorms.valid(currentWorm,:));
+                    fracValid = 100*totalValid/nbOfFrames;
+                    set(txtValid, 'string', ['Valid frames: ', num2str(totalValid), ' / ', num2str(nbOfFrames), ' = ', sprintf('%.1f', fracValid), ' %']);
+                    set(txtReject, 'string', ['Rejected frames: ', num2str(nbOfFrames-totalValid), ' / ', num2str(nbOfFrames), ' = ', sprintf('%.1f', 100-fracValid), ' %']);
+                    % -------------------
+                    % Display the trajectory of the current worm
+                    % -------------------
+                    if flagShowTrajectory && ~isempty(centerMovedSignificantly) && ~isempty(listOfWorms.positionCenterX)
+                        hold(hAxeAllVideo,'on')
+                        if isempty(hTraj) || ~ishandle(hTraj)
+                            hTraj = plot(hAxeAllVideo, listOfWorms.positionCenterX(currentWorm,centerMovedSignificantly(currentWorm,:) & listOfWorms.valid(currentWorm,:)),...
+                                listOfWorms.positionCenterY(currentWorm,centerMovedSignificantly(currentWorm,:)& listOfWorms.valid(currentWorm,:)),'-','color',colorTrajectory);
+                        else
+                            set(hTraj,'xdata', listOfWorms.positionCenterX(currentWorm,centerMovedSignificantly(currentWorm,:)& listOfWorms.valid(currentWorm,:)),...
+                                'ydata', listOfWorms.positionCenterY(currentWorm,centerMovedSignificantly(currentWorm,:)& listOfWorms.valid(currentWorm,:)));
+                        end
+                        hold(hAxeAllVideo,'off')
+                    end
                 end
             end
         catch exception
