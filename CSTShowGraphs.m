@@ -185,6 +185,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % =========
     function exportAll(hObject,eventdata)
         try
+            try
             defaultName = fullfile(filenames.export,['worm_data_',date,'.csv']);
             flagUserInput = true;
             if flagUserInput
@@ -314,6 +315,10 @@ waitfor(mainFigure,'BeingDeleted','on');
             else
                 rethrow(em)
             end
+            end
+        
+                        catch exception
+                    generateReport(exception)
         end
     end
 
@@ -321,6 +326,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % Change the colormap of all the window, based on what the user selected
 % =========
     function setColormap(hObject,eventdata)
+        try
         valueSelected = get(hPopColormap, 'value');
         if valueSelected <= 0
             % no change
@@ -332,12 +338,16 @@ waitfor(mainFigure,'BeingDeleted','on');
             colormap(axeExample, currentColormap);
             showMeasures
         end
+                        catch exception
+                    generateReport(exception)
+        end
     end
 
 % =========
 % Set the number of top worms
 % =========
     function setNumberOfTopWorms(hObject,eventdata)
+        try
         newnumber = round(str2double(get(hEditNumberOfTopWorms, 'string')));
         if ~isnan(newnumber) && newnumber >= 1
             numberOfTopWorms = newnumber;
@@ -345,12 +355,16 @@ waitfor(mainFigure,'BeingDeleted','on');
         else
             set(hEditNumberOfTopWorms, 'string', num2str(histoSteps));
         end
+                        catch exception
+                    generateReport(exception)
+        end
     end
 
 % =========
 % Check that the number of bins entered by the user is a valid number
 % =========
     function setNumberBins(hObject,eventdata)
+        try
         newnumber = round(str2double(get(hEditBins, 'string')));
         if ~isnan(newnumber) && newnumber >= 5 && newnumber <= 500
             histoSteps = newnumber;
@@ -358,12 +372,16 @@ waitfor(mainFigure,'BeingDeleted','on');
         else
             set(hEditBins, 'string', num2str(histoSteps));
         end
+                        catch exception
+                    generateReport(exception)
+        end
     end
 
 % =========
 % Load the raw measures from the txt files, based on the videos selected within the samples
 % =========
     function loadRawMeasures(hObject,eventdata)
+        try
         if nargin <= 0 || isempty(measures.(listOfMeasures{statSelected}).raw)
             increm = 1/totalVideos;
             valWait = 0;
@@ -456,11 +474,15 @@ waitfor(mainFigure,'BeingDeleted','on');
             % The data for the selected measure was already loaded, lazy list implementation
         end
         showMeasures
+                        catch exception
+                    generateReport(exception)
+        end
     end
 
 
 
     function measure2DSelected(hObject,eventdata)
+        try
         % Compute all measures
         hTmp2D = waitbar(0, 'Computing all measures...');
         for sss = 1:length(listOfMeasures)
@@ -518,6 +540,9 @@ waitfor(mainFigure,'BeingDeleted','on');
         uicontrol('parent', subFig, 'units', 'pixels', 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Measure on the Y axis:', 'position', [10 mainHLocal-140 150 20]);
         hYMeasure = uicontrol('parent', subFig, 'style', 'popupmenu', 'string', listOfButtons,'value',statToShow(2), 'position', [10 mainHLocal-160 200 20], 'callback', @measSel);
         show2DPlot;
+                        catch exception
+                    generateReport(exception)
+        end
         function close2D(ha, hb)
             set(subFig,'Visible','off');
             delete(subFig);
@@ -758,6 +783,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % Check if a new measure was selected by the user
 % =========
     function measureSelected(hObject,eventdata)
+        try
         idx = find(btnMeas == hObject);
         for otheridx = 1:length(btnMeas)
             set(btnMeas(otheridx), 'value', 0);
@@ -767,12 +793,16 @@ waitfor(mainFigure,'BeingDeleted','on');
             statSelected = idx;
             showMeasures;
         end
+                        catch exception
+                    generateReport(exception)
+        end
     end
 
 % =========
 % Check if a new video was selected by the user
 % =========
     function videoSelected(hObject,eventdata)
+        try
         samp = find(hSamples.listVideos == hObject);
         valueSelected = get(hObject, 'value');
         if valueSelected <= 0
@@ -797,12 +827,16 @@ waitfor(mainFigure,'BeingDeleted','on');
             end
             showMeasures(samp);
         end
+                        catch exception
+                    generateReport(exception)
+        end
     end
 
 % =========
 % Check if a new worm was selected by the user
 % =========
     function wormSelected(hObject,eventdata)
+        try
         samp = find(hSamples.listWoms == hObject);
         valueSelected = get(hObject, 'value');
         if valueSelected <= 0
@@ -813,12 +847,16 @@ waitfor(mainFigure,'BeingDeleted','on');
             wormListSelection(samp) = valueSelected;
             showMeasures(samp);
         end
+                        catch exception
+                    generateReport(exception)
+        end
     end
 
 % =========
 % Display the graphs for the selected measure, corresponding to either all samples, or only the samples selected as an argument
 % =========
     function showMeasures(sampleToShow)
+        try
         set(hLabel, 'string', listOfLabels{statSelected});
         if nargin <= 0
             sampleToShow = 1:nbOfSamples;
@@ -1069,6 +1107,9 @@ waitfor(mainFigure,'BeingDeleted','on');
                 axis(hSamples.plotHisto(samp), [xAxisCommon(1), xAxisCommon(2), 0, 1]);
                 set(hSamples.plotHisto(samp),'xtickmode','auto','XMinorGrid','on','ytick',[],'xgrid','on','XTickLabelMode','auto','ticklength',[0 0]);
             end
+        end
+                        catch exception
+                    generateReport(exception)
         end
     end
 

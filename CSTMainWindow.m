@@ -225,33 +225,46 @@ if fileToLog > 1; fclose(fileToLog); end
     end
 
     function processVideo(hObject,eventdata) %#ok<INUSD>
+        try
         set(mainFigure,'Visible','off');
         CSTProcessVideos
         set(mainFigure,'Visible','on');
         flagConsistentButton = false;
         checkSequences
         populateFilters
+                catch exception
+            generateReport(exception)
+        end
     end
 
     function checkResults(hObject,eventdata) %#ok<INUSD>
+        try
         set(mainFigure,'Visible','off');
         CSTCheckResults
         set(mainFigure,'Visible','on');
         flagConsistentButton = false;
         checkSequences
         populateFilters
+                catch exception
+            generateReport(exception)
+        end
     end
 
     function showMeasures(hObject,eventdata) %#ok<INUSD>
+        try
         set(mainFigure,'Visible','off');
         CSTShowMeasures
         set(mainFigure,'Visible','on');
         flagConsistentButton = false;
         checkSequences
         populateFilters
+                catch exception
+            generateReport(exception)
+        end
     end
 
     function removeVideos(hObject,eventdata) %#ok<INUSD>
+        try
         tmpData = get(tableVideos,'data');
         listNames = tmpData(:,1);
         [selection,ok] = listdlg('ListString',listNames, 'name', 'CeleST: remove videos','promptstring', 'Videos to remove from the database:',...
@@ -290,9 +303,13 @@ if fileToLog > 1; fclose(fileToLog); end
             end
             populateFilters
         end
+                catch exception
+            generateReport(exception)
+        end
     end
 
     function tableEdit(hObject,eventdata) %#ok<INUSL>
+        try
         if ~isempty(eventdata.NewData) && (~isnumeric(eventdata.NewData) || ~isnan(eventdata.NewData))
             fileDB(listVideosIdx(eventdata.Indices(1))).(fieldsIni{eventdata.Indices(2)}) = eventdata.NewData;
             populateFilters
@@ -302,9 +319,13 @@ if fileToLog > 1; fclose(fileToLog); end
             tmpData{eventdata.Indices(1),eventdata.Indices(2)} = fileDB(listVideosIdx(eventdata.Indices(1))).(fieldsIni{eventdata.Indices(2)});
             set(tableVideos, 'data', tmpData);
         end
+                catch exception
+            generateReport(exception)
+        end
     end
 
     function editTable(hObject,eventdata) %#ok<INUSD>
+        try
         if get(btnEdit,'value') == 1
             set(tableVideos, 'ColumnEditable',editable);
         else
@@ -312,6 +333,9 @@ if fileToLog > 1; fclose(fileToLog); end
             flagConsistentButton = false;
             checkSequences
             populateFilters
+        end
+                catch exception
+            generateReport(exception)
         end
     end
 
@@ -358,6 +382,7 @@ if fileToLog > 1; fclose(fileToLog); end
 % BUILD THE LIST OF VIDEOS TO SHOW, BASED ON THE SELECTED FILTERS
 % ============
     function setFilteredList(hObject,eventdata) %#ok<INUSD>
+        try
         fieldsToHideInTable = {'glareZones', 'format'};
         totToHide = length(fieldsToHideInTable);
         namesToShow = fieldnames(fileDB);
@@ -444,6 +469,9 @@ if fileToLog > 1; fclose(fileToLog); end
         end
         set(tableVideos,'data',result(1:currentVal,:));
         listVideosIdx = listVideosIdx(1:currentVal);
+                catch exception
+            generateReport(exception)
+        end
     end
 
 
@@ -499,6 +527,7 @@ if fileToLog > 1; fclose(fileToLog); end
 % ------------
 
     function checkSequences(hObject, event) %#ok<INUSD>
+        try
         if flagConsistentButton; h = waitbar(0,'Checking the consistency of the data...'); end
         ensureUniqueNames
         nb = length(fileDB);
@@ -540,6 +569,9 @@ if fileToLog > 1; fclose(fileToLog); end
             if ~errorCheck; msgbox('Data is consistent','Success'); end
         end
         flagConsistentButton = true;
+                catch exception
+            generateReport(exception)
+        end
     end
 
 % ------------
@@ -565,6 +597,7 @@ if fileToLog > 1; fclose(fileToLog); end
     end
 
     function addOneVideo(hObject,eventdata) %#ok<INUSD>
+        try
         flagOK = false;
         figureAdd = figure('Visible','on','Position',[50,100,440,500],'Name','CeleST: add a video', 'numbertitle','off','menubar','none');
         set(figureAdd, 'color', get(mainPanel,'backgroundcolor'));
@@ -584,6 +617,9 @@ if fileToLog > 1; fclose(fileToLog); end
         if flagOK
             ensureUniqueNames
             populateFilters
+        end
+                catch exception
+            generateReport(exception)
         end
         function addBrowse(hObject,eventdata) %#ok<INUSD>
             newDir = get(tmpfield.directory, 'string');
@@ -652,14 +688,14 @@ if fileToLog > 1; fclose(fileToLog); end
     end
 
     function addMultipleVideos(hObject,eventdata)
+        try
         sampleFileDirs = uipickfiles;
         if ~iscell(sampleFileDirs); return; end
         for i = 1:numel(sampleFileDirs)
             sampleFileDir = sampleFileDirs{i};
             if isdir(sampleFileDir)
-                [pathstr, name] = fileparts(sampleFileDir);
+                [~, name] = fileparts(sampleFileDir);
                 sampleName = name;
-                samplDir = pathstr;
                 
                 tmpIdx = 1;
                 tmpNbImages = 0;
@@ -726,6 +762,9 @@ if fileToLog > 1; fclose(fileToLog); end
             warndlg('Some of these video names already exist. They have been automatically renamed.','Warning')
         end
         populateFilters
+                catch exception
+            generateReport(exception)
+        end
     end
 
     function wormFileXMLread(xmlFileName)

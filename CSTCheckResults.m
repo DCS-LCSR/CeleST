@@ -293,7 +293,7 @@ flagRemoveTempMeasures = true;
 % UI elements to block
 % ----------
 listToDisable = {listVideos,listWorms, validateWormBtn, rejectWormBtn, saveAndComputeMeasuresBtn, glareZonesBtn, switchWormsBtn, switchHTBtn, switchValidityBtn, splitBlockBtn, isolateFrameBtn, nextBlockBtn,...
-            btnFirstFrame, editStartFrame, btnRewindFrame, btnPrevFrame, editCurrentFrame, btnNextFrame, btnForwardFrame, editEndFrame, btnLastFrame, txtMaxFrame, btnPlayVideo, closeBtn};
+    btnFirstFrame, editStartFrame, btnRewindFrame, btnPrevFrame, editCurrentFrame, btnNextFrame, btnForwardFrame, editEndFrame, btnLastFrame, txtMaxFrame, btnPlayVideo, closeBtn};
 
 % ------------
 % Waiting for closure
@@ -307,309 +307,316 @@ waitfor(mainFigure,'BeingDeleted','on');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     function switchHeadTail(hObject, eventdata)
-        for ff = max(1,min(nbOfFrames, floor(str2double(get(editFrameSwitchHTStart, 'string'))))):max(1,min(nbOfFrames, floor(str2double(get(editFrameSwitchHTEnd, 'string')))))
-            listOfWorms.skel{currentWorm}{ff} = listOfWorms.skel{currentWorm}{ff}(:,end:-1:1);
-            listOfWorms.width{currentWorm}{ff} = listOfWorms.width{currentWorm}{ff}(end:-1:1);
+        try
+            for ff = max(1,min(nbOfFrames, floor(str2double(get(editFrameSwitchHTStart, 'string'))))):max(1,min(nbOfFrames, floor(str2double(get(editFrameSwitchHTEnd, 'string')))))
+                listOfWorms.skel{currentWorm}{ff} = listOfWorms.skel{currentWorm}{ff}(:,end:-1:1);
+                listOfWorms.width{currentWorm}{ff} = listOfWorms.width{currentWorm}{ff}(end:-1:1);
+            end
+            selectWorm;
+            CSTwriteSegmentationToTXT(listOfWorms, fileDB(currentVideo).name);
+        catch exception
+            generateReport(exception)
         end
-        selectWorm;
-        CSTwriteSegmentationToTXT(listOfWorms, fileDB(currentVideo).name);
     end
 
     function updateMeasureForCurrentVideo(hObject, eventdata)
-        
-        for item = 1:length(listToDisable)
-            set(listToDisable{item}, 'enable', 'off');
-        end
-        
-        hTmp = waitbar(0,'Saving the results...');
-        pause(0.001)
-        finalNames = {'Wave_Initiation_Rate_Median', 'Wave_Initiation_Rate_Range', 'Body_Wave_Number_Median', 'Body_Wave_Number_Range', 'Asymmetry_Median', 'Asymmetry_Range', 'Reverse_Swimming', ...
-            'Curling', 'Stretch_Median', 'Stretch_Range', 'Attenuation_Median', 'Attenuation_Range', 'Traveling_Speed_Mean', 'Brush_Stroke_Median', 'Brush_Stroke_Range', 'Activity_Index_Median', 'Activity_Index_Range'...
-            , 'Wave_Initiation_Rate_10' 'Body_Wave_Number_10', 'Asymmetry_10', 'Stretch_10', 'Attenuation_10', 'Brush_Stroke_10', 'Activity_Index_10'...
-            };
-        for measureIdx = 1:length(finalNames)
-            allMeasures.(finalNames{measureIdx}) = NaN(1,nbOfWorms);
-        end
-        finalNamesAllValues = {'Wave_Initiation_Rate_All', 'Body_Wave_Number_All', 'Asymmetry_All', 'Reverse_Swimming_All', ...
-            'Curling_All', 'Stretch_All', 'Attenuation_All', 'Traveling_Speed_All', 'Brush_Stroke_All', 'Activity_Index_All'...
-            };
-        for measureIdx = 1:length(finalNamesAllValues)
-            allMeasures.(finalNamesAllValues{measureIdx}) = zeros(nbOfWorms,2*nbOfFrames);
-        end
-        allMeasures.('Curling_All') = NaN(nbOfWorms, nbOfFrames);
-        allMeasures.usability = NaN(1,nbOfWorms);
-        negativeThreshold = -1;
-        oldNames = {'status','highThr', 'lowThr', 'prevThr', 'highThrDef', 'lowThrDef', 'prevThrDef', 'usability', 'manualSeparators', 'separators'};
-        for oldIdx = 1:length(oldNames)
-            allMeasures.(oldNames{oldIdx}) = measures.(oldNames{oldIdx});
-        end
-        totWorms = 0;
-        for wormToMeasure = 1:nbOfWorms
-            waitbar(wormToMeasure/nbOfWorms,hTmp);
-            if strcmp(measures.status{wormToMeasure}, 'rejected')
-                continue
+        try
+            for item = 1:length(listToDisable)
+                set(listToDisable{item}, 'enable', 'off');
             end
-            totWorms = totWorms + 1;
-            %-----------------
-            % Usability
-            %-----------------
-            allMeasures.usability(wormToMeasure) = mean(listOfWorms.valid(wormToMeasure, :));
-            %-----------------
-            % Curvature
-            %-----------------
-            flagSmoothCurvature = true;
-            flagSuperSampleCurvature = true;
-            [ temporalFreq , spatialFreq , dynamicAmplitude , attenuation , curvature ] = CSTComputeMeasuresFromBody(listOfWorms.skel{wormToMeasure}, flagSmoothCurvature, flagSuperSampleCurvature, listOfWorms.valid(wormToMeasure,:));
-            rangeUsable = ~isnan(temporalFreq);
-            if isempty(rangeUsable)
-                return
+            
+            hTmp = waitbar(0,'Saving the results...');
+            pause(0.001)
+            finalNames = {'Wave_Initiation_Rate_Median', 'Wave_Initiation_Rate_Range', 'Body_Wave_Number_Median', 'Body_Wave_Number_Range', 'Asymmetry_Median', 'Asymmetry_Range', 'Reverse_Swimming', ...
+                'Curling', 'Stretch_Median', 'Stretch_Range', 'Attenuation_Median', 'Attenuation_Range', 'Traveling_Speed_Mean', 'Brush_Stroke_Median', 'Brush_Stroke_Range', 'Activity_Index_Median', 'Activity_Index_Range'...
+                , 'Wave_Initiation_Rate_10' 'Body_Wave_Number_10', 'Asymmetry_10', 'Stretch_10', 'Attenuation_10', 'Brush_Stroke_10', 'Activity_Index_10'...
+                };
+            for measureIdx = 1:length(finalNames)
+                allMeasures.(finalNames{measureIdx}) = NaN(1,nbOfWorms);
             end
-            %-----------------
-            % Wave Initiation Rate
-            %-----------------
-            allMeasures.('Wave_Initiation_Rate_All')(wormToMeasure,rangeUsable)  = fileDB(currentVideo).frames_per_second * 60 * temporalFreq(rangeUsable);
-            allMeasures.('Wave_Initiation_Rate_Median')(wormToMeasure)  = fileDB(currentVideo).frames_per_second * 60 * median(temporalFreq(rangeUsable));
-            allMeasures.('Wave_Initiation_Rate_Range')(wormToMeasure)   = fileDB(currentVideo).frames_per_second * 60 * ( prctile(temporalFreq(rangeUsable),90) - prctile(temporalFreq(rangeUsable),10) );
-            allMeasures.('Wave_Initiation_Rate_10')(wormToMeasure)   = fileDB(currentVideo).frames_per_second * 60 * prctile(temporalFreq(rangeUsable),10);
-            %-----------------
-            % Body Wave Number
-            %-----------------
-            allMeasures.('Body_Wave_Number_All')(wormToMeasure,rangeUsable)  = spatialFreq(rangeUsable);
-            allMeasures.('Body_Wave_Number_Median')(wormToMeasure)  = median(abs(spatialFreq(rangeUsable)));
-            allMeasures.('Body_Wave_Number_Range')(wormToMeasure)   = ( prctile(abs(spatialFreq(rangeUsable)),90) - prctile(abs(spatialFreq(rangeUsable)),10) );
-            allMeasures.('Body_Wave_Number_10')(wormToMeasure)   = prctile(abs(spatialFreq(rangeUsable)),10);
-            %-----------------
-            % Symmetry / Lateral preference
-            %-----------------
-            totalCurvature = mean(curvature(:,3:end),2);
-            averCurvature = zeros(1,length(totalCurvature));
-            for ff = 1:length(totalCurvature)
-                if temporalFreq(ff) > 0
-                    period = max(3,min(50,fix(1/temporalFreq(ff))));
-                else
-                    period = 50;
+            finalNamesAllValues = {'Wave_Initiation_Rate_All', 'Body_Wave_Number_All', 'Asymmetry_All', 'Reverse_Swimming_All', ...
+                'Curling_All', 'Stretch_All', 'Attenuation_All', 'Traveling_Speed_All', 'Brush_Stroke_All', 'Activity_Index_All'...
+                };
+            for measureIdx = 1:length(finalNamesAllValues)
+                allMeasures.(finalNamesAllValues{measureIdx}) = zeros(nbOfWorms,2*nbOfFrames);
+            end
+            allMeasures.('Curling_All') = NaN(nbOfWorms, nbOfFrames);
+            allMeasures.usability = NaN(1,nbOfWorms);
+            negativeThreshold = -1;
+            oldNames = {'status','highThr', 'lowThr', 'prevThr', 'highThrDef', 'lowThrDef', 'prevThrDef', 'usability', 'manualSeparators', 'separators'};
+            for oldIdx = 1:length(oldNames)
+                allMeasures.(oldNames{oldIdx}) = measures.(oldNames{oldIdx});
+            end
+            totWorms = 0;
+            for wormToMeasure = 1:nbOfWorms
+                waitbar(wormToMeasure/nbOfWorms,hTmp);
+                if strcmp(measures.status{wormToMeasure}, 'rejected')
+                    continue
                 end
-                timeRange = max(1, min(length(totalCurvature), ff-period)):max(1, min(length(totalCurvature), ff+period));
-                averCurvature(ff) = mean(totalCurvature(timeRange));
-            end
-            rangeUsable2 = ~isnan(averCurvature(:) .* totalCurvature(:));
-            tmpAverCurvature = averCurvature(rangeUsable2);
-            allMeasures.('Asymmetry_All')(wormToMeasure,rangeUsable2)  = tmpAverCurvature;
-            allMeasures.('Asymmetry_Median')(wormToMeasure)  = median(tmpAverCurvature);
-            allMeasures.('Asymmetry_Range')(wormToMeasure)   = ( prctile(tmpAverCurvature,90) - prctile(tmpAverCurvature,10) );
-            allMeasures.('Asymmetry_10')(wormToMeasure)   = prctile(tmpAverCurvature,10);
-            %-----------------
-            % Reverse Swimming
-            %-----------------
-            framesInReverse = sum(spatialFreq(rangeUsable) < negativeThreshold);
-            allFrames = numel(spatialFreq(rangeUsable));
-            allMeasures.('Reverse_Swimming')(wormToMeasure) = framesInReverse / allFrames;
-            %-----------------
-            % Curling
-            %-----------------
-            usableFrames = 0;
-            for ff = 1:nbOfFrames
-                if listOfWorms.valid(wormToMeasure, ff)
-                    usableFrames = usableFrames + 1;
-                    % distance head to lower-body
-                    idxHd = 1;
-                    idxTail = size(listOfWorms.skel{wormToMeasure}{ff}, 2);
-                    idxMid = round(idxTail / 2);
-                    xx = listOfWorms.skel{wormToMeasure}{ff}(1,:);
-                    yy = listOfWorms.skel{wormToMeasure}{ff}(2,:);
-                    minDistHead = min(hypot(xx(idxHd) - xx(idxMid:idxTail), yy(idxHd) - yy(idxMid:idxTail)));
-                    minDistTail = min(hypot(xx(idxTail) - xx(idxHd:idxMid), yy(idxTail) - yy(idxHd:idxMid)));
-                    allMeasures.('Curling_All')(wormToMeasure, ff) = min(minDistHead, minDistTail);
+                totWorms = totWorms + 1;
+                %-----------------
+                % Usability
+                %-----------------
+                allMeasures.usability(wormToMeasure) = mean(listOfWorms.valid(wormToMeasure, :));
+                %-----------------
+                % Curvature
+                %-----------------
+                flagSmoothCurvature = true;
+                flagSuperSampleCurvature = true;
+                [ temporalFreq , spatialFreq , dynamicAmplitude , attenuation , curvature ] = CSTComputeMeasuresFromBody(listOfWorms.skel{wormToMeasure}, flagSmoothCurvature, flagSuperSampleCurvature, listOfWorms.valid(wormToMeasure,:));
+                rangeUsable = ~isnan(temporalFreq);
+                if isempty(rangeUsable)
+                    return
                 end
-            end
-            allMeasures.('Curling')(wormToMeasure) = sum( allMeasures.('Curling_All')(wormToMeasure, :) <= thresholdDistPixel ) / usableFrames * 60; % in seconds(of curling) per minute(of swimming)
-            %-----------------
-            % Stretch
-            %-----------------
-            allMeasures.('Stretch_All')(wormToMeasure,rangeUsable)  = dynamicAmplitude(rangeUsable);
-            allMeasures.('Stretch_Median')(wormToMeasure)  = median(dynamicAmplitude(rangeUsable));
-            allMeasures.('Stretch_Range')(wormToMeasure)   = ( prctile(dynamicAmplitude(rangeUsable) ,90) - prctile(dynamicAmplitude(rangeUsable) ,10) );
-            allMeasures.('Stretch_10')(wormToMeasure)   = prctile(dynamicAmplitude(rangeUsable) ,10);
-            %-----------------
-            % Attenuation
-            %-----------------
-            allMeasures.('Attenuation_All')(wormToMeasure,rangeUsable)  = 100 * attenuation(rangeUsable);
-            allMeasures.('Attenuation_Median')(wormToMeasure)  = 100 * median(attenuation(rangeUsable));
-            allMeasures.('Attenuation_Range')(wormToMeasure)   = 100 * ( prctile(attenuation(rangeUsable) ,90) - prctile(attenuation(rangeUsable) ,10) );
-            allMeasures.('Attenuation_10')(wormToMeasure)   = 100 * prctile(attenuation(rangeUsable) ,10);
-            %-----------------
-            % Travel speed
-            %-----------------
-            deltas = zeros(1,nbOfFrames);
-            positionCenterX = zeros(1,nbOfFrames);
-            positionCenterY = zeros(1,nbOfFrames);
-            ff0 = 1;
-            if temporalFreq(ff0) > 0
-                period = max(3,min(50,fix(1/temporalFreq(ff0))));
-            else
-                period = 50;
-            end
-            timeWindowForSweptAreas = period;
-            while ff0 + timeWindowForSweptAreas < nbOfFrames
-                % -----------
-                % find the next frame with a complete usable range
-                % -----------
-                while (ff0 + timeWindowForSweptAreas <= nbOfFrames) && any( ~ listOfWorms.valid(wormToMeasure, ff0 + (0:timeWindowForSweptAreas)))
-                    ff0 = ff0 + 1;
+                %-----------------
+                % Wave Initiation Rate
+                %-----------------
+                allMeasures.('Wave_Initiation_Rate_All')(wormToMeasure,rangeUsable)  = fileDB(currentVideo).frames_per_second * 60 * temporalFreq(rangeUsable);
+                allMeasures.('Wave_Initiation_Rate_Median')(wormToMeasure)  = fileDB(currentVideo).frames_per_second * 60 * median(temporalFreq(rangeUsable));
+                allMeasures.('Wave_Initiation_Rate_Range')(wormToMeasure)   = fileDB(currentVideo).frames_per_second * 60 * ( prctile(temporalFreq(rangeUsable),90) - prctile(temporalFreq(rangeUsable),10) );
+                allMeasures.('Wave_Initiation_Rate_10')(wormToMeasure)   = fileDB(currentVideo).frames_per_second * 60 * prctile(temporalFreq(rangeUsable),10);
+                %-----------------
+                % Body Wave Number
+                %-----------------
+                allMeasures.('Body_Wave_Number_All')(wormToMeasure,rangeUsable)  = spatialFreq(rangeUsable);
+                allMeasures.('Body_Wave_Number_Median')(wormToMeasure)  = median(abs(spatialFreq(rangeUsable)));
+                allMeasures.('Body_Wave_Number_Range')(wormToMeasure)   = ( prctile(abs(spatialFreq(rangeUsable)),90) - prctile(abs(spatialFreq(rangeUsable)),10) );
+                allMeasures.('Body_Wave_Number_10')(wormToMeasure)   = prctile(abs(spatialFreq(rangeUsable)),10);
+                %-----------------
+                % Symmetry / Lateral preference
+                %-----------------
+                totalCurvature = mean(curvature(:,3:end),2);
+                averCurvature = zeros(1,length(totalCurvature));
+                for ff = 1:length(totalCurvature)
+                    if temporalFreq(ff) > 0
+                        period = max(3,min(50,fix(1/temporalFreq(ff))));
+                    else
+                        period = 50;
+                    end
+                    timeRange = max(1, min(length(totalCurvature), ff-period)):max(1, min(length(totalCurvature), ff+period));
+                    averCurvature(ff) = mean(totalCurvature(timeRange));
                 end
+                rangeUsable2 = ~isnan(averCurvature(:) .* totalCurvature(:));
+                tmpAverCurvature = averCurvature(rangeUsable2);
+                allMeasures.('Asymmetry_All')(wormToMeasure,rangeUsable2)  = tmpAverCurvature;
+                allMeasures.('Asymmetry_Median')(wormToMeasure)  = median(tmpAverCurvature);
+                allMeasures.('Asymmetry_Range')(wormToMeasure)   = ( prctile(tmpAverCurvature,90) - prctile(tmpAverCurvature,10) );
+                allMeasures.('Asymmetry_10')(wormToMeasure)   = prctile(tmpAverCurvature,10);
+                %-----------------
+                % Reverse Swimming
+                %-----------------
+                framesInReverse = sum(spatialFreq(rangeUsable) < negativeThreshold);
+                allFrames = numel(spatialFreq(rangeUsable));
+                allMeasures.('Reverse_Swimming')(wormToMeasure) = framesInReverse / allFrames;
+                %-----------------
+                % Curling
+                %-----------------
+                usableFrames = 0;
+                for ff = 1:nbOfFrames
+                    if listOfWorms.valid(wormToMeasure, ff)
+                        usableFrames = usableFrames + 1;
+                        % distance head to lower-body
+                        idxHd = 1;
+                        idxTail = size(listOfWorms.skel{wormToMeasure}{ff}, 2);
+                        idxMid = round(idxTail / 2);
+                        xx = listOfWorms.skel{wormToMeasure}{ff}(1,:);
+                        yy = listOfWorms.skel{wormToMeasure}{ff}(2,:);
+                        minDistHead = min(hypot(xx(idxHd) - xx(idxMid:idxTail), yy(idxHd) - yy(idxMid:idxTail)));
+                        minDistTail = min(hypot(xx(idxTail) - xx(idxHd:idxMid), yy(idxTail) - yy(idxHd:idxMid)));
+                        allMeasures.('Curling_All')(wormToMeasure, ff) = min(minDistHead, minDistTail);
+                    end
+                end
+                allMeasures.('Curling')(wormToMeasure) = sum( allMeasures.('Curling_All')(wormToMeasure, :) <= thresholdDistPixel ) / usableFrames * 60; % in seconds(of curling) per minute(of swimming)
+                %-----------------
+                % Stretch
+                %-----------------
+                allMeasures.('Stretch_All')(wormToMeasure,rangeUsable)  = dynamicAmplitude(rangeUsable);
+                allMeasures.('Stretch_Median')(wormToMeasure)  = median(dynamicAmplitude(rangeUsable));
+                allMeasures.('Stretch_Range')(wormToMeasure)   = ( prctile(dynamicAmplitude(rangeUsable) ,90) - prctile(dynamicAmplitude(rangeUsable) ,10) );
+                allMeasures.('Stretch_10')(wormToMeasure)   = prctile(dynamicAmplitude(rangeUsable) ,10);
+                %-----------------
+                % Attenuation
+                %-----------------
+                allMeasures.('Attenuation_All')(wormToMeasure,rangeUsable)  = 100 * attenuation(rangeUsable);
+                allMeasures.('Attenuation_Median')(wormToMeasure)  = 100 * median(attenuation(rangeUsable));
+                allMeasures.('Attenuation_Range')(wormToMeasure)   = 100 * ( prctile(attenuation(rangeUsable) ,90) - prctile(attenuation(rangeUsable) ,10) );
+                allMeasures.('Attenuation_10')(wormToMeasure)   = 100 * prctile(attenuation(rangeUsable) ,10);
+                %-----------------
+                % Travel speed
+                %-----------------
+                deltas = zeros(1,nbOfFrames);
+                positionCenterX = zeros(1,nbOfFrames);
+                positionCenterY = zeros(1,nbOfFrames);
+                ff0 = 1;
                 if temporalFreq(ff0) > 0
                     period = max(3,min(50,fix(1/temporalFreq(ff0))));
                 else
                     period = 50;
                 end
                 timeWindowForSweptAreas = period;
-                if ff0 + timeWindowForSweptAreas <= nbOfFrames
+                while ff0 + timeWindowForSweptAreas < nbOfFrames
                     % -----------
-                    % Initialize mask
+                    % find the next frame with a complete usable range
                     % -----------
-                    totalUsed = 0;
-                    for ff = ff0 + (0:timeWindowForSweptAreas)
-                        if listOfWorms.valid(wormToMeasure, ff)
-                            totalUsed = totalUsed + 1;
-                            totalWidth = sum(listOfWorms.width{wormToMeasure}{ff}(:));
-                            positionCenterX(ff0) = positionCenterX(ff0) + sum(listOfWorms.width{wormToMeasure}{ff}(:)' .* listOfWorms.skel{wormToMeasure}{ff}(1,:)) / totalWidth;
-                            positionCenterY(ff0) = positionCenterY(ff0) + sum(listOfWorms.width{wormToMeasure}{ff}(:)' .* listOfWorms.skel{wormToMeasure}{ff}(2,:)) / totalWidth;
+                    while (ff0 + timeWindowForSweptAreas <= nbOfFrames) && any( ~ listOfWorms.valid(wormToMeasure, ff0 + (0:timeWindowForSweptAreas)))
+                        ff0 = ff0 + 1;
+                    end
+                    if temporalFreq(ff0) > 0
+                        period = max(3,min(50,fix(1/temporalFreq(ff0))));
+                    else
+                        period = 50;
+                    end
+                    timeWindowForSweptAreas = period;
+                    if ff0 + timeWindowForSweptAreas <= nbOfFrames
+                        % -----------
+                        % Initialize mask
+                        % -----------
+                        totalUsed = 0;
+                        for ff = ff0 + (0:timeWindowForSweptAreas)
+                            if listOfWorms.valid(wormToMeasure, ff)
+                                totalUsed = totalUsed + 1;
+                                totalWidth = sum(listOfWorms.width{wormToMeasure}{ff}(:));
+                                positionCenterX(ff0) = positionCenterX(ff0) + sum(listOfWorms.width{wormToMeasure}{ff}(:)' .* listOfWorms.skel{wormToMeasure}{ff}(1,:)) / totalWidth;
+                                positionCenterY(ff0) = positionCenterY(ff0) + sum(listOfWorms.width{wormToMeasure}{ff}(:)' .* listOfWorms.skel{wormToMeasure}{ff}(2,:)) / totalWidth;
+                            end
+                        end
+                        positionCenterX(ff0) = positionCenterX(ff0) / totalUsed;
+                        positionCenterY(ff0) = positionCenterY(ff0) / totalUsed;
+                        if (ff0 > 1) && (positionCenterX(ff0-1) > 0) && (positionCenterY(ff0-1) > 0) && positionCenterX(ff0) >0 && positionCenterY(ff0) >0
+                            deltas(ff0) = hypot(positionCenterX(ff0)-positionCenterX(ff0-1), positionCenterY(ff0)-positionCenterY(ff0-1));
                         end
                     end
-                    positionCenterX(ff0) = positionCenterX(ff0) / totalUsed;
-                    positionCenterY(ff0) = positionCenterY(ff0) / totalUsed;
-                    if (ff0 > 1) && (positionCenterX(ff0-1) > 0) && (positionCenterY(ff0-1) > 0) && positionCenterX(ff0) >0 && positionCenterY(ff0) >0
-                        deltas(ff0) = hypot(positionCenterX(ff0)-positionCenterX(ff0-1), positionCenterY(ff0)-positionCenterY(ff0-1));
-                    end
-                end
-                ff0 = ff0 + 1;
-                % -----------
-                % finished
-                % -----------
-            end
-            listOfWorms.positionCenterX(wormToMeasure,:) = positionCenterX;
-            listOfWorms.positionCenterY(wormToMeasure,:) = positionCenterY;
-            % mm / min
-            tmpFramesUsed = length(deltas) - length(find(isnan(deltas)));
-            rangeUsableDist = ~isnan(deltas);
-            tmpDistanceTraveled = sum(deltas(rangeUsableDist));
-            allMeasures.('Traveling_Speed_All')(wormToMeasure, rangeUsableDist) = cumsum(deltas(rangeUsableDist)) * fileDB(currentVideo). mm_per_pixel;
-            allMeasures.('Traveling_Speed_Mean')(wormToMeasure) = tmpDistanceTraveled / tmpFramesUsed * fileDB(currentVideo). mm_per_pixel * fileDB(currentVideo).frames_per_second * 60;
-            %-----------------
-            % Sweeping speed
-            %-----------------
-            maskAreaCovered = zeros(yImage, xImage);
-            averageWormBodyMask = zeros(yImage, xImage);
-            areaCoveredNorm = zeros(1,nbOfFrames);
-            sweeping_noTimeNorm = zeros(1, nbOfFrames);
-            ff0 = 1;
-            if temporalFreq(ff0) > 0
-                period = max(3,min(50,fix(1/temporalFreq(ff0))));
-            else
-                period = 50;
-            end
-            timeWindowForSweptAreas = period;
-            while ff0 + timeWindowForSweptAreas < nbOfFrames
-                % -----------
-                % find the next frame with a complete usable range
-                % -----------
-                while (ff0 + timeWindowForSweptAreas < nbOfFrames) && any( ~ listOfWorms.valid(wormToMeasure, ff0 + (0:timeWindowForSweptAreas)))
                     ff0 = ff0 + 1;
+                    % -----------
+                    % finished
+                    % -----------
                 end
+                listOfWorms.positionCenterX(wormToMeasure,:) = positionCenterX;
+                listOfWorms.positionCenterY(wormToMeasure,:) = positionCenterY;
+                % mm / min
+                tmpFramesUsed = length(deltas) - length(find(isnan(deltas)));
+                rangeUsableDist = ~isnan(deltas);
+                tmpDistanceTraveled = sum(deltas(rangeUsableDist));
+                allMeasures.('Traveling_Speed_All')(wormToMeasure, rangeUsableDist) = cumsum(deltas(rangeUsableDist)) * fileDB(currentVideo). mm_per_pixel;
+                allMeasures.('Traveling_Speed_Mean')(wormToMeasure) = tmpDistanceTraveled / tmpFramesUsed * fileDB(currentVideo). mm_per_pixel * fileDB(currentVideo).frames_per_second * 60;
+                %-----------------
+                % Sweeping speed
+                %-----------------
+                maskAreaCovered = zeros(yImage, xImage);
+                averageWormBodyMask = zeros(yImage, xImage);
+                areaCoveredNorm = zeros(1,nbOfFrames);
+                sweeping_noTimeNorm = zeros(1, nbOfFrames);
+                ff0 = 1;
                 if temporalFreq(ff0) > 0
                     period = max(3,min(50,fix(1/temporalFreq(ff0))));
                 else
                     period = 50;
                 end
-                timeWindowForSweptAreas = min(period, nbOfFrames - ff0);
-                if ff0 + timeWindowForSweptAreas <= nbOfFrames
+                timeWindowForSweptAreas = period;
+                while ff0 + timeWindowForSweptAreas < nbOfFrames
                     % -----------
-                    % Initialize mask
+                    % find the next frame with a complete usable range
                     % -----------
-                    maskAreaCovered(:) = 0;
-                    averageWormBodyArea = 0;
-                    for ff = ff0 + (0:timeWindowForSweptAreas)
-                        averageWormBodyMask(:) = 0;
-                        for vv = 1:length(listOfWorms.width{wormToMeasure}{ff})
-                            rr = max(1, min(yImage, round(listOfWorms.skel{wormToMeasure}{ff}(2,vv)-listOfWorms.width{wormToMeasure}{ff}(vv)):round(listOfWorms.skel{wormToMeasure}{ff}(2,vv)+listOfWorms.width{wormToMeasure}{ff}(vv))));
-                            cc = max(1, min(xImage, round(listOfWorms.skel{wormToMeasure}{ff}(1,vv)-listOfWorms.width{wormToMeasure}{ff}(vv)):round(listOfWorms.skel{wormToMeasure}{ff}(1,vv)+listOfWorms.width{wormToMeasure}{ff}(vv))));
-                            averageWormBodyMask(rr,cc) = 1 + averageWormBodyMask(rr,cc);
-                            maskAreaCovered(rr,cc) = 1 + maskAreaCovered(rr,cc);
-                        end
-                        averageWormBodyArea = averageWormBodyArea + sum(averageWormBodyMask(:) > 0);
+                    while (ff0 + timeWindowForSweptAreas < nbOfFrames) && any( ~ listOfWorms.valid(wormToMeasure, ff0 + (0:timeWindowForSweptAreas)))
+                        ff0 = ff0 + 1;
                     end
-                    areaCoveredNorm(ff0) = sum(maskAreaCovered(:) > 0) / (averageWormBodyArea / (1+timeWindowForSweptAreas));
-                    % -----------
-                    % move to the next frame
-                    % -----------
-                    ff0 = ff0 + 1;
-                    while (ff0 + timeWindowForSweptAreas < nbOfFrames) && listOfWorms.valid(wormToMeasure, ff0+timeWindowForSweptAreas)
+                    if temporalFreq(ff0) > 0
+                        period = max(3,min(50,fix(1/temporalFreq(ff0))));
+                    else
+                        period = 50;
+                    end
+                    timeWindowForSweptAreas = min(period, nbOfFrames - ff0);
+                    if ff0 + timeWindowForSweptAreas <= nbOfFrames
                         % -----------
-                        % remove previous frame
+                        % Initialize mask
                         % -----------
-                        ff = ff0 - 1;
-                        averageWormBodyMask(:) = 0;
-                        for vv = 1:length(listOfWorms.width{wormToMeasure}{ff})
-                            rr = max(1, min(yImage, round(listOfWorms.skel{wormToMeasure}{ff}(2,vv)-listOfWorms.width{wormToMeasure}{ff}(vv)):round(listOfWorms.skel{wormToMeasure}{ff}(2,vv)+listOfWorms.width{wormToMeasure}{ff}(vv))));
-                            cc = max(1, min(xImage, round(listOfWorms.skel{wormToMeasure}{ff}(1,vv)-listOfWorms.width{wormToMeasure}{ff}(vv)):round(listOfWorms.skel{wormToMeasure}{ff}(1,vv)+listOfWorms.width{wormToMeasure}{ff}(vv))));
-                            averageWormBodyMask(rr,cc) = 1 + averageWormBodyMask(rr,cc);
-                            maskAreaCovered(rr,cc) = -1 + maskAreaCovered(rr,cc);
+                        maskAreaCovered(:) = 0;
+                        averageWormBodyArea = 0;
+                        for ff = ff0 + (0:timeWindowForSweptAreas)
+                            averageWormBodyMask(:) = 0;
+                            for vv = 1:length(listOfWorms.width{wormToMeasure}{ff})
+                                rr = max(1, min(yImage, round(listOfWorms.skel{wormToMeasure}{ff}(2,vv)-listOfWorms.width{wormToMeasure}{ff}(vv)):round(listOfWorms.skel{wormToMeasure}{ff}(2,vv)+listOfWorms.width{wormToMeasure}{ff}(vv))));
+                                cc = max(1, min(xImage, round(listOfWorms.skel{wormToMeasure}{ff}(1,vv)-listOfWorms.width{wormToMeasure}{ff}(vv)):round(listOfWorms.skel{wormToMeasure}{ff}(1,vv)+listOfWorms.width{wormToMeasure}{ff}(vv))));
+                                averageWormBodyMask(rr,cc) = 1 + averageWormBodyMask(rr,cc);
+                                maskAreaCovered(rr,cc) = 1 + maskAreaCovered(rr,cc);
+                            end
+                            averageWormBodyArea = averageWormBodyArea + sum(averageWormBodyMask(:) > 0);
                         end
-                        averageWormBodyArea = averageWormBodyArea - sum(averageWormBodyMask(:) > 0);
-                        % -----------
-                        % add new frame
-                        % -----------
-                        ff = ff0 + timeWindowForSweptAreas;
-                        averageWormBodyMask(:) = 0;
-                        for vv = 1:length(listOfWorms.width{wormToMeasure}{ff})
-                            rr = max(1, min(yImage, round(listOfWorms.skel{wormToMeasure}{ff}(2,vv)-listOfWorms.width{wormToMeasure}{ff}(vv)):round(listOfWorms.skel{wormToMeasure}{ff}(2,vv)+listOfWorms.width{wormToMeasure}{ff}(vv))));
-                            cc = max(1, min(xImage, round(listOfWorms.skel{wormToMeasure}{ff}(1,vv)-listOfWorms.width{wormToMeasure}{ff}(vv)):round(listOfWorms.skel{wormToMeasure}{ff}(1,vv)+listOfWorms.width{wormToMeasure}{ff}(vv))));
-                            averageWormBodyMask(rr,cc) = 1 + averageWormBodyMask(rr,cc);
-                            maskAreaCovered(rr,cc) = 1 + maskAreaCovered(rr,cc);
-                        end
-                        averageWormBodyArea = averageWormBodyArea + sum(averageWormBodyMask(:) > 0);
                         areaCoveredNorm(ff0) = sum(maskAreaCovered(:) > 0) / (averageWormBodyArea / (1+timeWindowForSweptAreas));
-                        sweeping_noTimeNorm(ff0) = areaCoveredNorm(ff0) * temporalFreq(ff0*2) * fileDB(currentVideo).frames_per_second * 60;
                         % -----------
                         % move to the next frame
                         % -----------
                         ff0 = ff0 + 1;
+                        while (ff0 + timeWindowForSweptAreas < nbOfFrames) && listOfWorms.valid(wormToMeasure, ff0+timeWindowForSweptAreas)
+                            % -----------
+                            % remove previous frame
+                            % -----------
+                            ff = ff0 - 1;
+                            averageWormBodyMask(:) = 0;
+                            for vv = 1:length(listOfWorms.width{wormToMeasure}{ff})
+                                rr = max(1, min(yImage, round(listOfWorms.skel{wormToMeasure}{ff}(2,vv)-listOfWorms.width{wormToMeasure}{ff}(vv)):round(listOfWorms.skel{wormToMeasure}{ff}(2,vv)+listOfWorms.width{wormToMeasure}{ff}(vv))));
+                                cc = max(1, min(xImage, round(listOfWorms.skel{wormToMeasure}{ff}(1,vv)-listOfWorms.width{wormToMeasure}{ff}(vv)):round(listOfWorms.skel{wormToMeasure}{ff}(1,vv)+listOfWorms.width{wormToMeasure}{ff}(vv))));
+                                averageWormBodyMask(rr,cc) = 1 + averageWormBodyMask(rr,cc);
+                                maskAreaCovered(rr,cc) = -1 + maskAreaCovered(rr,cc);
+                            end
+                            averageWormBodyArea = averageWormBodyArea - sum(averageWormBodyMask(:) > 0);
+                            % -----------
+                            % add new frame
+                            % -----------
+                            ff = ff0 + timeWindowForSweptAreas;
+                            averageWormBodyMask(:) = 0;
+                            for vv = 1:length(listOfWorms.width{wormToMeasure}{ff})
+                                rr = max(1, min(yImage, round(listOfWorms.skel{wormToMeasure}{ff}(2,vv)-listOfWorms.width{wormToMeasure}{ff}(vv)):round(listOfWorms.skel{wormToMeasure}{ff}(2,vv)+listOfWorms.width{wormToMeasure}{ff}(vv))));
+                                cc = max(1, min(xImage, round(listOfWorms.skel{wormToMeasure}{ff}(1,vv)-listOfWorms.width{wormToMeasure}{ff}(vv)):round(listOfWorms.skel{wormToMeasure}{ff}(1,vv)+listOfWorms.width{wormToMeasure}{ff}(vv))));
+                                averageWormBodyMask(rr,cc) = 1 + averageWormBodyMask(rr,cc);
+                                maskAreaCovered(rr,cc) = 1 + maskAreaCovered(rr,cc);
+                            end
+                            averageWormBodyArea = averageWormBodyArea + sum(averageWormBodyMask(:) > 0);
+                            areaCoveredNorm(ff0) = sum(maskAreaCovered(:) > 0) / (averageWormBodyArea / (1+timeWindowForSweptAreas));
+                            sweeping_noTimeNorm(ff0) = areaCoveredNorm(ff0) * temporalFreq(ff0*2) * fileDB(currentVideo).frames_per_second * 60;
+                            % -----------
+                            % move to the next frame
+                            % -----------
+                            ff0 = ff0 + 1;
+                        end
                     end
+                    % -----------
+                    % finished
+                    % -----------
                 end
-                % -----------
-                % finished
-                % -----------
+                tmp = sweeping_noTimeNorm;
+                allMeasures.('Activity_Index_All')(wormToMeasure,1:length(sweeping_noTimeNorm))  = sweeping_noTimeNorm;
+                allMeasures.('Activity_Index_Median')(wormToMeasure)  = median(tmp(tmp > 0));
+                allMeasures.('Activity_Index_Range')(wormToMeasure)   = ( prctile(tmp(tmp > 0), 90) - prctile(tmp(tmp > 0), 10) );
+                allMeasures.('Activity_Index_10')(wormToMeasure)   = prctile(tmp(tmp > 0), 10);
+                tmp = areaCoveredNorm(areaCoveredNorm > 0) ./ timeWindowForSweptAreas;
+                allMeasures.('Brush_Stroke_All')(wormToMeasure, 1:length(tmp)) = tmp;
+                allMeasures.('Brush_Stroke_Median')(wormToMeasure) = median(tmp);
+                allMeasures.('Brush_Stroke_Range')(wormToMeasure) = ( prctile(tmp, 90) - prctile(tmp, 10) );
+                allMeasures.('Brush_Stroke_10')(wormToMeasure) = prctile(tmp, 10);
+                totalWormsChecked = totalWormsChecked + 1;
             end
-            tmp = sweeping_noTimeNorm;
-            allMeasures.('Activity_Index_All')(wormToMeasure,1:length(sweeping_noTimeNorm))  = sweeping_noTimeNorm;
-            allMeasures.('Activity_Index_Median')(wormToMeasure)  = median(tmp(tmp > 0));
-            allMeasures.('Activity_Index_Range')(wormToMeasure)   = ( prctile(tmp(tmp > 0), 90) - prctile(tmp(tmp > 0), 10) );
-            allMeasures.('Activity_Index_10')(wormToMeasure)   = prctile(tmp(tmp > 0), 10);
-            tmp = areaCoveredNorm(areaCoveredNorm > 0) ./ timeWindowForSweptAreas;
-            allMeasures.('Brush_Stroke_All')(wormToMeasure, 1:length(tmp)) = tmp;
-            allMeasures.('Brush_Stroke_Median')(wormToMeasure) = median(tmp);
-            allMeasures.('Brush_Stroke_Range')(wormToMeasure) = ( prctile(tmp, 90) - prctile(tmp, 10) );
-            allMeasures.('Brush_Stroke_10')(wormToMeasure) = prctile(tmp, 10);
-            totalWormsChecked = totalWormsChecked + 1;
-        end
-        if flagRemoveTempMeasures
-            finalNamesAllValues = {'Wave_Initiation_Rate_All', 'Body_Wave_Number_All', 'Asymmetry_All', 'Reverse_Swimming_All', ...
-                'Curling_All', 'Stretch_All', 'Attenuation_All', 'Traveling_Speed_All', 'Brush_Stroke_All', 'Activity_Index_All'...
-                };
-            for measureIdx = 1:length(finalNamesAllValues)
-                allMeasures = rmfield(allMeasures, finalNamesAllValues{measureIdx});
+            if flagRemoveTempMeasures
+                finalNamesAllValues = {'Wave_Initiation_Rate_All', 'Body_Wave_Number_All', 'Asymmetry_All', 'Reverse_Swimming_All', ...
+                    'Curling_All', 'Stretch_All', 'Attenuation_All', 'Traveling_Speed_All', 'Brush_Stroke_All', 'Activity_Index_All'...
+                    };
+                for measureIdx = 1:length(finalNamesAllValues)
+                    allMeasures = rmfield(allMeasures, finalNamesAllValues{measureIdx});
+                end
             end
-        end
-        close(hTmp);
-        pause(0.001);
-        if currentVideo~=0  
-            CSTwriteMeasuresToTXT(allMeasures, fileDB(currentVideo).name);
-            fileDB(currentVideo).measured = true;
-            fileDB(currentVideo).worms = totWorms;
-            populateFilters
-        end
-        for item = 1:length(listToDisable)
-            set(listToDisable{item}, 'enable', 'on');
+            close(hTmp);
+            pause(0.001);
+            if currentVideo~=0
+                CSTwriteMeasuresToTXT(allMeasures, fileDB(currentVideo).name);
+                fileDB(currentVideo).measured = true;
+                fileDB(currentVideo).worms = totWorms;
+                populateFilters
+            end
+            for item = 1:length(listToDisable)
+                set(listToDisable{item}, 'enable', 'on');
+            end
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -621,35 +628,39 @@ waitfor(mainFigure,'BeingDeleted','on');
 % SHORTCUTS FOR NAVIGATION AND VALIDATION
 % ============
     function keyboardShortcuts(hObject, eventdata) %#ok<INUSL>
-        if strcmp(eventdata.Key, 'space') && ~isempty(eventdata.Modifier) && strcmp(eventdata.Modifier{1}, 'shift')
-            isolateFrame
-            switchValidity
-        elseif strcmp(eventdata.Key, 'space')
-            switchValidity
-        elseif strcmp(eventdata.Key, 'leftarrow')
-            selectFrameByClick(btnPrevFrame)
-        elseif strcmp(eventdata.Key, 'rightarrow')
-            selectFrameByClick(btnNextFrame)
-        elseif strcmp(eventdata.Key, 'uparrow')
-            selectNextBlock
-        elseif strcmp(eventdata.Key, 'pageup')
-            tmpNewWorm = get(listWorms, 'value') - 1;
-            if tmpNewWorm >= 1
-                set(listWorms, 'value', tmpNewWorm);
-                selectWorm
+        try
+            if strcmp(eventdata.Key, 'space') && ~isempty(eventdata.Modifier) && strcmp(eventdata.Modifier{1}, 'shift')
+                isolateFrame
+                switchValidity
+            elseif strcmp(eventdata.Key, 'space')
+                switchValidity
+            elseif strcmp(eventdata.Key, 'leftarrow')
+                selectFrameByClick(btnPrevFrame)
+            elseif strcmp(eventdata.Key, 'rightarrow')
+                selectFrameByClick(btnNextFrame)
+            elseif strcmp(eventdata.Key, 'uparrow')
+                selectNextBlock
+            elseif strcmp(eventdata.Key, 'pageup')
+                tmpNewWorm = get(listWorms, 'value') - 1;
+                if tmpNewWorm >= 1
+                    set(listWorms, 'value', tmpNewWorm);
+                    selectWorm
+                end
+            elseif strcmp(eventdata.Key, 'pagedown')
+                tmpNewWorm = get(listWorms, 'value') + 1;
+                if tmpNewWorm <= nbOfWorms
+                    set(listWorms, 'value', tmpNewWorm)
+                    selectWorm
+                end
+            elseif strcmp(eventdata.Key, 'return')
+                validateWorm
+            elseif strcmp(eventdata.Key, 'backspace')
+                rejectWorm
+            elseif strcmp(eventdata.Key, 'home')
+                selectFrameByClick(btnFirstFrame)
             end
-        elseif strcmp(eventdata.Key, 'pagedown')
-            tmpNewWorm = get(listWorms, 'value') + 1;
-            if tmpNewWorm <= nbOfWorms
-                set(listWorms, 'value', tmpNewWorm)
-                selectWorm
-            end
-        elseif strcmp(eventdata.Key, 'return')
-            validateWorm
-        elseif strcmp(eventdata.Key, 'backspace')
-            rejectWorm
-        elseif strcmp(eventdata.Key, 'home')
-            selectFrameByClick(btnFirstFrame)
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -662,32 +673,35 @@ waitfor(mainFigure,'BeingDeleted','on');
 % MANAGE GLARE ZONES FROM A POP-UP WINDOW: DISPLAY, DEFINE, MODIFY, ERASE, SAVE
 % ============
     function manageGlareZones(hObject,eventdata) %#ok<*INUSD>
-        if currentVideo == 0
-            return
+        try
+            if currentVideo == 0
+                return
+            end
+            dimImage = 1.5*size(currentImage);
+            popupPosition = [5,40,dimImage(2)+10,dimImage(1)+50];
+            hPolygons = cell(1,length(fileDB(currentVideo).glareZones));
+            hEllipses = cell(1,0);
+            hPopup = figure('Visible','off','Position',popupPosition,'Name','CeleST: Define glare zone','numbertitle','off', 'menubar', 'none', 'windowstyle', 'modal');
+            pnlPopup = uipanel('parent', hPopup,'BorderType', 'none','units','pixels', 'position', [0 0 popupPosition(3) popupPosition(4)]);
+            hAxePopup = axes('parent', pnlPopup, 'units','pixels','position',[5 5 dimImage(2) dimImage(1)],'xtick',[],'ytick',[],'color',[.5 .5 .5]);
+            uicontrol('parent',pnlPopup,'style','pushbutton','string','New Ellipse','position',[105 dimImage(1)+10 100 35],'callback',@(a,b) newEllipse);
+            uicontrol('parent',pnlPopup,'style','pushbutton','string','New Polygon','position',[205 dimImage(1)+10 100 35],'callback',@(a,b) newPolygon);
+            uicontrol('parent',pnlPopup,'style','pushbutton','string','Save and Close','position',[405 dimImage(1)+10 150 35],'callback',@(a,b) saveAll);
+            uicontrol('parent',pnlPopup,'style','pushbutton','string','Erase zones','position',[655 dimImage(1)+10 100 35],'callback',@(a,b) eraseAll);
+            image('parent', hAxePopup, 'cdata', currentImage);
+            axis(hAxePopup, 'equal', 'off', 'image', 'tight','ij');
+            colormap(gray(255));
+            for zz = 1:length(fileDB(currentVideo).glareZones)
+                hPolygons{zz} = impoly(hAxePopup, fileDB(currentVideo).glareZones{zz});
+            end
+            set(hPopup,'visible','on');
+            waitfor(hPopup,'BeingDeleted','on');
+            checkWormsAgainstGlare
+            computeBlockSeparatorsAndValidity;
+            selectWorm
+        catch exception
+            generateReport(exception)
         end
-        dimImage = 1.5*size(currentImage);
-        popupPosition = [5,40,dimImage(2)+10,dimImage(1)+50];
-        hPolygons = cell(1,length(fileDB(currentVideo).glareZones));
-        hEllipses = cell(1,0);
-        hPopup = figure('Visible','off','Position',popupPosition,'Name','CeleST: Define glare zone','numbertitle','off', 'menubar', 'none', 'windowstyle', 'modal');
-        pnlPopup = uipanel('parent', hPopup,'BorderType', 'none','units','pixels', 'position', [0 0 popupPosition(3) popupPosition(4)]);
-        hAxePopup = axes('parent', pnlPopup, 'units','pixels','position',[5 5 dimImage(2) dimImage(1)],'xtick',[],'ytick',[],'color',[.5 .5 .5]);
-        uicontrol('parent',pnlPopup,'style','pushbutton','string','New Ellipse','position',[105 dimImage(1)+10 100 35],'callback',@(a,b) newEllipse);
-        uicontrol('parent',pnlPopup,'style','pushbutton','string','New Polygon','position',[205 dimImage(1)+10 100 35],'callback',@(a,b) newPolygon);
-        uicontrol('parent',pnlPopup,'style','pushbutton','string','Save and Close','position',[405 dimImage(1)+10 150 35],'callback',@(a,b) saveAll);
-        uicontrol('parent',pnlPopup,'style','pushbutton','string','Erase zones','position',[655 dimImage(1)+10 100 35],'callback',@(a,b) eraseAll);
-        image('parent', hAxePopup, 'cdata', currentImage);
-        axis(hAxePopup, 'equal', 'off', 'image', 'tight','ij');
-        colormap(gray(255));
-        for zz = 1:length(fileDB(currentVideo).glareZones)
-            hPolygons{zz} = impoly(hAxePopup, fileDB(currentVideo).glareZones{zz});
-        end
-        set(hPopup,'visible','on');
-        waitfor(hPopup,'BeingDeleted','on');
-        checkWormsAgainstGlare
-        computeBlockSeparatorsAndValidity;
-        selectWorm
-        
         function newEllipse
             hEllipses{end+1} = imellipse(hAxePopup);
         end
@@ -721,38 +735,43 @@ waitfor(mainFigure,'BeingDeleted','on');
             set(hPopup,'visible','off');
             delete(hPopup);
         end
+        
     end
 
 % ============
 % CHECK WHETHER WORMS ARE WITHIN THE GLARE ZONES THROUGHOUT THE VIDEO
 % ============
     function checkWormsAgainstGlare
-        if isfield(fileDB, 'glareZones')
-            % Build a mask of glare regions
-            hWaitBar = waitbar(0,'Detecting the overlap of worms with glare zones...');
-            pause(0.001)
-            mask = false(yImage, xImage);
-            for zz = 1:length(fileDB(currentVideo).glareZones)
-                if ~isempty(fileDB(currentVideo).glareZones{zz})
-                    mask = mask | poly2mask(fileDB(currentVideo).glareZones{zz}(:,1), fileDB(currentVideo).glareZones{zz}(:,2), yImage, xImage);
-                end
-            end
-            for ww = 1:nbOfWorms
-                waitbar(ww/nbOfWorms, hWaitBar);
-                for ff = 1:nbOfFrames
-                    skel = round(listOfWorms.skel{ww}{ff});
-                    flagIn = false;
-                    for vv = 1:size(skel,2)
-                        if mask(max(1,min(yImage,skel(2,vv))), max(1,min(xImage,skel(1,vv))))
-                            flagIn = true;
-                            break
-                        end
+        try
+            if isfield(fileDB, 'glareZones')
+                % Build a mask of glare regions
+                hWaitBar = waitbar(0,'Detecting the overlap of worms with glare zones...');
+                pause(0.001)
+                mask = false(yImage, xImage);
+                for zz = 1:length(fileDB(currentVideo).glareZones)
+                    if ~isempty(fileDB(currentVideo).glareZones{zz})
+                        mask = mask | poly2mask(fileDB(currentVideo).glareZones{zz}(:,1), fileDB(currentVideo).glareZones{zz}(:,2), yImage, xImage);
                     end
-                    listOfWorms.inGlareZone(ww,ff) = flagIn;
                 end
+                for ww = 1:nbOfWorms
+                    waitbar(ww/nbOfWorms, hWaitBar);
+                    for ff = 1:nbOfFrames
+                        skel = round(listOfWorms.skel{ww}{ff});
+                        flagIn = false;
+                        for vv = 1:size(skel,2)
+                            if mask(max(1,min(yImage,skel(2,vv))), max(1,min(xImage,skel(1,vv))))
+                                flagIn = true;
+                                break
+                            end
+                        end
+                        listOfWorms.inGlareZone(ww,ff) = flagIn;
+                    end
+                end
+                close(hWaitBar)
+                pause(0.001)
             end
-            close(hWaitBar)
-            pause(0.001)
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -764,11 +783,15 @@ waitfor(mainFigure,'BeingDeleted','on');
 % SELECT THE WORM TO BE SWITCHED FROM THE DROP-DOWN LIST IN THE GUI
 % ============
     function setWormSwitch(hObject,eventdata) %#ok<*INUSD>
-        valueSelected = get(popWormSwitch, 'value');
-        if valueSelected <= 0
-            set(popWormSwitch, 'value', idxOtherWorm);
-        else
-            idxOtherWorm = valueSelected;
+        try
+            valueSelected = get(popWormSwitch, 'value');
+            if valueSelected <= 0
+                set(popWormSwitch, 'value', idxOtherWorm);
+            else
+                idxOtherWorm = valueSelected;
+            end
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -776,121 +799,125 @@ waitfor(mainFigure,'BeingDeleted','on');
 % SWITCH THE TWO SELECTED WORMS
 % ============
     function switchWorms(hObject,eventdata) %#ok<INUSD>
-        frameCutStart = floor(str2double(get(editFrameCutStart, 'string')));
-        if isnan(frameCutStart) || frameCutStart < 1 || frameCutStart > nbOfFrames
-            return
-        end
-        frameCutEnd = floor(str2double(get(editFrameCutEnd, 'string')));
-        if isnan(frameCutEnd) || frameCutEnd < 1 || frameCutEnd > nbOfFrames
-            return
-        end
-        if (frameCutEnd < frameCutStart)
-            helpdlg('The frames defining the switch are not consistent. The initial frame index should be smaller than the final one.','CeleST');
-            return
-        end
-        choice = questdlg('Are you sure you want to switch the worms?','Switch worms','Switch','Cancel','Cancel');
-        
-        if strcmp(choice,'Switch')
-            worm1 = currentWorm;
-            worm2 = wormSwitchIdx(get(popWormSwitch,'value'));
-            listBoolean = {'missed', 'lost', 'overlapped', 'valid', 'outOfLengths', 'outOfPrevious', 'inGlareZone', 'selfOverlap', 'manualInvalid', 'manualValid'};
-            listCell = {'skel', 'width', 'cblSubSampled'};
-            listCellSingle = {'localthreshold'};
-            listDouble = {'lengthWorms', 'positionCenterX', 'positionCenterY', 'widthCenter', 'overlapPrev', 'headThrashCount'};
-            % Removed deprecated fields from listDouble: 'angleHead', 'angleTail', 'I', 'J', 'C', 'S', 'O'
+        try
+            frameCutStart = floor(str2double(get(editFrameCutStart, 'string')));
+            if isnan(frameCutStart) || frameCutStart < 1 || frameCutStart > nbOfFrames
+                return
+            end
+            frameCutEnd = floor(str2double(get(editFrameCutEnd, 'string')));
+            if isnan(frameCutEnd) || frameCutEnd < 1 || frameCutEnd > nbOfFrames
+                return
+            end
+            if (frameCutEnd < frameCutStart)
+                helpdlg('The frames defining the switch are not consistent. The initial frame index should be smaller than the final one.','CeleST');
+                return
+            end
+            choice = questdlg('Are you sure you want to switch the worms?','Switch worms','Switch','Cancel','Cancel');
             
-            if worm2 < 0
-                disp('create new worm ')
-                % ---------
-                % Create a new worm
-                % ---------
-                nbOfWorms = 1 + nbOfWorms;
-                worm2 = nbOfWorms;
-                for idx = 1:length(listBoolean)
-                    listOfWorms.(listBoolean{idx})(worm2,1:nbOfFrames) = false;
-                end
-                listOfWorms.lost(worm2,:) = true;
-                for idx = 1:length(listCell)
-                    for ff = 1:nbOfFrames
-                        listOfWorms.(listCell{idx}){worm2}{ff} = listOfWorms.(listCell{idx}){worm1}{frameCutStart};
+            if strcmp(choice,'Switch')
+                worm1 = currentWorm;
+                worm2 = wormSwitchIdx(get(popWormSwitch,'value'));
+                listBoolean = {'missed', 'lost', 'overlapped', 'valid', 'outOfLengths', 'outOfPrevious', 'inGlareZone', 'selfOverlap', 'manualInvalid', 'manualValid'};
+                listCell = {'skel', 'width', 'cblSubSampled'};
+                listCellSingle = {'localthreshold'};
+                listDouble = {'lengthWorms', 'positionCenterX', 'positionCenterY', 'widthCenter', 'overlapPrev', 'headThrashCount'};
+                % Removed deprecated fields from listDouble: 'angleHead', 'angleTail', 'I', 'J', 'C', 'S', 'O'
+                
+                if worm2 < 0
+                    disp('create new worm ')
+                    % ---------
+                    % Create a new worm
+                    % ---------
+                    nbOfWorms = 1 + nbOfWorms;
+                    worm2 = nbOfWorms;
+                    for idx = 1:length(listBoolean)
+                        listOfWorms.(listBoolean{idx})(worm2,1:nbOfFrames) = false;
                     end
+                    listOfWorms.lost(worm2,:) = true;
+                    for idx = 1:length(listCell)
+                        for ff = 1:nbOfFrames
+                            listOfWorms.(listCell{idx}){worm2}{ff} = listOfWorms.(listCell{idx}){worm1}{frameCutStart};
+                        end
+                    end
+                    for idx = 1:length(listCellSingle)
+                        listOfWorms.(listCellSingle{idx}){worm2} = listOfWorms.(listCellSingle{idx}){worm1};
+                    end
+                    for idx = 1:length(listDouble)
+                        listOfWorms.(listDouble{idx})(worm2,1:nbOfFrames) = listOfWorms.(listDouble{idx})(worm1,frameCutStart);
+                    end
+                    longMean = mean(listOfWorms.lengthWorms(worm2,~listOfWorms.lost(worm2,:) & ~listOfWorms.overlapped(worm2,:)));
+                    longStd = std(listOfWorms.lengthWorms(worm2,~listOfWorms.lost(worm2,:) & ~listOfWorms.overlapped(worm2,:)));
+                    measures.highThrDef(worm2) = ceil(longMean + 3*longStd);
+                    measures.highThr(worm2) = measures.highThrDef(worm2);
+                    measures.lowThrDef(worm2) = max(0,floor(longMean - 3*longStd));
+                    measures.lowThr(worm2) = measures.lowThrDef(worm2);
+                    listOfWorms.outOfLengths(worm2,:) = (listOfWorms.lengthWorms(worm2,:) > measures.highThr(worm2)) | (listOfWorms.lengthWorms(worm2,:) < measures.lowThr(worm2));
+                    measures.prevThrDef(worm2) = 25;
+                    measures.prevThr(worm2) = measures.prevThrDef(worm2);
+                    listOfWorms.outOfPrevious(worm2,:) = (listOfWorms.overlapPrev(worm2,:)*100 < measures.prevThr(worm2));
+                    measures.status{worm2} = '';
+                    measures.manualSeparators{worm2} = [];
+                    measures.separators{worm2} = [];
+                    tmpAfterSelfOverlap(worm2,:) = false;
                 end
-                for idx = 1:length(listCellSingle)
-                    listOfWorms.(listCellSingle{idx}){worm2} = listOfWorms.(listCellSingle{idx}){worm1};
+                % ---------
+                % Switch the two worms
+                % ---------
+                for idx = 1:length(listCell)
+                    buffer = listOfWorms.(listCell{idx}){worm1}(frameCutStart:frameCutEnd);
+                    listOfWorms.(listCell{idx}){worm1}(frameCutStart:frameCutEnd) = listOfWorms.(listCell{idx}){worm2}(frameCutStart:frameCutEnd);
+                    listOfWorms.(listCell{idx}){worm2}(frameCutStart:frameCutEnd) = buffer;
+                end
+                for idx = 1:length(listBoolean)
+                    buffer = listOfWorms.(listBoolean{idx})(worm1,frameCutStart:frameCutEnd);
+                    listOfWorms.(listBoolean{idx})(worm1,frameCutStart:frameCutEnd) = listOfWorms.(listBoolean{idx})(worm2,frameCutStart:frameCutEnd);
+                    listOfWorms.(listBoolean{idx})(worm2,frameCutStart:frameCutEnd) = buffer;
                 end
                 for idx = 1:length(listDouble)
-                    listOfWorms.(listDouble{idx})(worm2,1:nbOfFrames) = listOfWorms.(listDouble{idx})(worm1,frameCutStart);
+                    buffer = listOfWorms.(listDouble{idx})(worm1,frameCutStart:frameCutEnd);
+                    listOfWorms.(listDouble{idx})(worm1,frameCutStart:frameCutEnd) = listOfWorms.(listDouble{idx})(worm2,frameCutStart:frameCutEnd);
+                    listOfWorms.(listDouble{idx})(worm2,frameCutStart:frameCutEnd) = buffer;
                 end
-                longMean = mean(listOfWorms.lengthWorms(worm2,~listOfWorms.lost(worm2,:) & ~listOfWorms.overlapped(worm2,:)));
-                longStd = std(listOfWorms.lengthWorms(worm2,~listOfWorms.lost(worm2,:) & ~listOfWorms.overlapped(worm2,:)));
-                measures.highThrDef(worm2) = ceil(longMean + 3*longStd);
-                measures.highThr(worm2) = measures.highThrDef(worm2);
-                measures.lowThrDef(worm2) = max(0,floor(longMean - 3*longStd));
-                measures.lowThr(worm2) = measures.lowThrDef(worm2);
-                listOfWorms.outOfLengths(worm2,:) = (listOfWorms.lengthWorms(worm2,:) > measures.highThr(worm2)) | (listOfWorms.lengthWorms(worm2,:) < measures.lowThr(worm2));
-                measures.prevThrDef(worm2) = 25;
-                measures.prevThr(worm2) = measures.prevThrDef(worm2);
-                listOfWorms.outOfPrevious(worm2,:) = (listOfWorms.overlapPrev(worm2,:)*100 < measures.prevThr(worm2));
-                measures.status{worm2} = '';
-                measures.manualSeparators{worm2} = [];
-                measures.separators{worm2} = [];
-                tmpAfterSelfOverlap(worm2,:) = false;
-            end
-            % ---------
-            % Switch the two worms
-            % ---------
-            for idx = 1:length(listCell)
-                buffer = listOfWorms.(listCell{idx}){worm1}(frameCutStart:frameCutEnd);
-                listOfWorms.(listCell{idx}){worm1}(frameCutStart:frameCutEnd) = listOfWorms.(listCell{idx}){worm2}(frameCutStart:frameCutEnd);
-                listOfWorms.(listCell{idx}){worm2}(frameCutStart:frameCutEnd) = buffer;
-            end
-            for idx = 1:length(listBoolean)
-                buffer = listOfWorms.(listBoolean{idx})(worm1,frameCutStart:frameCutEnd);
-                listOfWorms.(listBoolean{idx})(worm1,frameCutStart:frameCutEnd) = listOfWorms.(listBoolean{idx})(worm2,frameCutStart:frameCutEnd);
-                listOfWorms.(listBoolean{idx})(worm2,frameCutStart:frameCutEnd) = buffer;
-            end
-            for idx = 1:length(listDouble)
-                buffer = listOfWorms.(listDouble{idx})(worm1,frameCutStart:frameCutEnd);
-                listOfWorms.(listDouble{idx})(worm1,frameCutStart:frameCutEnd) = listOfWorms.(listDouble{idx})(worm2,frameCutStart:frameCutEnd);
-                listOfWorms.(listDouble{idx})(worm2,frameCutStart:frameCutEnd) = buffer;
-            end
-            % ---------
-            % Check if the extremities of each worm should be switched in the frames that were swapped
-            % ---------
-            for ww = [worm1, worm2]
-                if frameCutStart >= 2
-                    if sum(hypot(listOfWorms.skel{ww}{frameCutStart-1}(1,:)-listOfWorms.skel{ww}{frameCutStart}(1,:),        listOfWorms.skel{ww}{frameCutStart-1}(2,:)-listOfWorms.skel{ww}{frameCutStart}(2,:)))...
-                            > sum(hypot(listOfWorms.skel{ww}{frameCutStart-1}(1,:)-listOfWorms.skel{ww}{frameCutStart}(1,end:-1:1), listOfWorms.skel{ww}{frameCutStart-1}(2,:)-listOfWorms.skel{ww}{frameCutStart}(2,end:-1:1)))
-                        % Swap
-                        for ff = frameCutStart:frameCutEnd
-                            listOfWorms.skel{ww}{ff} = listOfWorms.skel{ww}{ff}(:, end:-1:1);
-                            listOfWorms.width{ww}{ff} = listOfWorms.width{ww}{ff}(end:-1:1);
+                % ---------
+                % Check if the extremities of each worm should be switched in the frames that were swapped
+                % ---------
+                for ww = [worm1, worm2]
+                    if frameCutStart >= 2
+                        if sum(hypot(listOfWorms.skel{ww}{frameCutStart-1}(1,:)-listOfWorms.skel{ww}{frameCutStart}(1,:),        listOfWorms.skel{ww}{frameCutStart-1}(2,:)-listOfWorms.skel{ww}{frameCutStart}(2,:)))...
+                                > sum(hypot(listOfWorms.skel{ww}{frameCutStart-1}(1,:)-listOfWorms.skel{ww}{frameCutStart}(1,end:-1:1), listOfWorms.skel{ww}{frameCutStart-1}(2,:)-listOfWorms.skel{ww}{frameCutStart}(2,end:-1:1)))
+                            % Swap
+                            for ff = frameCutStart:frameCutEnd
+                                listOfWorms.skel{ww}{ff} = listOfWorms.skel{ww}{ff}(:, end:-1:1);
+                                listOfWorms.width{ww}{ff} = listOfWorms.width{ww}{ff}(end:-1:1);
+                            end
                         end
-                    end
-                elseif frameCutEnd <= nbOfFrames-1
-                    if sum(hypot(listOfWorms.skel{ww}{frameCutEnd}(1,:)-listOfWorms.skel{ww}{frameCutEnd+1}(1,:),        listOfWorms.skel{ww}{frameCutEnd}(2,:)-listOfWorms.skel{ww}{frameCutEnd+1}(2,:)))...
-                            > sum(hypot(listOfWorms.skel{ww}{frameCutEnd}(1,:)-listOfWorms.skel{ww}{frameCutEnd+1}(1,end:-1:1), listOfWorms.skel{ww}{frameCutEnd}(2,:)-listOfWorms.skel{ww}{frameCutEnd+1}(2,end:-1:1)))
-                        % Swap
-                        for ff = frameCutStart:frameCutEnd
-                            listOfWorms.skel{ww}{ff} = listOfWorms.skel{ww}{ff}(:, end:-1:1);
-                            listOfWorms.width{ww}{ff} = listOfWorms.width{ww}{ff}(end:-1:1);
+                    elseif frameCutEnd <= nbOfFrames-1
+                        if sum(hypot(listOfWorms.skel{ww}{frameCutEnd}(1,:)-listOfWorms.skel{ww}{frameCutEnd+1}(1,:),        listOfWorms.skel{ww}{frameCutEnd}(2,:)-listOfWorms.skel{ww}{frameCutEnd+1}(2,:)))...
+                                > sum(hypot(listOfWorms.skel{ww}{frameCutEnd}(1,:)-listOfWorms.skel{ww}{frameCutEnd+1}(1,end:-1:1), listOfWorms.skel{ww}{frameCutEnd}(2,:)-listOfWorms.skel{ww}{frameCutEnd+1}(2,end:-1:1)))
+                            % Swap
+                            for ff = frameCutStart:frameCutEnd
+                                listOfWorms.skel{ww}{ff} = listOfWorms.skel{ww}{ff}(:, end:-1:1);
+                                listOfWorms.width{ww}{ff} = listOfWorms.width{ww}{ff}(end:-1:1);
+                            end
                         end
                     end
                 end
+                measures.status{worm1} = 'unchecked';
+                measures.status{worm2} = 'unchecked';
+                computeBlockSeparatorsAndValidity
+                % ---------
+                % Update the interface
+                % ---------
+                nbOfWorms = length(listOfWorms.skel);
+                newListTmp = cell(1,nbOfWorms);
+                for tmp = 1:nbOfWorms
+                    newListTmp{tmp} = ['Worm ', num2str(tmp), ' : ', measures.status{tmp}];
+                end
+                set(listWorms, 'string', newListTmp);
+                selectWorm;
             end
-            measures.status{worm1} = 'unchecked';
-            measures.status{worm2} = 'unchecked';
-            computeBlockSeparatorsAndValidity
-            % ---------
-            % Update the interface
-            % ---------
-            nbOfWorms = length(listOfWorms.skel);
-            newListTmp = cell(1,nbOfWorms);
-            for tmp = 1:nbOfWorms
-                newListTmp{tmp} = ['Worm ', num2str(tmp), ' : ', measures.status{tmp}];
-            end
-            set(listWorms, 'string', newListTmp);
-            selectWorm;
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -940,87 +967,103 @@ waitfor(mainFigure,'BeingDeleted','on');
 % SELECT THE NEXT BLOCK
 % ============
     function selectNextBlock(hObject,eventdata) %#ok<*INUSD>
-        if currentVideo == 0
-            return
-        end
-        tmpRange = find(measures.separators{currentWorm} > currentFrame);
-        % Select current block
-        idxBlock = 2;
-        if(length(tmpRange)<2)
-            return
-        end
-        prevSeparator = measures.separators{currentWorm}(tmpRange(idxBlock) - 1);
-        nextSeparator = measures.separators{currentWorm}(tmpRange(idxBlock)) - 1;
-        if (prevSeparator == valueStartFrame) && (nextSeparator == valueEndFrame) && (length(tmpRange) >= 2)
-            % Select next block
+        try
+            if currentVideo == 0
+                return
+            end
+            tmpRange = find(measures.separators{currentWorm} > currentFrame);
+            % Select current block
             idxBlock = 2;
+            if(length(tmpRange)<2)
+                return
+            end
             prevSeparator = measures.separators{currentWorm}(tmpRange(idxBlock) - 1);
             nextSeparator = measures.separators{currentWorm}(tmpRange(idxBlock)) - 1;
+            if (prevSeparator == valueStartFrame) && (nextSeparator == valueEndFrame) && (length(tmpRange) >= 2)
+                % Select next block
+                idxBlock = 2;
+                prevSeparator = measures.separators{currentWorm}(tmpRange(idxBlock) - 1);
+                nextSeparator = measures.separators{currentWorm}(tmpRange(idxBlock)) - 1;
+            end
+            valueStartFrame = prevSeparator;
+            set(editStartFrame, 'string', num2str(valueStartFrame));
+            valueEndFrame = nextSeparator;
+            set(editEndFrame, 'string', num2str(valueEndFrame));
+            currentFrame = valueStartFrame;
+            set(editCurrentFrame, 'string', num2str(currentFrame));
+            selectFrameByClick(editCurrentFrame,[]);
+        catch exception
+            generateReport(exception)
         end
-        valueStartFrame = prevSeparator;
-        set(editStartFrame, 'string', num2str(valueStartFrame));
-        valueEndFrame = nextSeparator;
-        set(editEndFrame, 'string', num2str(valueEndFrame));
-        currentFrame = valueStartFrame;
-        set(editCurrentFrame, 'string', num2str(currentFrame));
-        selectFrameByClick(editCurrentFrame,[]);
     end
 
 % ============
 % DEFINE A NEW BLOCK STARTING FROM THE CURRENT FRAME
 % ============
     function splitBlock(hObject,eventdata) %#ok<INUSD>
-        if currentVideo == 0
-            return
+        try
+            if currentVideo == 0
+                return
+            end
+            if ~any(measures.manualSeparators{currentWorm} == currentFrame)
+                measures.manualSeparators{currentWorm}(end+1) = currentFrame;
+            end
+            computeBlockSeparatorsAndValidity
+            selectWorm
+        catch exception
+            generateReport(exception)
         end
-        if ~any(measures.manualSeparators{currentWorm} == currentFrame)
-            measures.manualSeparators{currentWorm}(end+1) = currentFrame;
-        end
-        computeBlockSeparatorsAndValidity
-        selectWorm
     end
 
 % ============
 % DEFINE A NEW BLOCK AS THE SINGLE CURRENT FRAME
 % ============
     function isolateFrame(hObject,eventdata) %#ok<INUSD>
-        if currentVideo == 0
-            return
+        try
+            if currentVideo == 0
+                return
+            end
+            if ~any(measures.manualSeparators{currentWorm} == currentFrame)
+                measures.manualSeparators{currentWorm}(end+1) = currentFrame;
+            end
+            if ~any(measures.manualSeparators{currentWorm} == currentFrame + 1)
+                measures.manualSeparators{currentWorm}(end+1) = currentFrame + 1;
+            end
+            computeBlockSeparatorsAndValidity
+            selectWorm
+        catch exception
+            generateReport(exception)
         end
-        if ~any(measures.manualSeparators{currentWorm} == currentFrame)
-            measures.manualSeparators{currentWorm}(end+1) = currentFrame;
-        end
-        if ~any(measures.manualSeparators{currentWorm} == currentFrame + 1)
-            measures.manualSeparators{currentWorm}(end+1) = currentFrame + 1;
-        end
-        computeBlockSeparatorsAndValidity
-        selectWorm
     end
 
 % ============
 % SWITCH THE VALIDITY FLAG OF ALL THE FRAMES IN THE CURRENT BLOCK
 % ============
     function switchValidity(hObject,eventdata) %#ok<*INUSD>
-        if currentVideo == 0
-            return
+        try
+            if currentVideo == 0
+                return
+            end
+            tmpRange = find(measures.separators{currentWorm} > currentFrame);
+            % Select current block
+            idxBlock = 1;
+            prevSeparator = measures.separators{currentWorm}(tmpRange(idxBlock) - 1);
+            nextSeparator = measures.separators{currentWorm}(tmpRange(idxBlock)) - 1;
+            newValue = ~ listOfWorms.valid(currentWorm, prevSeparator);
+            % store it as manual
+            if newValue
+                listOfWorms.manualValid(currentWorm, prevSeparator:nextSeparator) = true;
+                listOfWorms.manualInvalid(currentWorm, prevSeparator:nextSeparator) = false;
+            else
+                listOfWorms.manualValid(currentWorm, prevSeparator:nextSeparator) = false;
+                listOfWorms.manualInvalid(currentWorm, prevSeparator:nextSeparator) = true;
+            end
+            computeBlockSeparatorsAndValidity
+            selectWorm
+            CSTwriteSegmentationToTXT(listOfWorms, fileDB(currentVideo).name);
+        catch exception
+            generateReport(exception)
         end
-        tmpRange = find(measures.separators{currentWorm} > currentFrame);
-        % Select current block
-        idxBlock = 1;
-        prevSeparator = measures.separators{currentWorm}(tmpRange(idxBlock) - 1);
-        nextSeparator = measures.separators{currentWorm}(tmpRange(idxBlock)) - 1;
-        newValue = ~ listOfWorms.valid(currentWorm, prevSeparator);
-        % store it as manual
-        if newValue
-            listOfWorms.manualValid(currentWorm, prevSeparator:nextSeparator) = true;
-            listOfWorms.manualInvalid(currentWorm, prevSeparator:nextSeparator) = false;
-        else
-            listOfWorms.manualValid(currentWorm, prevSeparator:nextSeparator) = false;
-            listOfWorms.manualInvalid(currentWorm, prevSeparator:nextSeparator) = true;
-        end
-        computeBlockSeparatorsAndValidity
-        selectWorm
-        CSTwriteSegmentationToTXT(listOfWorms, fileDB(currentVideo).name);
     end
 
 
@@ -1032,114 +1075,122 @@ waitfor(mainFigure,'BeingDeleted','on');
 % SWITCH PLAY AND PAUSE VIDEO PLAYING
 % ============
     function playPauseVideo(hObject,eventdata) %#ok<INUSD>
-        if strcmp('Play',get(btnPlayVideo, 'string'))
-            message = 'Pause';
-        else
-            message = 'Play';
-        end
-        set(btnPlayVideo, 'string', message, 'value', 0);
-        while currentFrame < valueEndFrame && strcmp('Pause',get(btnPlayVideo, 'string')) && (get(btnPlayVideo,'Value') <= 0)
-            pause(0.05);
-            if (strcmp('Pause',get(btnPlayVideo, 'string')))
-                % Play the video frame by frame
-                selectFrameByClick(btnNextFrame, []);
+        try
+            if strcmp('Play',get(btnPlayVideo, 'string'))
+                message = 'Pause';
             else
-                break;
+                message = 'Play';
             end
+            set(btnPlayVideo, 'string', message, 'value', 0);
+            while currentFrame < valueEndFrame && strcmp('Pause',get(btnPlayVideo, 'string')) && (get(btnPlayVideo,'Value') <= 0)
+                pause(0.05);
+                if (strcmp('Pause',get(btnPlayVideo, 'string')))
+                    % Play the video frame by frame
+                    selectFrameByClick(btnNextFrame, []);
+                else
+                    break;
+                end
+            end
+            set(btnPlayVideo, 'string', 'Play', 'value', 0);
+        catch exception
+            generateReport(exception)
         end
-        set(btnPlayVideo, 'string', 'Play', 'value', 0);
     end
 
 % ============
 % SELECT A FRAME FROM ANY OF THE CONTROL OPTIONS IN THE GUI
 % ============
     function selectFrameByClick(hObject,eventdata) %#ok<INUSD>
-        if currentVideo == 0
-            return
-        end
-        if hObject == btnPrevFrame
-            currentFrame = max(1, currentFrame-1);
-        elseif hObject == btnFirstFrame
-            currentFrame = 1;
-        elseif hObject == editStartFrame
-            newValue = round(str2double(get(hObject, 'string')));
-            if ~isnan(newValue) && newValue >= 1 && newValue <= nbOfFrames
-                valueStartFrame = newValue;
+        try
+            if currentVideo == 0
+                return
             end
-            set(hObject, 'string', num2str(valueStartFrame));
-            return
-        elseif hObject == editCurrentFrame
-            newValue = floor(str2double(get(hObject, 'string')));
-            if ~isnan(newValue) && newValue >= 1 && newValue <= nbOfFrames
-                currentFrame = newValue;
-            end
-        elseif hObject == btnNextFrame
-            currentFrame = min(nbOfFrames, currentFrame+1);
-        elseif hObject == editEndFrame
-            newValue = round(str2double(get(hObject, 'string')));
-            if ~isnan(newValue) && newValue >= 1 && newValue <= nbOfFrames
-                valueEndFrame = newValue;
-            end
-            set(hObject, 'string', num2str(valueEndFrame));
-            return
-        elseif hObject == btnForwardFrame
-            currentFrame = valueEndFrame;
-        elseif hObject == btnRewindFrame
-            currentFrame = valueStartFrame;
-        elseif hObject == btnLastFrame
-            currentFrame = nbOfFrames;
-        elseif hObject == hAxeLength || hObject == hAxeLost || hObject == hAxePrevOverlap || hObject == hAxeOverlap || hObject == hAxeSelfOverlap || hObject == hAxeGlare
-            click = get(hObject, 'CurrentPoint');
-            currentFrame = max(1, min(nbOfFrames, floor(click(1))));
-        elseif hObject == hAxeValid
-            click = get(hObject, 'CurrentPoint');
-            if strcmp(get(mainFigure,'SelectionType'),'normal')
-                % ------------
-                % left click: select a single frame
-                % ------------
-                currentFrame = max(1, min(nbOfFrames, floor(click(1))));
-            elseif strcmp(get(mainFigure,'SelectionType'),'alt')
-                % ------------
-                % right click: change the validity of the block
-                % ------------
-                tmpRange = find(measures.separators{currentWorm} > click(1));
-                prevSeparator = measures.separators{currentWorm}(tmpRange(1) - 1);
-                nextSeparator = measures.separators{currentWorm}(tmpRange(1)) - 1;
-                newValue = ~ listOfWorms.valid(currentWorm, prevSeparator);
-                % store it as manual
-                if newValue
-                    listOfWorms.manualValid(currentWorm, prevSeparator:nextSeparator) = true;
-                    listOfWorms.manualInvalid(currentWorm, prevSeparator:nextSeparator) = false;
-                else
-                    listOfWorms.manualValid(currentWorm, prevSeparator:nextSeparator) = false;
-                    listOfWorms.manualInvalid(currentWorm, prevSeparator:nextSeparator) = true;
+            if hObject == btnPrevFrame
+                currentFrame = max(1, currentFrame-1);
+            elseif hObject == btnFirstFrame
+                currentFrame = 1;
+            elseif hObject == editStartFrame
+                newValue = round(str2double(get(hObject, 'string')));
+                if ~isnan(newValue) && newValue >= 1 && newValue <= nbOfFrames
+                    valueStartFrame = newValue;
                 end
-                computeBlockSeparatorsAndValidity
-                selectWorm
-            elseif strcmp(get(mainFigure,'SelectionType'),'open')
+                set(hObject, 'string', num2str(valueStartFrame));
+                return
+            elseif hObject == editCurrentFrame
+                newValue = floor(str2double(get(hObject, 'string')));
+                if ~isnan(newValue) && newValue >= 1 && newValue <= nbOfFrames
+                    currentFrame = newValue;
+                end
+            elseif hObject == btnNextFrame
+                currentFrame = min(nbOfFrames, currentFrame+1);
+            elseif hObject == editEndFrame
+                newValue = round(str2double(get(hObject, 'string')));
+                if ~isnan(newValue) && newValue >= 1 && newValue <= nbOfFrames
+                    valueEndFrame = newValue;
+                end
+                set(hObject, 'string', num2str(valueEndFrame));
+                return
+            elseif hObject == btnForwardFrame
+                currentFrame = valueEndFrame;
+            elseif hObject == btnRewindFrame
+                currentFrame = valueStartFrame;
+            elseif hObject == btnLastFrame
+                currentFrame = nbOfFrames;
+            elseif hObject == hAxeLength || hObject == hAxeLost || hObject == hAxePrevOverlap || hObject == hAxeOverlap || hObject == hAxeSelfOverlap || hObject == hAxeGlare
                 click = get(hObject, 'CurrentPoint');
-                % ------------
-                % double click: add a separator
-                % ------------
-                newSeparator = floor(click(1));
-                if any(measures.separators{currentWorm} == newSeparator)
-                    newSeparator = 1 + newSeparator;
-                    % if existing separator, add one at the next frame
-                    if any(measures.separators{currentWorm} == newSeparator)
-                        newSeparator = [];
+                currentFrame = max(1, min(nbOfFrames, floor(click(1))));
+            elseif hObject == hAxeValid
+                click = get(hObject, 'CurrentPoint');
+                if strcmp(get(mainFigure,'SelectionType'),'normal')
+                    % ------------
+                    % left click: select a single frame
+                    % ------------
+                    currentFrame = max(1, min(nbOfFrames, floor(click(1))));
+                elseif strcmp(get(mainFigure,'SelectionType'),'alt')
+                    % ------------
+                    % right click: change the validity of the block
+                    % ------------
+                    tmpRange = find(measures.separators{currentWorm} > click(1));
+                    prevSeparator = measures.separators{currentWorm}(tmpRange(1) - 1);
+                    nextSeparator = measures.separators{currentWorm}(tmpRange(1)) - 1;
+                    newValue = ~ listOfWorms.valid(currentWorm, prevSeparator);
+                    % store it as manual
+                    if newValue
+                        listOfWorms.manualValid(currentWorm, prevSeparator:nextSeparator) = true;
+                        listOfWorms.manualInvalid(currentWorm, prevSeparator:nextSeparator) = false;
+                    else
+                        listOfWorms.manualValid(currentWorm, prevSeparator:nextSeparator) = false;
+                        listOfWorms.manualInvalid(currentWorm, prevSeparator:nextSeparator) = true;
                     end
-                end
-                if ~isempty(newSeparator)
-                    % store it as a manual separator
-                    measures.manualSeparators{currentWorm}(end+1) = newSeparator;
                     computeBlockSeparatorsAndValidity
                     selectWorm
+                elseif strcmp(get(mainFigure,'SelectionType'),'open')
+                    click = get(hObject, 'CurrentPoint');
+                    % ------------
+                    % double click: add a separator
+                    % ------------
+                    newSeparator = floor(click(1));
+                    if any(measures.separators{currentWorm} == newSeparator)
+                        newSeparator = 1 + newSeparator;
+                        % if existing separator, add one at the next frame
+                        if any(measures.separators{currentWorm} == newSeparator)
+                            newSeparator = [];
+                        end
+                    end
+                    if ~isempty(newSeparator)
+                        % store it as a manual separator
+                        measures.manualSeparators{currentWorm}(end+1) = newSeparator;
+                        computeBlockSeparatorsAndValidity
+                        selectWorm
+                    end
                 end
             end
+            set(editCurrentFrame, 'string', int2str(currentFrame));
+            currentImage = imread( fullfile( fileDB(currentVideo).directory, imageFiles(currentFrame).name) );
+            displayCurrentFrame
+        catch exception
+            generateReport(exception)
         end
-        set(editCurrentFrame, 'string', int2str(currentFrame));
-        currentImage = imread( fullfile( fileDB(currentVideo).directory, imageFiles(currentFrame).name) );
-        displayCurrentFrame
     end
 
 % ============
@@ -1278,237 +1329,239 @@ waitfor(mainFigure,'BeingDeleted','on');
 % LOAD THE DATA FOR THE SELECTED VIDEO, THEN UPDATE THE WORM DISPLAY
 % ============
     function loadVideoContents(hObject,eventdata) %#ok<INUSD>
-        if (nargin <= 0) ||  (~isempty(listVideosIdx))
-            % ------------
-            % Check if the video should be loaded from user selection in GUI, or from arguments passed through API
-            % ------------
-            if nargin <= 0
-                currentVideo = videoIdxToLoad;
-            else
-                currentVideo = listVideosIdx(get(listVideos,'value'));
-            end
-
-            for item = 1:length(listToDisable)
-                set(listToDisable{item}, 'enable', 'off');
-            end           
-            
-            % ------------
-            % Check the presence of image files
-            % ------------
-            imageFiles = dir(fullfile(fileDB(currentVideo).directory,['*.',fileDB(currentVideo).format]));
-            if ~isempty(imageFiles)
-                % ----------------
-                % Special case: when images have filenames with different lengths
-                % (capture1 -> capture500), extract the number from the file name, use it to
-                % sort the list of files, and re-order the files
-                % ...............
-                longueurs = arrayfun(@(c) length(c.name),imageFiles);
-                if min(longueurs) < max(longueurs)
-                    nbOfElementsTmp = length(imageFiles);
-                    listOfNamesTmp = cell(1,nbOfElementsTmp);
-                    for n = 1:nbOfElementsTmp
-                        listOfNamesTmp{n} = imageFiles(n).name;
-                    end
-                    fctTmp = @(cellule) str2double(strrep(regexpi(cellule,'[0-9]*\.','match'),'.',''));
-                    results = cellfun(fctTmp,listOfNamesTmp);
-                    [valTmp, idxTmp] = sort(results); %#ok<ASGLU>
-                    for n=1:nbOfElementsTmp
-                        imageFiles(n).name = listOfNamesTmp{idxTmp(n)};
-                    end
-                end
-                % ...............
-            end
-            
-            currentFrame = 1;
-            set(editCurrentFrame, 'string', int2str(currentFrame));
-            try
-                currentImage = imread( fullfile( fileDB(currentVideo).directory, imageFiles(currentFrame).name) );
-            catch %#ok<CTCH>
-                currentImage = zeros(500);
-            end
-            xImage = size(currentImage,2);
-            yImage = size(currentImage,1);
-            % ------------
-            % Update the display with the total number of images
-            % ------------
-            nbOfFrames = length(imageFiles);
-            set(txtMaxFrame,'string', num2str(nbOfFrames));
-            valueStartFrame = 1;
-            valueEndFrame = nbOfFrames;
-            set(editStartFrame, 'string', num2str(valueStartFrame));
-            set(editEndFrame, 'string', num2str(valueEndFrame));
-            set(editFrameSwitchHTEnd, 'string', num2str(valueEndFrame));
-            % ------------
-            % Check the presence of segmentation results
-            % ------------
-            ftmp = fopen(fullfile(filenames.segmentation, ['wormSegm_',fileDB(currentVideo).name,'.txt']));
-            if ftmp >= 3
-                fclose(ftmp);
+        try
+            if (nargin <= 0) ||  (~isempty(listVideosIdx))
                 % ------------
-                % Load the segmentation results
+                % Check if the video should be loaded from user selection in GUI, or from arguments passed through API
                 % ------------
-                listOfWorms = CSTreadSegmentationFromTXT(fileDB(currentVideo).name);
-                nbOfWorms = length(listOfWorms.skel);
-                % ------------
-                % Check the presence of measures
-                % ------------
-                if ( fileDB(currentVideo).measured && isfield(listOfWorms,'outOfLengths'))
-                    measures = CSTreadMeasuresFromTXT(fileDB(currentVideo).name, true);
-                    
-                    if isfield(measures, 'ratioThrashMedian')
-                        measures = rmfield(measures, 'ratioThrashMedian');
-                    end
-                    if isfield(measures, 'ratioThrashStd')
-                        measures = rmfield(measures, 'ratioThrashStd');
-                    end
-                    if isfield(measures, 'ratioAngleThrashMedian')
-                        measures = rmfield(measures, 'ratioAngleThrashMedian');
-                    end
-                    
-                    tmpAfterSelfOverlap = [false(nbOfWorms,1) , listOfWorms.selfOverlap(:,1:end-1) & ~listOfWorms.selfOverlap(:,2:end) ];
+                if nargin <= 0
+                    currentVideo = videoIdxToLoad;
                 else
-                    % ------------
-                    % No previous existing measures
-                    % ------------
-                    hTmp = waitbar(0,'Analyzing the results...');
-                    pause(0.001)
-                    % ------------
-                    % Add extra fields if they are not defined already
-                    % ------------
-                    if ~isfield(listOfWorms, 'outOfLengths')
-                        listOfWorms.outOfLengths = false(nbOfWorms,nbOfFrames);
-                        listOfWorms.outOfPrevious = false(nbOfWorms,nbOfFrames);
-                        listOfWorms.inGlareZone = false(nbOfWorms,nbOfFrames);
-                        listOfWorms.valid = false(nbOfWorms,nbOfFrames);
-                        listOfWorms.selfOverlap = false(nbOfWorms,nbOfFrames);
-                        listOfWorms.positionCenterX = zeros(nbOfWorms,nbOfFrames);
-                        listOfWorms.positionCenterY = zeros(nbOfWorms,nbOfFrames);
-                        listOfWorms.widthCenter = zeros(nbOfWorms,nbOfFrames);
-                        listOfWorms.cblSubSampled = cell(1,nbOfWorms);
-                        for ww = 1:nbOfWorms
-                            listOfWorms.cblSubSampled{ww} = cell(1,nbOfFrames);
+                    currentVideo = listVideosIdx(get(listVideos,'value'));
+                end
+                
+                for item = 1:length(listToDisable)
+                    set(listToDisable{item}, 'enable', 'off');
+                end
+                
+                % ------------
+                % Check the presence of image files
+                % ------------
+                imageFiles = dir(fullfile(fileDB(currentVideo).directory,['*.',fileDB(currentVideo).format]));
+                if ~isempty(imageFiles)
+                    % ----------------
+                    % Special case: when images have filenames with different lengths
+                    % (capture1 -> capture500), extract the number from the file name, use it to
+                    % sort the list of files, and re-order the files
+                    % ...............
+                    longueurs = arrayfun(@(c) length(c.name),imageFiles);
+                    if min(longueurs) < max(longueurs)
+                        nbOfElementsTmp = length(imageFiles);
+                        listOfNamesTmp = cell(1,nbOfElementsTmp);
+                        for n = 1:nbOfElementsTmp
+                            listOfNamesTmp{n} = imageFiles(n).name;
                         end
-                        listOfWorms.overlapPrev = zeros(nbOfWorms, nbOfFrames);
-                        listOfWorms.manualInvalid = false(nbOfWorms, nbOfFrames);
-                        listOfWorms.manualValid = false(nbOfWorms, nbOfFrames);
-                        listOfWorms.headThrashCount = zeros(nbOfWorms, nbOfFrames);
+                        fctTmp = @(cellule) str2double(strrep(regexpi(cellule,'[0-9]*\.','match'),'.',''));
+                        results = cellfun(fctTmp,listOfNamesTmp);
+                        [valTmp, idxTmp] = sort(results); %#ok<ASGLU>
+                        for n=1:nbOfElementsTmp
+                            imageFiles(n).name = listOfNamesTmp{idxTmp(n)};
+                        end
                     end
+                    % ...............
+                end
+                
+                currentFrame = 1;
+                set(editCurrentFrame, 'string', int2str(currentFrame));
+                try
+                    currentImage = imread( fullfile( fileDB(currentVideo).directory, imageFiles(currentFrame).name) );
+                catch %#ok<CTCH>
+                    currentImage = zeros(500);
+                end
+                xImage = size(currentImage,2);
+                yImage = size(currentImage,1);
+                % ------------
+                % Update the display with the total number of images
+                % ------------
+                nbOfFrames = length(imageFiles);
+                set(txtMaxFrame,'string', num2str(nbOfFrames));
+                valueStartFrame = 1;
+                valueEndFrame = nbOfFrames;
+                set(editStartFrame, 'string', num2str(valueStartFrame));
+                set(editEndFrame, 'string', num2str(valueEndFrame));
+                set(editFrameSwitchHTEnd, 'string', num2str(valueEndFrame));
+                % ------------
+                % Check the presence of segmentation results
+                % ------------
+                ftmp = fopen(fullfile(filenames.segmentation, ['wormSegm_',fileDB(currentVideo).name,'.txt']));
+                if ftmp >= 3
+                    fclose(ftmp);
                     % ------------
-                    % Scan the results
+                    % Load the segmentation results
                     % ------------
-                    subSamp = (0:(1/nbSamplesCBL):1)';
-                    for ff = 1:nbOfFrames
-                        waitbar(ff/nbOfFrames,hTmp);
-                        bbox = zeros(nbOfWorms,4);
-                        for ww = 1:nbOfWorms
-                            % =========
-                            % Remove extremities of width 0
-                            % =========
-                            if ~isempty(listOfWorms.width{ww}{ff}) && (listOfWorms.width{ww}{ff}(1) <= 0 || norm(listOfWorms.skel{ww}{ff}(:,1) - listOfWorms.skel{ww}{ff}(:,2)) < 0.05)
-                                % Remove the head
-                                listOfWorms.width{ww}{ff}(1) = [];
-                                listOfWorms.skel{ww}{ff}(:,1) = [];
+                    listOfWorms = CSTreadSegmentationFromTXT(fileDB(currentVideo).name);
+                    nbOfWorms = length(listOfWorms.skel);
+                    % ------------
+                    % Check the presence of measures
+                    % ------------
+                    if ( fileDB(currentVideo).measured && isfield(listOfWorms,'outOfLengths'))
+                        measures = CSTreadMeasuresFromTXT(fileDB(currentVideo).name, true);
+                        
+                        if isfield(measures, 'ratioThrashMedian')
+                            measures = rmfield(measures, 'ratioThrashMedian');
+                        end
+                        if isfield(measures, 'ratioThrashStd')
+                            measures = rmfield(measures, 'ratioThrashStd');
+                        end
+                        if isfield(measures, 'ratioAngleThrashMedian')
+                            measures = rmfield(measures, 'ratioAngleThrashMedian');
+                        end
+                        
+                        tmpAfterSelfOverlap = [false(nbOfWorms,1) , listOfWorms.selfOverlap(:,1:end-1) & ~listOfWorms.selfOverlap(:,2:end) ];
+                    else
+                        % ------------
+                        % No previous existing measures
+                        % ------------
+                        hTmp = waitbar(0,'Analyzing the results...');
+                        pause(0.001)
+                        % ------------
+                        % Add extra fields if they are not defined already
+                        % ------------
+                        if ~isfield(listOfWorms, 'outOfLengths')
+                            listOfWorms.outOfLengths = false(nbOfWorms,nbOfFrames);
+                            listOfWorms.outOfPrevious = false(nbOfWorms,nbOfFrames);
+                            listOfWorms.inGlareZone = false(nbOfWorms,nbOfFrames);
+                            listOfWorms.valid = false(nbOfWorms,nbOfFrames);
+                            listOfWorms.selfOverlap = false(nbOfWorms,nbOfFrames);
+                            listOfWorms.positionCenterX = zeros(nbOfWorms,nbOfFrames);
+                            listOfWorms.positionCenterY = zeros(nbOfWorms,nbOfFrames);
+                            listOfWorms.widthCenter = zeros(nbOfWorms,nbOfFrames);
+                            listOfWorms.cblSubSampled = cell(1,nbOfWorms);
+                            for ww = 1:nbOfWorms
+                                listOfWorms.cblSubSampled{ww} = cell(1,nbOfFrames);
                             end
-                            if ~isempty(listOfWorms.width{ww}{ff}) && (listOfWorms.width{ww}{ff}(end) <= 0 || norm(listOfWorms.skel{ww}{ff}(:,end) - listOfWorms.skel{ww}{ff}(:,end-1)) < 0.05)
-                                % Remove the tail
-                                listOfWorms.width{ww}{ff}(end) = [];
-                                listOfWorms.skel{ww}{ff}(:,end) = [];
-                            end
-                            % =========
-                            % Re-sample the CBL
-                            % =========
-                            currentCBL = listOfWorms.skel{ww}{ff};
-                            long = cumsum([0,hypot(currentCBL(1,2:end)-currentCBL(1,1:end-1), currentCBL(2,2:end)-currentCBL(2,1:end-1))]);
-                            listOfWorms.lengthWorms(ww,ff) = long(end);
-                            long = long / long(end);
-                            currentCBL = interp1q(long', currentCBL', subSamp)';
-                            currentWidth = interp1q(long', listOfWorms.width{ww}{ff}', subSamp)';
-                            listOfWorms.skel{ww}{ff} = currentCBL;
-                            listOfWorms.width{ww}{ff} = currentWidth;
-                            listOfWorms.positionCenterX(ww,ff) = currentCBL(1, 1+nbSamplesCBL/2);
-                            listOfWorms.positionCenterY(ww,ff) = currentCBL(2, 1+nbSamplesCBL/2);
-                            listOfWorms.widthCenter(ww,ff) = mean(listOfWorms.width{ww}{ff});
-                            % =========
-                            % Detect overlap of extremities
-                            % =========
-                            flagLoopyWorm = false;
-                            totSub = length(subSamp);
-                            headThird = round(totSub/3);
-                            tailThird = round(2*totSub/3);
-                            % --------
-                            % Check if head is overlapping with tail
-                            % --------
-                            for idx = 1:headThird
-                                within = (hypot(currentCBL(1,idx+3:end) - currentCBL(1,idx), currentCBL(2,idx+3:end) - currentCBL(2,idx)) - currentWidth(idx+3:end) < 0 );
-                                if any(within)
-                                    flagLoopyWorm = true;
-                                    break
+                            listOfWorms.overlapPrev = zeros(nbOfWorms, nbOfFrames);
+                            listOfWorms.manualInvalid = false(nbOfWorms, nbOfFrames);
+                            listOfWorms.manualValid = false(nbOfWorms, nbOfFrames);
+                            listOfWorms.headThrashCount = zeros(nbOfWorms, nbOfFrames);
+                        end
+                        % ------------
+                        % Scan the results
+                        % ------------
+                        subSamp = (0:(1/nbSamplesCBL):1)';
+                        for ff = 1:nbOfFrames
+                            waitbar(ff/nbOfFrames,hTmp);
+                            bbox = zeros(nbOfWorms,4);
+                            for ww = 1:nbOfWorms
+                                % =========
+                                % Remove extremities of width 0
+                                % =========
+                                if ~isempty(listOfWorms.width{ww}{ff}) && (listOfWorms.width{ww}{ff}(1) <= 0 || norm(listOfWorms.skel{ww}{ff}(:,1) - listOfWorms.skel{ww}{ff}(:,2)) < 0.05)
+                                    % Remove the head
+                                    listOfWorms.width{ww}{ff}(1) = [];
+                                    listOfWorms.skel{ww}{ff}(:,1) = [];
                                 end
-                            end
-                            % --------
-                            % Check if tail is overlapping with head
-                            % --------
-                            if ~flagLoopyWorm
-                                for idx = tailThird:totSub
-                                    within = (hypot(currentCBL(1,1:idx-3) - currentCBL(1,idx), currentCBL(2,1:idx-3) - currentCBL(2,idx)) - currentWidth(1:idx-3) < 0 );
+                                if ~isempty(listOfWorms.width{ww}{ff}) && (listOfWorms.width{ww}{ff}(end) <= 0 || norm(listOfWorms.skel{ww}{ff}(:,end) - listOfWorms.skel{ww}{ff}(:,end-1)) < 0.05)
+                                    % Remove the tail
+                                    listOfWorms.width{ww}{ff}(end) = [];
+                                    listOfWorms.skel{ww}{ff}(:,end) = [];
+                                end
+                                % =========
+                                % Re-sample the CBL
+                                % =========
+                                currentCBL = listOfWorms.skel{ww}{ff};
+                                long = cumsum([0,hypot(currentCBL(1,2:end)-currentCBL(1,1:end-1), currentCBL(2,2:end)-currentCBL(2,1:end-1))]);
+                                listOfWorms.lengthWorms(ww,ff) = long(end);
+                                long = long / long(end);
+                                currentCBL = interp1q(long', currentCBL', subSamp)';
+                                currentWidth = interp1q(long', listOfWorms.width{ww}{ff}', subSamp)';
+                                listOfWorms.skel{ww}{ff} = currentCBL;
+                                listOfWorms.width{ww}{ff} = currentWidth;
+                                listOfWorms.positionCenterX(ww,ff) = currentCBL(1, 1+nbSamplesCBL/2);
+                                listOfWorms.positionCenterY(ww,ff) = currentCBL(2, 1+nbSamplesCBL/2);
+                                listOfWorms.widthCenter(ww,ff) = mean(listOfWorms.width{ww}{ff});
+                                % =========
+                                % Detect overlap of extremities
+                                % =========
+                                flagLoopyWorm = false;
+                                totSub = length(subSamp);
+                                headThird = round(totSub/3);
+                                tailThird = round(2*totSub/3);
+                                % --------
+                                % Check if head is overlapping with tail
+                                % --------
+                                for idx = 1:headThird
+                                    within = (hypot(currentCBL(1,idx+3:end) - currentCBL(1,idx), currentCBL(2,idx+3:end) - currentCBL(2,idx)) - currentWidth(idx+3:end) < 0 );
                                     if any(within)
                                         flagLoopyWorm = true;
                                         break
                                     end
                                 end
-                            end
-                            listOfWorms.selfOverlap(ww,ff) = flagLoopyWorm;
-                            % =========
-                            % Detect whether head and tail were swapped
-                            % =========
-                            if ff >= 2 && ...
-                                    sum(hypot(listOfWorms.skel{ww}{ff-1}(1,:)-listOfWorms.skel{ww}{ff}(1,:),listOfWorms.skel{ww}{ff-1}(2,:)-listOfWorms.skel{ww}{ff}(2,:)))...
-                                    > sum(hypot(listOfWorms.skel{ww}{ff-1}(1,:)-listOfWorms.skel{ww}{ff}(1,end:-1:1),listOfWorms.skel{ww}{ff-1}(2,:)-listOfWorms.skel{ww}{ff}(2,end:-1:1)))
-                                % Swap
-                                listOfWorms.skel{ww}{ff} = listOfWorms.skel{ww}{ff}(:, end:-1:1);
-                                listOfWorms.width{ww}{ff} = listOfWorms.width{ww}{ff}(end:-1:1);
-                            end
-                            % =========
-                            % Compute bounding box
-                            % =========
-                            bbox(ww,:) = [ min(listOfWorms.skel{ww}{ff}(1,:) - listOfWorms.width{ww}{ff}) , ...
-                                max(listOfWorms.skel{ww}{ff}(1,:) + listOfWorms.width{ww}{ff}) , ...
-                                min(listOfWorms.skel{ww}{ff}(2,:) - listOfWorms.width{ww}{ff}) , ...
-                                max(listOfWorms.skel{ww}{ff}(2,:) + listOfWorms.width{ww}{ff}) ];
-                            % =========
-                            % Compute overlap with previous location
-                            % =========
-                            if ff >= 2
-                                distTmp = zeros(1,length(listOfWorms.skel{ww}{ff}));
-                                for vv = 1:length(listOfWorms.skel{ww}{ff})
-                                    distTmp(vv) = min(hypot(listOfWorms.skel{ww}{ff}(1,vv)-listOfWorms.skel{ww}{ff-1}(1,:), listOfWorms.skel{ww}{ff}(2,vv)-listOfWorms.skel{ww}{ff-1}(2,:))...
-                                        - listOfWorms.width{ww}{ff-1}) < 0;
+                                % --------
+                                % Check if tail is overlapping with head
+                                % --------
+                                if ~flagLoopyWorm
+                                    for idx = tailThird:totSub
+                                        within = (hypot(currentCBL(1,1:idx-3) - currentCBL(1,idx), currentCBL(2,1:idx-3) - currentCBL(2,idx)) - currentWidth(1:idx-3) < 0 );
+                                        if any(within)
+                                            flagLoopyWorm = true;
+                                            break
+                                        end
+                                    end
                                 end
-                                listOfWorms.overlapPrev(ww, ff) = mean(distTmp);
-                            else
-                                listOfWorms.overlapPrev(ww, ff) = 1;
-                            end
-                            
-                            % =========
-                            % Detect overlap with other worms
-                            % =========
-                            if ~(listOfWorms.lost(ww,ff) || listOfWorms.missed(ww,ff))
-                                % --------
-                                % Compute the bounding boxes
-                                % --------
-                                for otherWorm = 1:(ww-1)
-                                    if ~(listOfWorms.lost(otherWorm,ff) || listOfWorms.missed(otherWorm,ff))
-                                        overlapX = (bbox(ww,1) <= bbox(otherWorm,1) && bbox(ww,2) >= bbox(otherWorm,1)) || (bbox(ww,1) >= bbox(otherWorm,1) && bbox(otherWorm,2) >= bbox(ww,1));
-                                        overlap = overlapX && ((bbox(ww,3) <= bbox(otherWorm,3) && bbox(ww,4) >= bbox(otherWorm,3)) || (bbox(ww,3) >= bbox(otherWorm,3) && bbox(otherWorm,4) >= bbox(ww,3)));
-                                        if overlap
-                                            for vv = 1:length(listOfWorms.skel{ww}{ff})
-                                                distTmp = hypot(listOfWorms.skel{ww}{ff}(1,vv)-listOfWorms.skel{otherWorm}{ff}(1,:),...
-                                                    listOfWorms.skel{ww}{ff}(2,vv)-listOfWorms.skel{otherWorm}{ff}(2,:));
-                                                distTmp = distTmp(:) - listOfWorms.width{ww}{ff}(vv) - listOfWorms.width{otherWorm}{ff}(:);
-                                                if any(distTmp <= 0)
-                                                    listOfWorms.overlapped(ww, ff) = true;
-                                                    listOfWorms.overlapped(otherWorm, ff) = true;
-                                                    break
+                                listOfWorms.selfOverlap(ww,ff) = flagLoopyWorm;
+                                % =========
+                                % Detect whether head and tail were swapped
+                                % =========
+                                if ff >= 2 && ...
+                                        sum(hypot(listOfWorms.skel{ww}{ff-1}(1,:)-listOfWorms.skel{ww}{ff}(1,:),listOfWorms.skel{ww}{ff-1}(2,:)-listOfWorms.skel{ww}{ff}(2,:)))...
+                                        > sum(hypot(listOfWorms.skel{ww}{ff-1}(1,:)-listOfWorms.skel{ww}{ff}(1,end:-1:1),listOfWorms.skel{ww}{ff-1}(2,:)-listOfWorms.skel{ww}{ff}(2,end:-1:1)))
+                                    % Swap
+                                    listOfWorms.skel{ww}{ff} = listOfWorms.skel{ww}{ff}(:, end:-1:1);
+                                    listOfWorms.width{ww}{ff} = listOfWorms.width{ww}{ff}(end:-1:1);
+                                end
+                                % =========
+                                % Compute bounding box
+                                % =========
+                                bbox(ww,:) = [ min(listOfWorms.skel{ww}{ff}(1,:) - listOfWorms.width{ww}{ff}) , ...
+                                    max(listOfWorms.skel{ww}{ff}(1,:) + listOfWorms.width{ww}{ff}) , ...
+                                    min(listOfWorms.skel{ww}{ff}(2,:) - listOfWorms.width{ww}{ff}) , ...
+                                    max(listOfWorms.skel{ww}{ff}(2,:) + listOfWorms.width{ww}{ff}) ];
+                                % =========
+                                % Compute overlap with previous location
+                                % =========
+                                if ff >= 2
+                                    distTmp = zeros(1,length(listOfWorms.skel{ww}{ff}));
+                                    for vv = 1:length(listOfWorms.skel{ww}{ff})
+                                        distTmp(vv) = min(hypot(listOfWorms.skel{ww}{ff}(1,vv)-listOfWorms.skel{ww}{ff-1}(1,:), listOfWorms.skel{ww}{ff}(2,vv)-listOfWorms.skel{ww}{ff-1}(2,:))...
+                                            - listOfWorms.width{ww}{ff-1}) < 0;
+                                    end
+                                    listOfWorms.overlapPrev(ww, ff) = mean(distTmp);
+                                else
+                                    listOfWorms.overlapPrev(ww, ff) = 1;
+                                end
+                                
+                                % =========
+                                % Detect overlap with other worms
+                                % =========
+                                if ~(listOfWorms.lost(ww,ff) || listOfWorms.missed(ww,ff))
+                                    % --------
+                                    % Compute the bounding boxes
+                                    % --------
+                                    for otherWorm = 1:(ww-1)
+                                        if ~(listOfWorms.lost(otherWorm,ff) || listOfWorms.missed(otherWorm,ff))
+                                            overlapX = (bbox(ww,1) <= bbox(otherWorm,1) && bbox(ww,2) >= bbox(otherWorm,1)) || (bbox(ww,1) >= bbox(otherWorm,1) && bbox(otherWorm,2) >= bbox(ww,1));
+                                            overlap = overlapX && ((bbox(ww,3) <= bbox(otherWorm,3) && bbox(ww,4) >= bbox(otherWorm,3)) || (bbox(ww,3) >= bbox(otherWorm,3) && bbox(otherWorm,4) >= bbox(ww,3)));
+                                            if overlap
+                                                for vv = 1:length(listOfWorms.skel{ww}{ff})
+                                                    distTmp = hypot(listOfWorms.skel{ww}{ff}(1,vv)-listOfWorms.skel{otherWorm}{ff}(1,:),...
+                                                        listOfWorms.skel{ww}{ff}(2,vv)-listOfWorms.skel{otherWorm}{ff}(2,:));
+                                                    distTmp = distTmp(:) - listOfWorms.width{ww}{ff}(vv) - listOfWorms.width{otherWorm}{ff}(:);
+                                                    if any(distTmp <= 0)
+                                                        listOfWorms.overlapped(ww, ff) = true;
+                                                        listOfWorms.overlapped(otherWorm, ff) = true;
+                                                        break
+                                                    end
                                                 end
                                             end
                                         end
@@ -1516,97 +1569,99 @@ waitfor(mainFigure,'BeingDeleted','on');
                                 end
                             end
                         end
-                    end
-                    % --------
-                    % Compute the outOfLengths thresholds
-                    % --------
-                    measures.highThr = zeros(1,nbOfWorms);
-                    measures.lowThr = zeros(1,nbOfWorms);
-                    measures.prevThr = zeros(1,nbOfWorms);
-                    measures.highThrDef = zeros(1,nbOfWorms);
-                    measures.lowThrDef = zeros(1,nbOfWorms);
-                    measures.prevThrDef = zeros(1,nbOfWorms);
-                    for ww = 1:nbOfWorms
-                        longMean = mean(listOfWorms.lengthWorms(ww,~listOfWorms.lost(ww,:) & ~listOfWorms.overlapped(ww,:)));
-                        longStd = std(listOfWorms.lengthWorms(ww,~listOfWorms.lost(ww,:) & ~listOfWorms.overlapped(ww,:)));
-                        measures.highThrDef(ww) = ceil(longMean + 3*longStd);
-                        if length(measures.highThr) < ww || measures.highThr(ww) == 0;
-                            measures.highThr(ww) = measures.highThrDef(ww);
-                        end
-                        measures.lowThrDef(ww) = max(0,floor(longMean - 3*longStd));
-                        if length(measures.lowThr) < ww || measures.lowThr(ww) == 0;
-                            measures.lowThr(ww) = measures.lowThrDef(ww);
-                        end
-                        listOfWorms.outOfLengths(ww,:) = (listOfWorms.lengthWorms(ww,:) > measures.highThr(ww)) | (listOfWorms.lengthWorms(ww,:) < measures.lowThr(ww));
                         % --------
-                        % Define the default previous overlap threshold
+                        % Compute the outOfLengths thresholds
                         % --------
-                        measures.prevThrDef(ww) = 25;
-                        measures.prevThr(ww) = measures.prevThrDef(ww);
-                        listOfWorms.outOfPrevious(ww,:) = (listOfWorms.overlapPrev(ww,:)*100 < measures.prevThr(ww));
+                        measures.highThr = zeros(1,nbOfWorms);
+                        measures.lowThr = zeros(1,nbOfWorms);
+                        measures.prevThr = zeros(1,nbOfWorms);
+                        measures.highThrDef = zeros(1,nbOfWorms);
+                        measures.lowThrDef = zeros(1,nbOfWorms);
+                        measures.prevThrDef = zeros(1,nbOfWorms);
+                        for ww = 1:nbOfWorms
+                            longMean = mean(listOfWorms.lengthWorms(ww,~listOfWorms.lost(ww,:) & ~listOfWorms.overlapped(ww,:)));
+                            longStd = std(listOfWorms.lengthWorms(ww,~listOfWorms.lost(ww,:) & ~listOfWorms.overlapped(ww,:)));
+                            measures.highThrDef(ww) = ceil(longMean + 3*longStd);
+                            if length(measures.highThr) < ww || measures.highThr(ww) == 0;
+                                measures.highThr(ww) = measures.highThrDef(ww);
+                            end
+                            measures.lowThrDef(ww) = max(0,floor(longMean - 3*longStd));
+                            if length(measures.lowThr) < ww || measures.lowThr(ww) == 0;
+                                measures.lowThr(ww) = measures.lowThrDef(ww);
+                            end
+                            listOfWorms.outOfLengths(ww,:) = (listOfWorms.lengthWorms(ww,:) > measures.highThr(ww)) | (listOfWorms.lengthWorms(ww,:) < measures.lowThr(ww));
+                            % --------
+                            % Define the default previous overlap threshold
+                            % --------
+                            measures.prevThrDef(ww) = 25;
+                            measures.prevThr(ww) = measures.prevThrDef(ww);
+                            listOfWorms.outOfPrevious(ww,:) = (listOfWorms.overlapPrev(ww,:)*100 < measures.prevThr(ww));
+                        end
+                        % --------
+                        % Compute the blocks and separators
+                        % --------
+                        measures.status = cell(1,nbOfWorms);
+                        measures.manualSeparators = cell(nbOfWorms,1);
+                        measures.separators = cell(nbOfWorms,1);
+                        tmpAfterSelfOverlap = false(nbOfWorms, nbOfFrames);
+                        checkWormsAgainstGlare
+                        computeBlockSeparatorsAndValidity;
+                        close(hTmp);
                     end
-                    % --------
-                    % Compute the blocks and separators
-                    % --------
-                    measures.status = cell(1,nbOfWorms);
-                    measures.manualSeparators = cell(nbOfWorms,1);
-                    measures.separators = cell(nbOfWorms,1);
-                    tmpAfterSelfOverlap = false(nbOfWorms, nbOfFrames);
-                    checkWormsAgainstGlare
-                    computeBlockSeparatorsAndValidity;
-                    close(hTmp);
-                end
-                newListTmp = cell(1,nbOfWorms);
-                %-------------------
-                % Use existing measures files in older format to extract the validity of the worms
-                %-------------------
-                fidTmp = fopen(fullfile(filenames.measures, ['wormMeas_',fileDB(currentVideo).name,'.txt']),'r');
-                if fidTmp >= 3
-                    sscanf(fgetl(fidTmp), 'fields %d');
-                    nbOfWormsTmp = sscanf(fgetl(fidTmp), 'worms %d');
-                    fieldTmp = fgetl(fidTmp);
-                    if strcmp(fieldTmp, 'status')
-                        % always store status anyway
-                        existingStatus = cell(1,nbOfWormsTmp);
-                        for ww = 1:nbOfWormsTmp
-                            existingStatus{ww} = fgetl(fidTmp);
-                            measures.status{ww} = existingStatus{ww};
+                    newListTmp = cell(1,nbOfWorms);
+                    %-------------------
+                    % Use existing measures files in older format to extract the validity of the worms
+                    %-------------------
+                    fidTmp = fopen(fullfile(filenames.measures, ['wormMeas_',fileDB(currentVideo).name,'.txt']),'r');
+                    if fidTmp >= 3
+                        sscanf(fgetl(fidTmp), 'fields %d');
+                        nbOfWormsTmp = sscanf(fgetl(fidTmp), 'worms %d');
+                        fieldTmp = fgetl(fidTmp);
+                        if strcmp(fieldTmp, 'status')
+                            % always store status anyway
+                            existingStatus = cell(1,nbOfWormsTmp);
+                            for ww = 1:nbOfWormsTmp
+                                existingStatus{ww} = fgetl(fidTmp);
+                                measures.status{ww} = existingStatus{ww};
+                            end
                         end
                     end
-                end
-                for tmp = 1:nbOfWorms
-                    if isempty(measures.status{tmp})
-                        measures.status{tmp} = 'unchecked';
+                    for tmp = 1:nbOfWorms
+                        if isempty(measures.status{tmp})
+                            measures.status{tmp} = 'unchecked';
+                        end
+                        if sum(listOfWorms.valid(tmp,:)) < 50
+                            measures.status{tmp} = 'rejected';
+                        end
+                        newListTmp{tmp} = ['Worm ', num2str(tmp), ' : ', measures.status{tmp}];
                     end
-                    if sum(listOfWorms.valid(tmp,:)) < 50
-                        measures.status{tmp} = 'rejected';
-                    end
-                    newListTmp{tmp} = ['Worm ', num2str(tmp), ' : ', measures.status{tmp}];
+                    set(listWorms, 'string', newListTmp, 'value',1);
+                    set(txtVideoLoaded,'string',fileDB(currentVideo).name);
+                else
+                    listOfWorms = cell(1,0);
+                    set(listWorms, 'string', [], 'value',1);
                 end
-                set(listWorms, 'string', newListTmp, 'value',1);
-                set(txtVideoLoaded,'string',fileDB(currentVideo).name);
+                hMainAllWorms = [];
+                hMainTextWorms = [];
+                hMainBox = [];
+                cla(hAxeAllVideo);
+                cla(hAxeCurrentWorm);
+                colormap(gray(255))
+                selectWorm
+                
+                for item = 1:length(listToDisable)
+                    set(listToDisable{item}, 'enable', 'on');
+                end
+                
             else
+                % ------------
+                % No existing segmentation results
+                % ------------
                 listOfWorms = cell(1,0);
                 set(listWorms, 'string', [], 'value',1);
             end
-            hMainAllWorms = [];
-            hMainTextWorms = [];
-            hMainBox = [];
-            cla(hAxeAllVideo);
-            cla(hAxeCurrentWorm); 
-            colormap(gray(255))
-            selectWorm
-            
-            for item = 1:length(listToDisable)
-                set(listToDisable{item}, 'enable', 'on');
-            end
-            
-        else
-            % ------------
-            % No existing segmentation results
-            % ------------
-            listOfWorms = cell(1,0);
-            set(listWorms, 'string', [], 'value',1);
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -1614,14 +1669,18 @@ waitfor(mainFigure,'BeingDeleted','on');
 % CHECK IF THE NEW VIDEO HAS DATA TO LOAD
 % ============
     function checkSelectedVideo(hObject,eventdata) %#ok<INUSD>
-        tmp = listVideosIdx(get(listVideos,'value'));
-        if ~fileDB(tmp).segmented
-            warndlg(sprintf('The chosen file has not been processed. \nPlease process prior the checking its measures.'),'Warning')
-        else
-            if (~isempty(listVideosIdx)) && (strcmp(get(mainFigure, 'Visible'),'on')) && (get(listVideos,'Value')~=currentVideo)
-                loadVideoContents(hObject,eventdata)
-                selectWorm
+        try
+            tmp = listVideosIdx(get(listVideos,'value'));
+            if ~fileDB(tmp).segmented
+                warndlg(sprintf('The chosen file has not been processed. \nPlease process prior the checking its measures.'),'Warning')
+            else
+                if (~isempty(listVideosIdx)) && (strcmp(get(mainFigure, 'Visible'),'on')) && (get(listVideos,'Value')~=currentVideo)
+                    loadVideoContents(hObject,eventdata)
+                    selectWorm
+                end
             end
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -1633,168 +1692,172 @@ waitfor(mainFigure,'BeingDeleted','on');
 % SELECT A WORM IN THE LIST, UPDATE ALL THE RELEVANT DISPLAYS IN THE GUI ACCORDINGLY
 % ============
     function selectWorm(hObject,eventdata) %#ok<INUSD>
-        currentWorm = get(listWorms, 'value');
-        if isempty(currentWorm)
-            cla(hAxeLength)
-        else
-            % -------------------
-            % Find listOfWorms.outOfLengths zones
-            % -------------------
-            set(txtSelectedWorm, 'String', ['Worm ', num2str(currentWorm)]);
-            set(editHighThr, 'string', int2str(measures.highThr(currentWorm)));
-            set(editLowThr, 'string', int2str(measures.lowThr(currentWorm)));
-            set(editPrevThr, 'string', int2str(measures.prevThr(currentWorm)));
-            newListTmp = {};
-            wormSwitchIdx = [];
-            for otherWorm = [1:currentWorm-1 , currentWorm+1:nbOfWorms]
-                %                 if ~strcmp('rejected', measures.status{otherWorm})
-                newListTmp{end+1} = ['Worm ', num2str(otherWorm)]; %#ok<AGROW>
-                wormSwitchIdx(end+1) = otherWorm; %#ok<AGROW>
-                %                 end
-            end
-            newListTmp{end+1} = 'new worm';
-            wormSwitchIdx(end+1) = -1;
-            set(popWormSwitch, 'string', newListTmp,'value', 1);
-            % -------------------
-            % Display the valid frames
-            % -------------------
-            cla(hAxeValid)
-            hold(hAxeValid, 'on');
-            for ff = 1:nbOfFrames
-                if listOfWorms.valid(currentWorm,ff)
-                    rectangle('parent',hAxeValid, 'position', [ff, 0, 1, 1], 'FaceColor', colorAccepted, 'edgecolor', colorAccepted, 'hittest', 'off');
+        try
+            currentWorm = get(listWorms, 'value');
+            if isempty(currentWorm)
+                cla(hAxeLength)
+            else
+                % -------------------
+                % Find listOfWorms.outOfLengths zones
+                % -------------------
+                set(txtSelectedWorm, 'String', ['Worm ', num2str(currentWorm)]);
+                set(editHighThr, 'string', int2str(measures.highThr(currentWorm)));
+                set(editLowThr, 'string', int2str(measures.lowThr(currentWorm)));
+                set(editPrevThr, 'string', int2str(measures.prevThr(currentWorm)));
+                newListTmp = {};
+                wormSwitchIdx = [];
+                for otherWorm = [1:currentWorm-1 , currentWorm+1:nbOfWorms]
+                    %                 if ~strcmp('rejected', measures.status{otherWorm})
+                    newListTmp{end+1} = ['Worm ', num2str(otherWorm)]; %#ok<AGROW>
+                    wormSwitchIdx(end+1) = otherWorm; %#ok<AGROW>
+                    %                 end
+                end
+                newListTmp{end+1} = 'new worm';
+                wormSwitchIdx(end+1) = -1;
+                set(popWormSwitch, 'string', newListTmp,'value', 1);
+                % -------------------
+                % Display the valid frames
+                % -------------------
+                cla(hAxeValid)
+                hold(hAxeValid, 'on');
+                for ff = 1:nbOfFrames
+                    if listOfWorms.valid(currentWorm,ff)
+                        rectangle('parent',hAxeValid, 'position', [ff, 0, 1, 1], 'FaceColor', colorAccepted, 'edgecolor', colorAccepted, 'hittest', 'off');
+                    else
+                        rectangle('parent',hAxeValid, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                    end
+                end
+                for sep = 1:length(measures.separators{currentWorm})
+                    line('parent',hAxeValid, 'xdata', measures.separators{currentWorm}(sep)*[1,1], 'ydata', [0, 1], 'color', 'k', 'hittest', 'off');
+                end
+                axis(hAxeValid,[1 nbOfFrames+1 0 1]);
+                grid(hAxeValid,'on')
+                set(hAxeValid, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
+                % -------------------
+                % Display the overlap with glare zones
+                % -------------------
+                cla(hAxeGlare)
+                hold(hAxeGlare, 'on');
+                for ff = find(listOfWorms.inGlareZone(currentWorm,:))
+                    rectangle('parent',hAxeGlare, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                end
+                axis(hAxeGlare,[1 nbOfFrames+1 0 1]);
+                grid(hAxeGlare,'on')
+                set(hAxeGlare, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
+                % -------------------
+                % Display the previous overlap
+                % -------------------
+                cla(hAxePrevOverlap)
+                hold(hAxePrevOverlap, 'on');
+                for ff = find(listOfWorms.outOfPrevious(currentWorm,:))
+                    rectangle('parent',hAxePrevOverlap, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                end
+                if (isempty(hLinePrevThr) || ~ishandle(hLinePrevThr))
+                    hLinePrevThr = line('parent',hAxePrevOverlap,'xdata', [1 nbOfFrames+1], 'ydata', 0.01*[measures.prevThr(currentWorm) measures.prevThr(currentWorm)], 'color', 'r', 'hittest', 'off');
                 else
-                    rectangle('parent',hAxeValid, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                    set(hLinePrevThr, 'ydata', 0.01*[measures.prevThr(currentWorm) measures.prevThr(currentWorm)]);
+                end
+                stairs(hAxePrevOverlap, listOfWorms.overlapPrev(currentWorm,:), 'hittest', 'off');
+                axis(hAxePrevOverlap,[1 nbOfFrames+1 0 1]);
+                grid(hAxePrevOverlap,'on')
+                set(hAxePrevOverlap, 'XTickLabel', [], 'TickLength', [0 0], 'YTick',[0 0.5 1],'YTickLabel', ['  0'; ' 50'; '100'], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
+                % -------------------
+                % Display the lost frames
+                % -------------------
+                cla(hAxeLost)
+                hold(hAxeLost, 'on');
+                for ff = find(listOfWorms.lost(currentWorm,:))
+                    rectangle('parent',hAxeLost, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                end
+                axis(hAxeLost,[1 nbOfFrames+1 0 1]);
+                grid(hAxeLost,'on')
+                set(hAxeLost, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
+                % -------------------
+                % Display the overlap with other worms
+                % -------------------
+                cla(hAxeOverlap)
+                hold(hAxeOverlap, 'on');
+                for ff = find(listOfWorms.overlapped(currentWorm,:))
+                    rectangle('parent',hAxeOverlap, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                end
+                axis(hAxeOverlap,[1 nbOfFrames+1 0 1]);
+                grid(hAxeOverlap,'on')
+                set(hAxeOverlap, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
+                % -------------------
+                % Display the end of self-overlap
+                % -------------------
+                cla(hAxeSelfOverlap)
+                hold(hAxeSelfOverlap, 'on');
+                for ff = find(tmpAfterSelfOverlap(currentWorm,:))
+                    rectangle('parent',hAxeSelfOverlap, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                end
+                axis(hAxeSelfOverlap,[1 nbOfFrames+1 0 1]);
+                grid(hAxeSelfOverlap,'on')
+                set(hAxeSelfOverlap, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
+                % -------------------
+                % Display the length
+                % -------------------
+                cla(hAxeLength)
+                stairs(hAxeLength, listOfWorms.lengthWorms(currentWorm,:), 'hittest', 'off');
+                tmp = axis(hAxeLength) + [0 0 0 1];
+                axis(hAxeLength,[1 nbOfFrames+1 0 tmp(4)]);
+                hold(hAxeLength,'on')
+                for ff = find(listOfWorms.outOfLengths(currentWorm,:))
+                    rectangle('parent',hAxeLength, 'position', [ff, 0, 1, tmp(4)], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
+                end
+                if (isempty(hLineHighThr) || ~ishandle(hLineHighThr))
+                    hLineHighThr = line('parent',hAxeLength,'xdata', [tmp(1) tmp(2)], 'ydata', [measures.highThr(currentWorm) measures.highThr(currentWorm)], 'color', 'r', 'hittest', 'off');
+                else
+                    set(hLineHighThr, 'xdata', [tmp(1) tmp(2)], 'ydata', [measures.highThr(currentWorm) measures.highThr(currentWorm)]);
+                end
+                if (isempty(hLineLowThr) || ~ishandle(hLineLowThr))
+                    hLineLowThr = line('parent',hAxeLength,'xdata', [tmp(1) tmp(2)], 'ydata', [measures.lowThr(currentWorm) measures.lowThr(currentWorm)], 'color', 'r', 'hittest', 'off');
+                else
+                    set(hLineLowThr, 'xdata', [tmp(1) tmp(2)], 'ydata', [measures.lowThr(currentWorm) measures.lowThr(currentWorm)]);
+                end
+                stairs(hAxeLength, listOfWorms.lengthWorms(currentWorm,:),'-k', 'hittest', 'off');
+                hold(hAxeLength,'off')
+                grid(hAxeLength,'on')
+                set(hAxeLength, 'TickLength', [0 0], 'ButtonDownFcn', @selectFrameByClick)
+                % -------------------
+                % Display the current frame location on all graphs
+                % -------------------
+                tmp = axis(hAxeLength);
+                hRectCurrentFrame(1) = rectangle('parent',hAxeLength,      'position', [currentFrame, tmp(3), 1, tmp(4)-tmp(3)], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
+                hRectCurrentFrame(2) = rectangle('parent',hAxeOverlap,     'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
+                hRectCurrentFrame(3) = rectangle('parent',hAxeLost,        'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
+                hRectCurrentFrame(4) = rectangle('parent',hAxePrevOverlap, 'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
+                hRectCurrentFrame(5) = rectangle('parent',hAxeValid,       'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
+                hRectCurrentFrame(6) = rectangle('parent',hAxeSelfOverlap, 'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
+                hRectCurrentFrame(7) = rectangle('parent',hAxeGlare,       'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
+                % -------------------
+                % Update the display
+                % -------------------
+                displayCurrentFrame
+                % -------------------
+                % Update the number of valid frames
+                % -------------------
+                totalValid = sum(listOfWorms.valid(currentWorm,:));
+                fracValid = 100*totalValid/nbOfFrames;
+                set(txtValid, 'string', ['Valid frames: ', num2str(totalValid), ' / ', num2str(nbOfFrames), ' = ', sprintf('%.1f', fracValid), ' %']);
+                set(txtReject, 'string', ['Rejected frames: ', num2str(nbOfFrames-totalValid), ' / ', num2str(nbOfFrames), ' = ', sprintf('%.1f', 100-fracValid), ' %']);
+                % -------------------
+                % Display the trajectory of the current worm
+                % -------------------
+                if flagShowTrajectory && ~isempty(centerMovedSignificantly) && ~isempty(listOfWorms.positionCenterX)
+                    hold(hAxeAllVideo,'on')
+                    if isempty(hTraj) || ~ishandle(hTraj)
+                        hTraj = plot(hAxeAllVideo, listOfWorms.positionCenterX(currentWorm,centerMovedSignificantly(currentWorm,:) & listOfWorms.valid(currentWorm,:)),...
+                            listOfWorms.positionCenterY(currentWorm,centerMovedSignificantly(currentWorm,:)& listOfWorms.valid(currentWorm,:)),'-','color',colorTrajectory);
+                    else
+                        set(hTraj,'xdata', listOfWorms.positionCenterX(currentWorm,centerMovedSignificantly(currentWorm,:)& listOfWorms.valid(currentWorm,:)),...
+                            'ydata', listOfWorms.positionCenterY(currentWorm,centerMovedSignificantly(currentWorm,:)& listOfWorms.valid(currentWorm,:)));
+                    end
+                    hold(hAxeAllVideo,'off')
                 end
             end
-            for sep = 1:length(measures.separators{currentWorm})
-                line('parent',hAxeValid, 'xdata', measures.separators{currentWorm}(sep)*[1,1], 'ydata', [0, 1], 'color', 'k', 'hittest', 'off');
-            end
-            axis(hAxeValid,[1 nbOfFrames+1 0 1]);
-            grid(hAxeValid,'on')
-            set(hAxeValid, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
-            % -------------------
-            % Display the overlap with glare zones
-            % -------------------
-            cla(hAxeGlare)
-            hold(hAxeGlare, 'on');
-            for ff = find(listOfWorms.inGlareZone(currentWorm,:))
-                rectangle('parent',hAxeGlare, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
-            end
-            axis(hAxeGlare,[1 nbOfFrames+1 0 1]);
-            grid(hAxeGlare,'on')
-            set(hAxeGlare, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
-            % -------------------
-            % Display the previous overlap
-            % -------------------
-            cla(hAxePrevOverlap)
-            hold(hAxePrevOverlap, 'on');
-            for ff = find(listOfWorms.outOfPrevious(currentWorm,:))
-                rectangle('parent',hAxePrevOverlap, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
-            end
-            if (isempty(hLinePrevThr) || ~ishandle(hLinePrevThr))
-                hLinePrevThr = line('parent',hAxePrevOverlap,'xdata', [1 nbOfFrames+1], 'ydata', 0.01*[measures.prevThr(currentWorm) measures.prevThr(currentWorm)], 'color', 'r', 'hittest', 'off');
-            else
-                set(hLinePrevThr, 'ydata', 0.01*[measures.prevThr(currentWorm) measures.prevThr(currentWorm)]);
-            end
-            stairs(hAxePrevOverlap, listOfWorms.overlapPrev(currentWorm,:), 'hittest', 'off');
-            axis(hAxePrevOverlap,[1 nbOfFrames+1 0 1]);
-            grid(hAxePrevOverlap,'on')
-            set(hAxePrevOverlap, 'XTickLabel', [], 'TickLength', [0 0], 'YTick',[0 0.5 1],'YTickLabel', ['  0'; ' 50'; '100'], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
-            % -------------------
-            % Display the lost frames
-            % -------------------
-            cla(hAxeLost)
-            hold(hAxeLost, 'on');
-            for ff = find(listOfWorms.lost(currentWorm,:))
-                rectangle('parent',hAxeLost, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
-            end
-            axis(hAxeLost,[1 nbOfFrames+1 0 1]);
-            grid(hAxeLost,'on')
-            set(hAxeLost, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
-            % -------------------
-            % Display the overlap with other worms
-            % -------------------
-            cla(hAxeOverlap)
-            hold(hAxeOverlap, 'on');
-            for ff = find(listOfWorms.overlapped(currentWorm,:))
-                rectangle('parent',hAxeOverlap, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
-            end
-            axis(hAxeOverlap,[1 nbOfFrames+1 0 1]);
-            grid(hAxeOverlap,'on')
-            set(hAxeOverlap, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
-            % -------------------
-            % Display the end of self-overlap
-            % -------------------
-            cla(hAxeSelfOverlap)
-            hold(hAxeSelfOverlap, 'on');
-            for ff = find(tmpAfterSelfOverlap(currentWorm,:))
-                rectangle('parent',hAxeSelfOverlap, 'position', [ff, 0, 1, 1], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
-            end
-            axis(hAxeSelfOverlap,[1 nbOfFrames+1 0 1]);
-            grid(hAxeSelfOverlap,'on')
-            set(hAxeSelfOverlap, 'XTickLabel', [], 'TickLength', [0 0],'YTick',[0 1], 'YTickLabel', [], 'color', 'w', 'ButtonDownFcn', @selectFrameByClick);
-            % -------------------
-            % Display the length
-            % -------------------
-            cla(hAxeLength)
-            stairs(hAxeLength, listOfWorms.lengthWorms(currentWorm,:), 'hittest', 'off');
-            tmp = axis(hAxeLength) + [0 0 0 1];
-            axis(hAxeLength,[1 nbOfFrames+1 0 tmp(4)]);
-            hold(hAxeLength,'on')
-            for ff = find(listOfWorms.outOfLengths(currentWorm,:))
-                rectangle('parent',hAxeLength, 'position', [ff, 0, 1, tmp(4)], 'FaceColor', colorRejected, 'edgecolor', colorRejected, 'hittest', 'off');
-            end
-            if (isempty(hLineHighThr) || ~ishandle(hLineHighThr))
-                hLineHighThr = line('parent',hAxeLength,'xdata', [tmp(1) tmp(2)], 'ydata', [measures.highThr(currentWorm) measures.highThr(currentWorm)], 'color', 'r', 'hittest', 'off');
-            else
-                set(hLineHighThr, 'xdata', [tmp(1) tmp(2)], 'ydata', [measures.highThr(currentWorm) measures.highThr(currentWorm)]);
-            end
-            if (isempty(hLineLowThr) || ~ishandle(hLineLowThr))
-                hLineLowThr = line('parent',hAxeLength,'xdata', [tmp(1) tmp(2)], 'ydata', [measures.lowThr(currentWorm) measures.lowThr(currentWorm)], 'color', 'r', 'hittest', 'off');
-            else
-                set(hLineLowThr, 'xdata', [tmp(1) tmp(2)], 'ydata', [measures.lowThr(currentWorm) measures.lowThr(currentWorm)]);
-            end
-            stairs(hAxeLength, listOfWorms.lengthWorms(currentWorm,:),'-k', 'hittest', 'off');
-            hold(hAxeLength,'off')
-            grid(hAxeLength,'on')
-            set(hAxeLength, 'TickLength', [0 0], 'ButtonDownFcn', @selectFrameByClick)
-            % -------------------
-            % Display the current frame location on all graphs
-            % -------------------
-            tmp = axis(hAxeLength);
-            hRectCurrentFrame(1) = rectangle('parent',hAxeLength,      'position', [currentFrame, tmp(3), 1, tmp(4)-tmp(3)], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
-            hRectCurrentFrame(2) = rectangle('parent',hAxeOverlap,     'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
-            hRectCurrentFrame(3) = rectangle('parent',hAxeLost,        'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
-            hRectCurrentFrame(4) = rectangle('parent',hAxePrevOverlap, 'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
-            hRectCurrentFrame(5) = rectangle('parent',hAxeValid,       'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
-            hRectCurrentFrame(6) = rectangle('parent',hAxeSelfOverlap, 'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
-            hRectCurrentFrame(7) = rectangle('parent',hAxeGlare,       'position', [currentFrame, 0, 1, 1], 'FaceColor', 'none', 'edgecolor', 'k', 'LineStyle', '--', 'hittest', 'off');
-            % -------------------
-            % Update the display
-            % -------------------
-            displayCurrentFrame
-            % -------------------
-            % Update the number of valid frames
-            % -------------------
-            totalValid = sum(listOfWorms.valid(currentWorm,:));
-            fracValid = 100*totalValid/nbOfFrames;
-            set(txtValid, 'string', ['Valid frames: ', num2str(totalValid), ' / ', num2str(nbOfFrames), ' = ', sprintf('%.1f', fracValid), ' %']);
-            set(txtReject, 'string', ['Rejected frames: ', num2str(nbOfFrames-totalValid), ' / ', num2str(nbOfFrames), ' = ', sprintf('%.1f', 100-fracValid), ' %']);
-            % -------------------
-            % Display the trajectory of the current worm
-            % -------------------
-            if flagShowTrajectory && ~isempty(centerMovedSignificantly) && ~isempty(listOfWorms.positionCenterX)
-                hold(hAxeAllVideo,'on')
-                if isempty(hTraj) || ~ishandle(hTraj)
-                    hTraj = plot(hAxeAllVideo, listOfWorms.positionCenterX(currentWorm,centerMovedSignificantly(currentWorm,:) & listOfWorms.valid(currentWorm,:)),...
-                        listOfWorms.positionCenterY(currentWorm,centerMovedSignificantly(currentWorm,:)& listOfWorms.valid(currentWorm,:)),'-','color',colorTrajectory);
-                else
-                    set(hTraj,'xdata', listOfWorms.positionCenterX(currentWorm,centerMovedSignificantly(currentWorm,:)& listOfWorms.valid(currentWorm,:)),...
-                        'ydata', listOfWorms.positionCenterY(currentWorm,centerMovedSignificantly(currentWorm,:)& listOfWorms.valid(currentWorm,:)));
-                end
-                hold(hAxeAllVideo,'off')
-            end
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -1806,66 +1869,70 @@ waitfor(mainFigure,'BeingDeleted','on');
 % SELECT A THRESHOLD
 % ============
     function selectThreshold(hObject,eventdata) %#ok<INUSD>
-        if currentVideo == 0
-            return
-        end
-        % ------------
-        % Length: high threshold
-        % ------------
-        if hObject == btnHighThrUp
-            measures.highThr(currentWorm) = measures.highThr(currentWorm) + 1;
-        elseif hObject == btnHighThrDown
-            measures.highThr(currentWorm) = max(0, measures.highThr(currentWorm)-1);
-        elseif hObject == btnHighThrDefault
-            measures.highThr(currentWorm) = measures.highThrDef(currentWorm);
-        elseif hObject == editHighThr
-            newCurrent = round(str2double(get(editHighThr, 'string')));
-            if ~isnan(newCurrent) && newCurrent >= 0
-                measures.highThr(currentWorm) = newCurrent;
+        try
+            if currentVideo == 0
+                return
             end
-        end
-        set(editHighThr, 'string', int2str(measures.highThr(currentWorm)));
-        % ------------
-        % Length: low threshold
-        % ------------
-        if hObject == btnLowThrUp
-            measures.lowThr(currentWorm) = measures.lowThr(currentWorm) + 1;
-        elseif hObject == btnLowThrDown
-            measures.lowThr(currentWorm) = max(0, measures.lowThr(currentWorm)-1);
-        elseif hObject == btnLowThrDefault
-            measures.lowThr(currentWorm) = measures.lowThrDef(currentWorm);
-        elseif hObject == editLowThr
-            newCurrent = round(str2double(get(editLowThr, 'string')));
-            if ~isnan(newCurrent) && newCurrent >= 0
-                measures.lowThr(currentWorm) = newCurrent;
+            % ------------
+            % Length: high threshold
+            % ------------
+            if hObject == btnHighThrUp
+                measures.highThr(currentWorm) = measures.highThr(currentWorm) + 1;
+            elseif hObject == btnHighThrDown
+                measures.highThr(currentWorm) = max(0, measures.highThr(currentWorm)-1);
+            elseif hObject == btnHighThrDefault
+                measures.highThr(currentWorm) = measures.highThrDef(currentWorm);
+            elseif hObject == editHighThr
+                newCurrent = round(str2double(get(editHighThr, 'string')));
+                if ~isnan(newCurrent) && newCurrent >= 0
+                    measures.highThr(currentWorm) = newCurrent;
+                end
             end
-        end
-        set(editLowThr, 'string', int2str(measures.lowThr(currentWorm)));
-        listOfWorms.outOfLengths(currentWorm,:) =...
-            (listOfWorms.lengthWorms(currentWorm,:) > measures.highThr(currentWorm))...
-            | (listOfWorms.lengthWorms(currentWorm,:) < measures.lowThr(currentWorm));
-        % ------------
-        % Previous overlap threshold
-        % ------------
-        if hObject == btnPrevThrUp
-            measures.prevThr(currentWorm) = min(100,measures.prevThr(currentWorm) + 1);
-        elseif hObject == btnPrevThrDown
-            measures.prevThr(currentWorm) = max(0, measures.prevThr(currentWorm)-1);
-        elseif hObject == btnPrevThrDefault
-            measures.prevThr(currentWorm) = measures.prevThrDef(currentWorm);
-        elseif hObject == editPrevThr
-            newCurrent = round(str2double(get(editPrevThr, 'string')));
-            if ~isnan(newCurrent) && newCurrent >= 0 && newCurrent <= 100
-                measures.prevThr(currentWorm) = newCurrent;
+            set(editHighThr, 'string', int2str(measures.highThr(currentWorm)));
+            % ------------
+            % Length: low threshold
+            % ------------
+            if hObject == btnLowThrUp
+                measures.lowThr(currentWorm) = measures.lowThr(currentWorm) + 1;
+            elseif hObject == btnLowThrDown
+                measures.lowThr(currentWorm) = max(0, measures.lowThr(currentWorm)-1);
+            elseif hObject == btnLowThrDefault
+                measures.lowThr(currentWorm) = measures.lowThrDef(currentWorm);
+            elseif hObject == editLowThr
+                newCurrent = round(str2double(get(editLowThr, 'string')));
+                if ~isnan(newCurrent) && newCurrent >= 0
+                    measures.lowThr(currentWorm) = newCurrent;
+                end
             end
+            set(editLowThr, 'string', int2str(measures.lowThr(currentWorm)));
+            listOfWorms.outOfLengths(currentWorm,:) =...
+                (listOfWorms.lengthWorms(currentWorm,:) > measures.highThr(currentWorm))...
+                | (listOfWorms.lengthWorms(currentWorm,:) < measures.lowThr(currentWorm));
+            % ------------
+            % Previous overlap threshold
+            % ------------
+            if hObject == btnPrevThrUp
+                measures.prevThr(currentWorm) = min(100,measures.prevThr(currentWorm) + 1);
+            elseif hObject == btnPrevThrDown
+                measures.prevThr(currentWorm) = max(0, measures.prevThr(currentWorm)-1);
+            elseif hObject == btnPrevThrDefault
+                measures.prevThr(currentWorm) = measures.prevThrDef(currentWorm);
+            elseif hObject == editPrevThr
+                newCurrent = round(str2double(get(editPrevThr, 'string')));
+                if ~isnan(newCurrent) && newCurrent >= 0 && newCurrent <= 100
+                    measures.prevThr(currentWorm) = newCurrent;
+                end
+            end
+            listOfWorms.outOfPrevious(currentWorm,:) = (listOfWorms.overlapPrev(currentWorm,:)*100 < measures.prevThr(currentWorm));
+            set(editPrevThr, 'string', int2str(measures.prevThr(currentWorm)));
+            % ------------
+            % Update the display
+            % ------------
+            computeBlockSeparatorsAndValidity
+            selectWorm
+        catch exception
+            generateReport(exception)
         end
-        listOfWorms.outOfPrevious(currentWorm,:) = (listOfWorms.overlapPrev(currentWorm,:)*100 < measures.prevThr(currentWorm));
-        set(editPrevThr, 'string', int2str(measures.prevThr(currentWorm)));
-        % ------------
-        % Update the display
-        % ------------
-        computeBlockSeparatorsAndValidity
-        selectWorm
     end
 
 
@@ -1877,26 +1944,34 @@ waitfor(mainFigure,'BeingDeleted','on');
 % VALIDATE A WORM
 % ============
     function validateWorm(hObject,eventdata) %#ok<INUSD>
-        if currentVideo == 0
-            return
+        try
+            if currentVideo == 0
+                return
+            end
+            measures.status{currentWorm} = 'valid';
+            tmp = get(listWorms,'string');
+            tmp{currentWorm} = ['Worm ', num2str(currentWorm), ' : ', measures.status{currentWorm}];
+            set(listWorms,'string', tmp);
+        catch exception
+            generateReport(exception)
         end
-        measures.status{currentWorm} = 'valid';
-        tmp = get(listWorms,'string');
-        tmp{currentWorm} = ['Worm ', num2str(currentWorm), ' : ', measures.status{currentWorm}];
-        set(listWorms,'string', tmp);
     end
 
 % ============
 % REJECT A WORM
 % ============
     function rejectWorm(hObject,eventdata) %#ok<INUSD>
-        if currentVideo == 0
-            return
+        try
+            if currentVideo == 0
+                return
+            end
+            measures.status{currentWorm} = 'rejected';
+            tmp = get(listWorms,'string');
+            tmp{currentWorm} = ['Worm ', num2str(currentWorm), ' : ', measures.status{currentWorm}];
+            set(listWorms,'string', tmp);
+        catch exception
+            generateReport(exception)
         end
-        measures.status{currentWorm} = 'rejected';
-        tmp = get(listWorms,'string');
-        tmp{currentWorm} = ['Worm ', num2str(currentWorm), ' : ', measures.status{currentWorm}];
-        set(listWorms,'string', tmp);
     end
 
 
@@ -1945,48 +2020,51 @@ waitfor(mainFigure,'BeingDeleted','on');
 % BUILD THE LIST OF VIDEOS TO SHOW, BASED ON THE SELECTED FILTERS
 % ============
     function setFilteredList(hObject,eventdata) %#ok<INUSD>
-        newListTmp = cell(length(fileDB),1);
-        currentVal = 0;
-        listVideosIdx = zeros(1,length(fileDB));
-        fields = fieldnames(flt);
-        for field = 1:length(fields)
-            filterSelection.(fields{field}) = get(flt.(fields{field}),'value');
-        end
-        for vv = 1:length(fileDB)
-            flagKeep = true;
+        try
+            newListTmp = cell(length(fileDB),1);
+            currentVal = 0;
+            listVideosIdx = zeros(1,length(fileDB));
+            fields = fieldnames(flt);
             for field = 1:length(fields)
-                if (field == colFtlWell)
-                    value = num2str(~isempty(fileDB(vv).(fields{field})));
-                elseif ~ischar(fileDB(vv).(fields{field}))
-                    value = num2str(fileDB(vv).(fields{field}));
-                else
-                    value = fileDB(vv).(fields{field});
+                filterSelection.(fields{field}) = get(flt.(fields{field}),'value');
+            end
+            for vv = 1:length(fileDB)
+                flagKeep = true;
+                for field = 1:length(fields)
+                    if (field == colFtlWell)
+                        value = num2str(~isempty(fileDB(vv).(fields{field})));
+                    elseif ~ischar(fileDB(vv).(fields{field}))
+                        value = num2str(fileDB(vv).(fields{field}));
+                    else
+                        value = fileDB(vv).(fields{field});
+                    end
+                    options = get(flt.(fields{field}),'string');
+                    selIdx = get(flt.(fields{field}),'value');
+                    if length(selIdx) >= 1 && selIdx(1) == 1
+                        continue;
+                    end
+                    selection = options(selIdx);
+                    cand = 1;
+                    while (cand <= length(selection)) && ~strcmpi(value, selection{cand})
+                        cand = cand + 1;
+                    end
+                    if cand > length(selection)
+                        flagKeep = false;
+                        break
+                    end
                 end
-                options = get(flt.(fields{field}),'string');
-                selIdx = get(flt.(fields{field}),'value');
-                if length(selIdx) >= 1 && selIdx(1) == 1
-                    continue;
-                end
-                selection = options(selIdx);
-                cand = 1;
-                while (cand <= length(selection)) && ~strcmpi(value, selection{cand})
-                    cand = cand + 1;
-                end
-                if cand > length(selection)
-                    flagKeep = false;
-                    break
+                if flagKeep && fileDB(vv).segmented
+                    currentVal = currentVal + 1;
+                    newListTmp{currentVal} = fileDB(vv).name;
+                    listVideosIdx(currentVal) = vv;
                 end
             end
-            if flagKeep && fileDB(vv).segmented
-                currentVal = currentVal + 1;
-                newListTmp{currentVal} = fileDB(vv).name;
-                listVideosIdx(currentVal) = vv;
-            end
+            listVideosIdx = listVideosIdx(1:currentVal);
+            set(listVideos, 'string', newListTmp(1:currentVal,:), 'value',1);
+            set(txtListVideos,'string', ['Select a video (',num2str(length(listVideosIdx)),' filtered)']);
+        catch exception
+            generateReport(exception)
         end
-        listVideosIdx = listVideosIdx(1:currentVal);
-        set(listVideos, 'string', newListTmp(1:currentVal,:), 'value',1);
-        set(txtListVideos,'string', ['Select a video (',num2str(length(listVideosIdx)),' filtered)']);
-        
     end
 
 % ============
