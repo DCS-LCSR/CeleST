@@ -308,12 +308,16 @@ waitfor(mainFigure,'BeingDeleted','on');
 
     function switchHeadTail(hObject, eventdata)
         try
-            for ff = max(1,min(nbOfFrames, floor(str2double(get(editFrameSwitchHTStart, 'string'))))):max(1,min(nbOfFrames, floor(str2double(get(editFrameSwitchHTEnd, 'string')))))
-                listOfWorms.skel{currentWorm}{ff} = listOfWorms.skel{currentWorm}{ff}(:,end:-1:1);
-                listOfWorms.width{currentWorm}{ff} = listOfWorms.width{currentWorm}{ff}(end:-1:1);
+            if currentWorm~=0
+                for ff = max(1,min(nbOfFrames, floor(str2double(get(editFrameSwitchHTStart, 'string'))))):max(1,min(nbOfFrames, floor(str2double(get(editFrameSwitchHTEnd, 'string')))))
+                    listOfWorms.skel{currentWorm}{ff} = listOfWorms.skel{currentWorm}{ff}(:,end:-1:1);
+                    listOfWorms.width{currentWorm}{ff} = listOfWorms.width{currentWorm}{ff}(end:-1:1);
+                end
+                selectWorm;
+                CSTwriteSegmentationToTXT(listOfWorms, fileDB(currentVideo).name);
+            else
+                warndlg('Please select a video','No Video Selected');
             end
-            selectWorm;
-            CSTwriteSegmentationToTXT(listOfWorms, fileDB(currentVideo).name);
         catch exception
             generateReport(exception)
         end
