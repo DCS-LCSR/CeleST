@@ -186,139 +186,139 @@ waitfor(mainFigure,'BeingDeleted','on');
     function exportAll(hObject,eventdata)
         try
             try
-            defaultName = fullfile(filenames.export,['worm_data_',date,'.csv']);
-            flagUserInput = true;
-            if flagUserInput
-                [csvFile,csvPath] = uiputfile('*.csv','Save to CSV file', defaultName);
-                if ~csvPath % user pressed cancel
-                    return
+                defaultName = fullfile(filenames.export,['worm_data_',date,'.csv']);
+                flagUserInput = true;
+                if flagUserInput
+                    [csvFile,csvPath] = uiputfile('*.csv','Save to CSV file', defaultName);
+                    if ~csvPath % user pressed cancel
+                        return
+                    end
+                    fileToWrite = fopen(fullfile(csvPath,csvFile),'a');
+                else
+                    fileToWrite = fopen(defaultName,'a'); %#ok<UNRCH>
                 end
-                fileToWrite = fopen(fullfile(csvPath,csvFile),'a');
-            else
-                fileToWrite = fopen(defaultName,'a'); %#ok<UNRCH>
-            end
-            prevSelection = samplesListSelection;
-            prevStat = statSelected;
-            samplesListSelection(:) = 1;
-            for statSelected = 1:nbOfMeasures %#ok<FXUP>
-                showMeasures
-            end
-            output = ['Videos selected', sprintf('\n')];
-            % List the samples and their contents
-            for samp = 1:nbOfSamples
-                output = [output, samplesDef{1,samp}]; %#ok<*AGROW>
-                nbOfVideos = length(samplesIdx{samp});
-                for vid = 1:nbOfVideos+1
-                    output = [output, ' , ', samplesDef{vid+1,samp}];
+                prevSelection = samplesListSelection;
+                prevStat = statSelected;
+                samplesListSelection(:) = 1;
+                for statSelected = 1:nbOfMeasures %#ok<FXUP>
+                    showMeasures
                 end
-                output = [output, sprintf('\n')];
-            end
-            
-            output = [output, sprintf(',\n\n\n'), 'Statistics , number of data points, mean , standard error of the mean , 95%% confidence interval around the mean , standard deviation , minimum value , first quartile , median , third quartile , maximum value', sprintf('\n\n')];
-            % For each measure, list the samples, the videos and the stats
-            wait = waitbar(0, 'Please wait...');
-            for idx = 1:nbOfMeasures
-                waitbar(idx / (3*nbOfMeasures))
-                output = [output, sprintf(',\n'), listOfButtons{idx}, sprintf('\n')];
+                output = ['Videos selected', sprintf('\n')];
+                % List the samples and their contents
                 for samp = 1:nbOfSamples
-                    output = [output, samplesDef{1,samp}];
-                    output = [output, ...
-                        ' , ', sprintf('%f', measures.(listOfMeasures{idx}).nbDataPoints{samp}) , ...
-                        ' , ', sprintf('%f', measures.(listOfMeasures{idx}).mean{samp}) , ...
-                        ' , ', sprintf('%f', measures.(listOfMeasures{idx}).sem{samp}) , ...
-                        ' , ', sprintf('%f', measures.(listOfMeasures{idx}).cimean{samp}) , ...
-                        ' , ', sprintf('%f', measures.(listOfMeasures{idx}).std{samp}) , ...
-                        ' , ', sprintf('%f', measures.(listOfMeasures{idx}).min{samp}) , ...
-                        ' , ', sprintf('%f', measures.(listOfMeasures{idx}).quart1{samp}) , ...
-                        ' , ', sprintf('%f', measures.(listOfMeasures{idx}).median{samp}) , ...
-                        ' , ', sprintf('%f', measures.(listOfMeasures{idx}).quart3{samp}) , ...
-                        ' , ', sprintf('%f', measures.(listOfMeasures{idx}).max{samp}) ...
-                        ];
+                    output = [output, samplesDef{1,samp}]; %#ok<*AGROW>
+                    nbOfVideos = length(samplesIdx{samp});
+                    for vid = 1:nbOfVideos+1
+                        output = [output, ' , ', samplesDef{vid+1,samp}];
+                    end
                     output = [output, sprintf('\n')];
                 end
-            end
-            nbOfMeasures = length(listOfMeasures);
-            nbOfSamples = length(samplesIdx);
-            tableData = cell(2+(nbOfMeasures+1)*(nbOfSamples-1)-2, 1+4*(nbOfSamples-1));
-            tableData{1,1} = 'p values';
-            for head = 2:nbOfSamples
-                tableData{1,4*(head-1)-1} = samplesDef{1,head};
-            end
-            for meas = 2:nbOfMeasures
-                waitbar((nbOfMeasures+meas) / (3*nbOfMeasures))
-                rawData = cell(1,nbOfSamples);
-                for samp = 1:nbOfSamples
-                    rawData{samp} = [];
-                    for vid = 1:length(measures.(listOfMeasures{meas}).raw{samp})
-                        rawData{samp} = [rawData{samp} ; measures.(listOfMeasures{meas}).raw{samp}{vid}];
+                
+                output = [output, sprintf(',\n\n\n'), 'Statistics , number of data points, mean , standard error of the mean , 95%% confidence interval around the mean , standard deviation , minimum value , first quartile , median , third quartile , maximum value', sprintf('\n\n')];
+                % For each measure, list the samples, the videos and the stats
+                wait = waitbar(0, 'Please wait...');
+                for idx = 1:nbOfMeasures
+                    waitbar(idx / (3*nbOfMeasures))
+                    output = [output, sprintf(',\n'), listOfButtons{idx}, sprintf('\n')];
+                    for samp = 1:nbOfSamples
+                        output = [output, samplesDef{1,samp}];
+                        output = [output, ...
+                            ' , ', sprintf('%f', measures.(listOfMeasures{idx}).nbDataPoints{samp}) , ...
+                            ' , ', sprintf('%f', measures.(listOfMeasures{idx}).mean{samp}) , ...
+                            ' , ', sprintf('%f', measures.(listOfMeasures{idx}).sem{samp}) , ...
+                            ' , ', sprintf('%f', measures.(listOfMeasures{idx}).cimean{samp}) , ...
+                            ' , ', sprintf('%f', measures.(listOfMeasures{idx}).std{samp}) , ...
+                            ' , ', sprintf('%f', measures.(listOfMeasures{idx}).min{samp}) , ...
+                            ' , ', sprintf('%f', measures.(listOfMeasures{idx}).quart1{samp}) , ...
+                            ' , ', sprintf('%f', measures.(listOfMeasures{idx}).median{samp}) , ...
+                            ' , ', sprintf('%f', measures.(listOfMeasures{idx}).quart3{samp}) , ...
+                            ' , ', sprintf('%f', measures.(listOfMeasures{idx}).max{samp}) ...
+                            ];
+                        output = [output, sprintf('\n')];
                     end
                 end
-                for samp1 = 1:nbOfSamples-1
-                    tableData{2+(nbOfMeasures+1)*(samp1-1), 1} = samplesDef{1,samp1};
-                    tableData{2+(nbOfMeasures+1)*(samp1-1)+meas-1, 2} = listOfButtons{meas};
-                    for samp2 = (1+samp1):nbOfSamples
-                        if (size(rawData{samp1},1)==size(rawData{samp1},2))
-                            msgbox(['Stat tests could not be run for measure: ' listOfMeasures{meas} 'because data was non-commensurate for: ' samplesDef{3,samp1} '\nContinuing...'])
-                        elseif(size(rawData{samp2},1)==size(rawData{samp2},2))
-                            msgbox(['Stat tests could not be run for measure: ' listOfMeasures{meas} 'because data was non-commensurate for: ' samplesDef{3,samp2} '\nContinuing...'])
-                        else
-                            
-                            tableData{2+(nbOfMeasures+1)*(samp1-1) , 3+4*(samp2-2)} = 'F test';
-                            [~,pFtest] = vartest2(rawData{samp1},rawData{samp2},0.05, 'both');
-                            tableData{2+(nbOfMeasures+1)*(samp1-1)+(meas-1) , 3+4*(samp2-2)} = sprintf('%.4f',pFtest);
-                            
-                            tableData{2+(nbOfMeasures+1)*(samp1-1) , 3+4*(samp2-2)+1} = 't test equal';
-                            [~,pEqual] = ttest2(rawData{samp1},rawData{samp2},0.05, 'both','equal');
-                            tableData{2+(nbOfMeasures+1)*(samp1-1)+(meas-1) , 3+4*(samp2-2)+1} = sprintf('%.4f',pEqual);
-                            
-                            tableData{2+(nbOfMeasures+1)*(samp1-1) , 3+4*(samp2-2)+2} = 't test diff.';
-                            [~,pDiff] = ttest2(rawData{samp1},rawData{samp2},0.05, 'both','unequal');
-                            tableData{2+(nbOfMeasures+1)*(samp1-1)+(meas-1) , 3+4*(samp2-2)+2} = sprintf('%.4f',pDiff);
-                            
+                nbOfMeasures = length(listOfMeasures);
+                nbOfSamples = length(samplesIdx);
+                tableData = cell(2+(nbOfMeasures+1)*(nbOfSamples-1)-2, 1+4*(nbOfSamples-1));
+                tableData{1,1} = 'p values';
+                for head = 2:nbOfSamples
+                    tableData{1,4*(head-1)-1} = samplesDef{1,head};
+                end
+                for meas = 2:nbOfMeasures
+                    waitbar((nbOfMeasures+meas) / (3*nbOfMeasures))
+                    rawData = cell(1,nbOfSamples);
+                    for samp = 1:nbOfSamples
+                        rawData{samp} = [];
+                        for vid = 1:length(measures.(listOfMeasures{meas}).raw{samp})
+                            rawData{samp} = [rawData{samp} ; measures.(listOfMeasures{meas}).raw{samp}{vid}];
+                        end
+                    end
+                    for samp1 = 1:nbOfSamples-1
+                        tableData{2+(nbOfMeasures+1)*(samp1-1), 1} = samplesDef{1,samp1};
+                        tableData{2+(nbOfMeasures+1)*(samp1-1)+meas-1, 2} = listOfButtons{meas};
+                        for samp2 = (1+samp1):nbOfSamples
+                            if (size(rawData{samp1},1)==size(rawData{samp1},2))
+                                msgbox(['Stat tests could not be run for measure: ' listOfMeasures{meas} 'because data was non-commensurate for: ' samplesDef{3,samp1} '\nContinuing...'])
+                            elseif(size(rawData{samp2},1)==size(rawData{samp2},2))
+                                msgbox(['Stat tests could not be run for measure: ' listOfMeasures{meas} 'because data was non-commensurate for: ' samplesDef{3,samp2} '\nContinuing...'])
+                            else
+                                
+                                tableData{2+(nbOfMeasures+1)*(samp1-1) , 3+4*(samp2-2)} = 'F test';
+                                [~,pFtest] = vartest2(rawData{samp1},rawData{samp2},0.05, 'both');
+                                tableData{2+(nbOfMeasures+1)*(samp1-1)+(meas-1) , 3+4*(samp2-2)} = sprintf('%.4f',pFtest);
+                                
+                                tableData{2+(nbOfMeasures+1)*(samp1-1) , 3+4*(samp2-2)+1} = 't test equal';
+                                [~,pEqual] = ttest2(rawData{samp1},rawData{samp2},0.05, 'both','equal');
+                                tableData{2+(nbOfMeasures+1)*(samp1-1)+(meas-1) , 3+4*(samp2-2)+1} = sprintf('%.4f',pEqual);
+                                
+                                tableData{2+(nbOfMeasures+1)*(samp1-1) , 3+4*(samp2-2)+2} = 't test diff.';
+                                [~,pDiff] = ttest2(rawData{samp1},rawData{samp2},0.05, 'both','unequal');
+                                tableData{2+(nbOfMeasures+1)*(samp1-1)+(meas-1) , 3+4*(samp2-2)+2} = sprintf('%.4f',pDiff);
+                                
+                            end
                         end
                     end
                 end
-            end
-            output = [output, sprintf('\n\n\n')];
-            for tmpRow = 1:size(tableData,1)
-                for tmpCol = 1:size(tableData,2)
-                    output = [output,tableData{tmpRow,tmpCol}, ' , '];
-                end
-                output = [output, sprintf('\n')];
-            end
-            
-            output = [output, sprintf(',\n\n\n\n'), 'Data points', sprintf('\n\n\n')];
-            % For each measure, list the samples, the videos and the values
-            for idx = 1:nbOfMeasures
-                waitbar((2*nbOfMeasures+idx) / (3*nbOfMeasures))
-                output = [output, listOfButtons{idx}, sprintf('\n')];
-                for samp = 1:nbOfSamples
-                    output = [output, samplesDef{1,samp}];
-                    nbOfVideos = length(samplesIdx{samp});
-                    for vid = 1:nbOfVideos
-                        newData = sprintf(', %f', measures.(listOfMeasures{idx}).raw{samp}{vid});
-                        output = [output, newData(~isnan(newData))];
+                output = [output, sprintf('\n\n\n')];
+                for tmpRow = 1:size(tableData,1)
+                    for tmpCol = 1:size(tableData,2)
+                        output = [output,tableData{tmpRow,tmpCol}, ' , '];
                     end
                     output = [output, sprintf('\n')];
                 end
+                
+                output = [output, sprintf(',\n\n\n\n'), 'Data points', sprintf('\n\n\n')];
+                % For each measure, list the samples, the videos and the values
+                for idx = 1:nbOfMeasures
+                    waitbar((2*nbOfMeasures+idx) / (3*nbOfMeasures))
+                    output = [output, listOfButtons{idx}, sprintf('\n')];
+                    for samp = 1:nbOfSamples
+                        output = [output, samplesDef{1,samp}];
+                        nbOfVideos = length(samplesIdx{samp});
+                        for vid = 1:nbOfVideos
+                            newData = sprintf(', %f', measures.(listOfMeasures{idx}).raw{samp}{vid});
+                            output = [output, newData(~isnan(newData))];
+                        end
+                        output = [output, sprintf('\n')];
+                    end
+                end
+                
+                fprintf(fileToWrite,output);
+                fclose(fileToWrite);
+                close(wait);
+                samplesListSelection = prevSelection;
+                statSelected = prevStat;
+            catch em
+                if flagRobustness
+                    fprintf(fileToLog, '***   There was an error writing export file \n');
+                    fprintf(fileToLog, [getReport(em, 'basic'),'\n']);
+                else
+                    rethrow(em)
+                end
             end
             
-            fprintf(fileToWrite,output);
-            fclose(fileToWrite);
-            close(wait);
-            samplesListSelection = prevSelection;
-            statSelected = prevStat;
-        catch em
-            if flagRobustness
-                fprintf(fileToLog, '***   There was an error writing export file \n');
-                fprintf(fileToLog, [getReport(em, 'basic'),'\n']);
-            else
-                rethrow(em)
-            end
-            end
-        
-                        catch exception
-                    generateReport(exception)
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -327,19 +327,19 @@ waitfor(mainFigure,'BeingDeleted','on');
 % =========
     function setColormap(hObject,eventdata)
         try
-        valueSelected = get(hPopColormap, 'value');
-        if valueSelected <= 0
-            % no change
-            set(hPopColormap, 'value', idxColormap);
-        else
-            % change in selection
-            idxColormap = valueSelected;
-            currentColormap = colormap(listColormaps{idxColormap});
-            colormap(axeExample, currentColormap);
-            showMeasures
-        end
-                        catch exception
-                    generateReport(exception)
+            valueSelected = get(hPopColormap, 'value');
+            if valueSelected <= 0
+                % no change
+                set(hPopColormap, 'value', idxColormap);
+            else
+                % change in selection
+                idxColormap = valueSelected;
+                currentColormap = colormap(listColormaps{idxColormap});
+                colormap(axeExample, currentColormap);
+                showMeasures
+            end
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -348,15 +348,15 @@ waitfor(mainFigure,'BeingDeleted','on');
 % =========
     function setNumberOfTopWorms(hObject,eventdata)
         try
-        newnumber = round(str2double(get(hEditNumberOfTopWorms, 'string')));
-        if ~isnan(newnumber) && newnumber >= 1
-            numberOfTopWorms = newnumber;
-            loadRawMeasures
-        else
-            set(hEditNumberOfTopWorms, 'string', num2str(histoSteps));
-        end
-                        catch exception
-                    generateReport(exception)
+            newnumber = round(str2double(get(hEditNumberOfTopWorms, 'string')));
+            if ~isnan(newnumber) && newnumber >= 1
+                numberOfTopWorms = newnumber;
+                loadRawMeasures
+            else
+                set(hEditNumberOfTopWorms, 'string', num2str(histoSteps));
+            end
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -365,15 +365,15 @@ waitfor(mainFigure,'BeingDeleted','on');
 % =========
     function setNumberBins(hObject,eventdata)
         try
-        newnumber = round(str2double(get(hEditBins, 'string')));
-        if ~isnan(newnumber) && newnumber >= 5 && newnumber <= 500
-            histoSteps = newnumber;
-            showMeasures
-        else
-            set(hEditBins, 'string', num2str(histoSteps));
-        end
-                        catch exception
-                    generateReport(exception)
+            newnumber = round(str2double(get(hEditBins, 'string')));
+            if ~isnan(newnumber) && newnumber >= 5 && newnumber <= 500
+                histoSteps = newnumber;
+                showMeasures
+            else
+                set(hEditBins, 'string', num2str(histoSteps));
+            end
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -382,100 +382,100 @@ waitfor(mainFigure,'BeingDeleted','on');
 % =========
     function loadRawMeasures(hObject,eventdata)
         try
-        if nargin <= 0 || isempty(measures.(listOfMeasures{statSelected}).raw)
-            increm = 1/totalVideos;
-            valWait = 0;
-            hWait = waitbar(valWait, 'Loading measures...');
-            for idx = 1:length(listOfMeasures)
-                measures.(listOfMeasures{idx}).raw = cell(1,nbOfSamples);
-            end
-            wormIndices = cell(1,nbOfSamples);
-            for samp = 1:nbOfSamples
-                % load the data for each sample
-                nbOfVideos = length(samplesIdx{samp});
-                % Load the usabilities
-                allUsab = [];
-                allVids = [];
-                allIdx = [];
-                if isgraphics(hWait); waitbar(valWait, hWait,['Loading usabilities for: ', samplesDef{1,samp}]); end
-                for vid = 1:nbOfVideos
-                    [ measLoaded, wormIdx ] = CSTreadMeasuresFromTXT(fileDB(samplesIdx{samp}{vid}).name, false, {'usability'},true);
-                    usabilities = measLoaded.usability;
-                    nbOfPoints = length(usabilities);
-                    allUsab = [allUsab ; usabilities(:) ];
-                    allVids = [allVids ; samplesIdx{samp}{vid} * ones(nbOfPoints,1) ];
-                    allIdx  = [ allIdx ; wormIdx(:) ];
-                end
-                % Sort the usabilities
-                [~, idxsorted] = sort(allUsab, 'descend');
-                % Find the indices to load
-                allWormsToLoad = min(numberOfTopWorms, length(idxsorted));
-                idxsorted = idxsorted(1:allWormsToLoad);
-                videosToLoad = allVids(idxsorted);
-                wormsToLoad = allIdx(idxsorted);
-                % Re-load only the top worms
-                if isgraphics(hWaitBar); waitbar(valWait, hWait,['Loading measures for: ', samplesDef{1,samp}]); end
+            if nargin <= 0 || isempty(measures.(listOfMeasures{statSelected}).raw)
+                increm = 1/totalVideos;
+                valWait = 0;
+                hWait = waitbar(valWait, 'Loading measures...');
                 for idx = 1:length(listOfMeasures)
-                    measures.(listOfMeasures{idx}).raw{samp} = cell(1,nbOfVideos);
+                    measures.(listOfMeasures{idx}).raw = cell(1,nbOfSamples);
                 end
-                wormIndices{samp} = cell(1,nbOfVideos);
-                for vid = 1:nbOfVideos
-                    % check if video worth loading
-                    flagOkToLoad = false;
-                    for vidComp = 1:length(videosToLoad)
-                        flagOkToLoad = flagOkToLoad || (videosToLoad(vidComp) == samplesIdx{samp}{vid});
+                wormIndices = cell(1,nbOfSamples);
+                for samp = 1:nbOfSamples
+                    % load the data for each sample
+                    nbOfVideos = length(samplesIdx{samp});
+                    % Load the usabilities
+                    allUsab = [];
+                    allVids = [];
+                    allIdx = [];
+                    if isgraphics(hWait); waitbar(valWait, hWait,['Loading usabilities for: ', samplesDef{1,samp}]); end
+                    for vid = 1:nbOfVideos
+                        [ measLoaded, wormIdx ] = CSTreadMeasuresFromTXT(fileDB(samplesIdx{samp}{vid}).name, false, {'usability'},true);
+                        usabilities = measLoaded.usability;
+                        nbOfPoints = length(usabilities);
+                        allUsab = [allUsab ; usabilities(:) ];
+                        allVids = [allVids ; samplesIdx{samp}{vid} * ones(nbOfPoints,1) ];
+                        allIdx  = [ allIdx ; wormIdx(:) ];
                     end
-                    flagOkToLoad = ~isempty(find(videosToLoad == samplesIdx{samp}{vid}, 1));
-                    if flagOkToLoad
-                        % load the data of each video
-                        valWait = valWait + increm;
-                        if isgraphics(hWaitBar); waitbar(valWait, hWait); end
-                        % check if worms worth keeping
-                        wormsWorthKeeping = wormsToLoad(videosToLoad == samplesIdx{samp}{vid});
-                        [measLoaded, ~] = CSTreadMeasuresFromTXT(fileDB(samplesIdx{samp}{vid}).name, false, listOfMeasures, true, wormsWorthKeeping);
-                        wormIndices{samp}{vid} = wormsWorthKeeping;
-                        for idx = 1:length(listOfMeasures)
-                            if isfield(measLoaded, listOfMeasures{idx})
-                                measures.(listOfMeasures{idx}).raw{samp}{vid} = measLoaded.(listOfMeasures{idx});
-                            else
-                                measures.(listOfMeasures{idx}).raw{samp}{vid} = NaN;
+                    % Sort the usabilities
+                    [~, idxsorted] = sort(allUsab, 'descend');
+                    % Find the indices to load
+                    allWormsToLoad = min(numberOfTopWorms, length(idxsorted));
+                    idxsorted = idxsorted(1:allWormsToLoad);
+                    videosToLoad = allVids(idxsorted);
+                    wormsToLoad = allIdx(idxsorted);
+                    % Re-load only the top worms
+                    if isgraphics(hWait); waitbar(valWait, hWait,['Loading measures for: ', samplesDef{1,samp}]); end
+                    for idx = 1:length(listOfMeasures)
+                        measures.(listOfMeasures{idx}).raw{samp} = cell(1,nbOfVideos);
+                    end
+                    wormIndices{samp} = cell(1,nbOfVideos);
+                    for vid = 1:nbOfVideos
+                        % check if video worth loading
+                        flagOkToLoad = false;
+                        for vidComp = 1:length(videosToLoad)
+                            flagOkToLoad = flagOkToLoad || (videosToLoad(vidComp) == samplesIdx{samp}{vid});
+                        end
+                        flagOkToLoad = ~isempty(find(videosToLoad == samplesIdx{samp}{vid}, 1));
+                        if flagOkToLoad
+                            % load the data of each video
+                            valWait = valWait + increm;
+                            if isgraphics(hWait); waitbar(valWait, hWait); end
+                            % check if worms worth keeping
+                            wormsWorthKeeping = wormsToLoad(videosToLoad == samplesIdx{samp}{vid});
+                            [measLoaded, ~] = CSTreadMeasuresFromTXT(fileDB(samplesIdx{samp}{vid}).name, false, listOfMeasures, true, wormsWorthKeeping);
+                            wormIndices{samp}{vid} = wormsWorthKeeping;
+                            for idx = 1:length(listOfMeasures)
+                                if isfield(measLoaded, listOfMeasures{idx})
+                                    measures.(listOfMeasures{idx}).raw{samp}{vid} = measLoaded.(listOfMeasures{idx});
+                                else
+                                    measures.(listOfMeasures{idx}).raw{samp}{vid} = NaN;
+                                end
+                            end
+                            for idx = 1:length(measuresToMultByMmPerPxl)
+                                measures.(measuresToMultByMmPerPxl{idx}).raw{samp}{vid} = measures.(measuresToMultByMmPerPxl{idx}).raw{samp}{vid} .* fileDB(samplesIdx{samp}{vid}).mm_per_pixel;
+                            end
+                            for idx = 1:length(measuresToMultByFramesPerSec)
+                                measures.(measuresToMultByFramesPerSec{idx}).raw{samp}{vid} = measures.(measuresToMultByFramesPerSec{idx}).raw{samp}{vid} .* fileDB(samplesIdx{samp}{vid}).frames_per_second;
+                            end
+                            for idx = 1:length(measuresToMultBySecPerMin)
+                                measures.(measuresToMultBySecPerMin{idx}).raw{samp}{vid} = measures.(measuresToMultBySecPerMin{idx}).raw{samp}{vid} .* 60;
+                            end
+                            for idx = 1:length(measuresToMultByDegPerRadian)
+                                measures.(measuresToMultByDegPerRadian{idx}).raw{samp}{vid} = measures.(measuresToMultByDegPerRadian{idx}).raw{samp}{vid} .* 180 / pi;
+                            end
+                            if isfield(measures, 'distanceWhenReverse')
+                                measures.('distanceWhenReverse').raw{samp}{vid}(measures.('distanceWhenReverse').raw{samp}{vid} < 0) = NaN;
+                            end
+                            if isfield(measures, 'BFthrashing')
+                                measures.('BFthrashing').raw{samp}{vid}(measures.('BFthrashing').raw{samp}{vid} < 0) = NaN;
+                                measures.('BFinflexion').raw{samp}{vid}(measures.('BFinflexion').raw{samp}{vid} < 0) = NaN;
+                                measures.('BFsymmetry').raw{samp}{vid}(measures.('BFsymmetry').raw{samp}{vid} < 0) = NaN;
+                                measures.('BFflexibility').raw{samp}{vid}(measures.('BFflexibility').raw{samp}{vid} < 0) = NaN;
+                                measures.('Bthrashing').raw{samp}{vid}(measures.('Bthrashing').raw{samp}{vid} < 0) = NaN;
+                                measures.('Bflexibility').raw{samp}{vid}(measures.('Bflexibility').raw{samp}{vid} < 0) = NaN;
+                                measures.('Fthrashing').raw{samp}{vid}(measures.('Fthrashing').raw{samp}{vid} < 0) = NaN;
+                                measures.('Fflexibility').raw{samp}{vid}(measures.('Fflexibility').raw{samp}{vid} < 0) = NaN;
                             end
                         end
-                        for idx = 1:length(measuresToMultByMmPerPxl)
-                            measures.(measuresToMultByMmPerPxl{idx}).raw{samp}{vid} = measures.(measuresToMultByMmPerPxl{idx}).raw{samp}{vid} .* fileDB(samplesIdx{samp}{vid}).mm_per_pixel;
-                        end
-                        for idx = 1:length(measuresToMultByFramesPerSec)
-                            measures.(measuresToMultByFramesPerSec{idx}).raw{samp}{vid} = measures.(measuresToMultByFramesPerSec{idx}).raw{samp}{vid} .* fileDB(samplesIdx{samp}{vid}).frames_per_second;
-                        end
-                        for idx = 1:length(measuresToMultBySecPerMin)
-                            measures.(measuresToMultBySecPerMin{idx}).raw{samp}{vid} = measures.(measuresToMultBySecPerMin{idx}).raw{samp}{vid} .* 60;
-                        end
-                        for idx = 1:length(measuresToMultByDegPerRadian)
-                            measures.(measuresToMultByDegPerRadian{idx}).raw{samp}{vid} = measures.(measuresToMultByDegPerRadian{idx}).raw{samp}{vid} .* 180 / pi;
-                        end
-                        if isfield(measures, 'distanceWhenReverse')
-                            measures.('distanceWhenReverse').raw{samp}{vid}(measures.('distanceWhenReverse').raw{samp}{vid} < 0) = NaN;
-                        end
-                        if isfield(measures, 'BFthrashing')
-                            measures.('BFthrashing').raw{samp}{vid}(measures.('BFthrashing').raw{samp}{vid} < 0) = NaN;
-                            measures.('BFinflexion').raw{samp}{vid}(measures.('BFinflexion').raw{samp}{vid} < 0) = NaN;
-                            measures.('BFsymmetry').raw{samp}{vid}(measures.('BFsymmetry').raw{samp}{vid} < 0) = NaN;
-                            measures.('BFflexibility').raw{samp}{vid}(measures.('BFflexibility').raw{samp}{vid} < 0) = NaN;
-                            measures.('Bthrashing').raw{samp}{vid}(measures.('Bthrashing').raw{samp}{vid} < 0) = NaN;
-                            measures.('Bflexibility').raw{samp}{vid}(measures.('Bflexibility').raw{samp}{vid} < 0) = NaN;
-                            measures.('Fthrashing').raw{samp}{vid}(measures.('Fthrashing').raw{samp}{vid} < 0) = NaN;
-                            measures.('Fflexibility').raw{samp}{vid}(measures.('Fflexibility').raw{samp}{vid} < 0) = NaN;
-                        end
                     end
                 end
+                if isgraphics(hWait); close(hWait); end
+            else
+                % The data for the selected measure was already loaded, lazy list implementation
             end
-            close(hWait);
-        else
-            % The data for the selected measure was already loaded, lazy list implementation
-        end
-        showMeasures
-                        catch exception
-                    generateReport(exception)
+            showMeasures
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -483,65 +483,65 @@ waitfor(mainFigure,'BeingDeleted','on');
 
     function measure2DSelected(hObject,eventdata)
         try
-        % Compute all measures
-        hTmp2D = waitbar(0, 'Computing all measures...');
-        for sss = 1:length(listOfMeasures)
-            if isgraphics(hTmp2D); waitbar(sss/length(listOfMeasures), hTmp2D, ['Computing measure ', num2str(sss), ' / ', num2str(length(listOfMeasures))]); end
-            statSelected = sss;
-            showMeasures;
-        end
-        if isgraphics(hTmp2D); close(hTmp2D); end
-        
-        % Define the colorbars for histograms
-        colorSteps = 100;
-        histoSteps2D = 20;
-        ramp = 1-linspace(0.01,1,colorSteps/2)';
-        rampDark = 1-linspace(0.01,0.5,colorSteps/2)';
-        zero = zeros(colorSteps/2,1);
-        one = ones(colorSteps/2,1);
-        colorsHisto{1} = [ ramp, ramp, one  ; zero, zero, rampDark];
-        colorsHisto{2} = [ ramp, one,  one  ; zero, rampDark, rampDark];
-        colorsHisto{3} = [ one,  ramp, ramp ; rampDark, zero, zero];
-        colorsHisto{4} = [ one,  ramp, one  ; rampDark, zero, rampDark];
-        colorsHisto{5} = [ ramp, one,  ramp ; zero, rampDark, zero];
-        colorsHisto{6} = [ one,  one,  ramp ; rampDark, rampDark, zero];
-        colorsHisto{5} = (colorsHisto{6} + colorsHisto{3})/2;
-        colorsHisto{2} = (colorsHisto{2} + colorsHisto{5})/2;
-        for other = 7:nbOfSamples
-            colorsHisto{other} = [ one,  one,  ramp ; rampDark, rampDark, zero];
-        end
-        
-        % Display the information for all selected samples
-        sampleToShow = 1:nbOfSamples;
-        nbBoxes = 10;
-        mainHLocal = mainH;
-        mainWLocal = mainW;
-        subFig = figure('Position',[5,40,mainWLocal,mainHLocal],'Name','CeleST: 2D-graphs','numbertitle','off', 'color', get(mainPanel,'backgroundcolor'));
-        hPlot2D = axes('parent', subFig, 'units','pixels','position',[340 80 mainWLocal-440 mainHLocal-100], 'color', [0.5 0.5 0.5]);
-        for samps = sampleToShow
-            uicontrol('parent', subFig, 'units', 'pixels', 'style', 'text', 'HorizontalAlignment', 'left', 'string', samplesDef(samplesListSelection(samps), samps), 'position', [10 mainHLocal-140-100*samps 200 20]);
-            tmpAx = axes('parent', subFig, 'units', 'pixels', 'position', [10 mainHLocal-160-100*samps 200 20]);
-            for bb = 1:nbBoxes
-                fill(bb+[-1 -1 0 0],[0 1 1 0],colorsHisto{samps}(colorSteps/nbBoxes*bb,:),'parent', tmpAx);
-                hold(tmpAx, 'on');
+            % Compute all measures
+            hTmp2D = waitbar(0, 'Computing all measures...');
+            for sss = 1:length(listOfMeasures)
+                if isgraphics(hTmp2D); waitbar(sss/length(listOfMeasures), hTmp2D, ['Computing measure ', num2str(sss), ' / ', num2str(length(listOfMeasures))]); end
+                statSelected = sss;
+                showMeasures;
             end
-            set(tmpAx,'xtick',[],'ytick',[]);
-            uicontrol('parent', subFig, 'units', 'pixels', 'style', 'text', 'HorizontalAlignment', 'left', 'string', ' 1         samples in bin', 'position', [10 mainHLocal-180-100*samps 150 18]);
-            hHistoMax(samps) = uicontrol('parent', subFig, 'units', 'pixels', 'style', 'text', 'HorizontalAlignment', 'center', 'string', '1', 'position', [190 mainHLocal-180-100*samps 20 18]);
-        end
-        
-        uicontrol('parent', subFig,'style','pushbutton', 'string', 'Close', 'position', [10 mainHLocal-40 100 30], 'callback', @close2D);
-        uicontrol('parent', subFig, 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Number of histogram bins:', 'position', [10 mainHLocal-200 200 20]);
-        hEditBins2D = uicontrol('parent', subFig, 'style', 'edit', 'string', num2str(histoSteps2D), 'position', [175 mainHLocal-200 50 25], 'callback', @setNumberBins2D);
-        
-        statToShow = [1 2];
-        uicontrol('parent', subFig, 'units', 'pixels', 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Measure on the X axis:', 'position', [10 mainHLocal-80 150 20]);
-        hXMeasure = uicontrol('parent', subFig, 'style', 'popupmenu', 'string', listOfButtons,'value',statToShow(1), 'position', [10 mainHLocal-100 200 20], 'callback', @measSel);
-        uicontrol('parent', subFig, 'units', 'pixels', 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Measure on the Y axis:', 'position', [10 mainHLocal-140 150 20]);
-        hYMeasure = uicontrol('parent', subFig, 'style', 'popupmenu', 'string', listOfButtons,'value',statToShow(2), 'position', [10 mainHLocal-160 200 20], 'callback', @measSel);
-        show2DPlot;
-                        catch exception
-                    generateReport(exception)
+            if isgraphics(hTmp2D); close(hTmp2D); end
+            
+            % Define the colorbars for histograms
+            colorSteps = 100;
+            histoSteps2D = 20;
+            ramp = 1-linspace(0.01,1,colorSteps/2)';
+            rampDark = 1-linspace(0.01,0.5,colorSteps/2)';
+            zero = zeros(colorSteps/2,1);
+            one = ones(colorSteps/2,1);
+            colorsHisto{1} = [ ramp, ramp, one  ; zero, zero, rampDark];
+            colorsHisto{2} = [ ramp, one,  one  ; zero, rampDark, rampDark];
+            colorsHisto{3} = [ one,  ramp, ramp ; rampDark, zero, zero];
+            colorsHisto{4} = [ one,  ramp, one  ; rampDark, zero, rampDark];
+            colorsHisto{5} = [ ramp, one,  ramp ; zero, rampDark, zero];
+            colorsHisto{6} = [ one,  one,  ramp ; rampDark, rampDark, zero];
+            colorsHisto{5} = (colorsHisto{6} + colorsHisto{3})/2;
+            colorsHisto{2} = (colorsHisto{2} + colorsHisto{5})/2;
+            for other = 7:nbOfSamples
+                colorsHisto{other} = [ one,  one,  ramp ; rampDark, rampDark, zero];
+            end
+            
+            % Display the information for all selected samples
+            sampleToShow = 1:nbOfSamples;
+            nbBoxes = 10;
+            mainHLocal = mainH;
+            mainWLocal = mainW;
+            subFig = figure('Position',[5,40,mainWLocal,mainHLocal],'Name','CeleST: 2D-graphs','numbertitle','off', 'color', get(mainPanel,'backgroundcolor'));
+            hPlot2D = axes('parent', subFig, 'units','pixels','position',[340 80 mainWLocal-440 mainHLocal-100], 'color', [0.5 0.5 0.5]);
+            for samps = sampleToShow
+                uicontrol('parent', subFig, 'units', 'pixels', 'style', 'text', 'HorizontalAlignment', 'left', 'string', samplesDef(samplesListSelection(samps), samps), 'position', [10 mainHLocal-140-100*samps 200 20]);
+                tmpAx = axes('parent', subFig, 'units', 'pixels', 'position', [10 mainHLocal-160-100*samps 200 20]);
+                for bb = 1:nbBoxes
+                    fill(bb+[-1 -1 0 0],[0 1 1 0],colorsHisto{samps}(colorSteps/nbBoxes*bb,:),'parent', tmpAx);
+                    hold(tmpAx, 'on');
+                end
+                set(tmpAx,'xtick',[],'ytick',[]);
+                uicontrol('parent', subFig, 'units', 'pixels', 'style', 'text', 'HorizontalAlignment', 'left', 'string', ' 1         samples in bin', 'position', [10 mainHLocal-180-100*samps 150 18]);
+                hHistoMax(samps) = uicontrol('parent', subFig, 'units', 'pixels', 'style', 'text', 'HorizontalAlignment', 'center', 'string', '1', 'position', [190 mainHLocal-180-100*samps 20 18]);
+            end
+            
+            uicontrol('parent', subFig,'style','pushbutton', 'string', 'Close', 'position', [10 mainHLocal-40 100 30], 'callback', @close2D);
+            uicontrol('parent', subFig, 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Number of histogram bins:', 'position', [10 mainHLocal-200 200 20]);
+            hEditBins2D = uicontrol('parent', subFig, 'style', 'edit', 'string', num2str(histoSteps2D), 'position', [175 mainHLocal-200 50 25], 'callback', @setNumberBins2D);
+            
+            statToShow = [1 2];
+            uicontrol('parent', subFig, 'units', 'pixels', 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Measure on the X axis:', 'position', [10 mainHLocal-80 150 20]);
+            hXMeasure = uicontrol('parent', subFig, 'style', 'popupmenu', 'string', listOfButtons,'value',statToShow(1), 'position', [10 mainHLocal-100 200 20], 'callback', @measSel);
+            uicontrol('parent', subFig, 'units', 'pixels', 'style', 'text', 'HorizontalAlignment', 'left', 'string', 'Measure on the Y axis:', 'position', [10 mainHLocal-140 150 20]);
+            hYMeasure = uicontrol('parent', subFig, 'style', 'popupmenu', 'string', listOfButtons,'value',statToShow(2), 'position', [10 mainHLocal-160 200 20], 'callback', @measSel);
+            show2DPlot;
+        catch exception
+            generateReport(exception)
         end
         function close2D(ha, hb)
             set(subFig,'Visible','off');
@@ -784,17 +784,17 @@ waitfor(mainFigure,'BeingDeleted','on');
 % =========
     function measureSelected(hObject,eventdata)
         try
-        idx = find(btnMeas == hObject);
-        for otheridx = 1:length(btnMeas)
-            set(btnMeas(otheridx), 'value', 0);
-        end
-        set(btnMeas(idx), 'value', 1);
-        if idx ~= statSelected
-            statSelected = idx;
-            showMeasures;
-        end
-                        catch exception
-                    generateReport(exception)
+            idx = find(btnMeas == hObject);
+            for otheridx = 1:length(btnMeas)
+                set(btnMeas(otheridx), 'value', 0);
+            end
+            set(btnMeas(idx), 'value', 1);
+            if idx ~= statSelected
+                statSelected = idx;
+                showMeasures;
+            end
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -803,32 +803,32 @@ waitfor(mainFigure,'BeingDeleted','on');
 % =========
     function videoSelected(hObject,eventdata)
         try
-        samp = find(hSamples.listVideos == hObject);
-        valueSelected = get(hObject, 'value');
-        if valueSelected <= 0
-            % no change
-            set(hObject, 'value', samplesListSelection(samp));
-        else
-            % change in selection
-            samplesListSelection(samp) = valueSelected;
-            if (valueSelected == 1)
-                % The selection is the sample's name, disable the individual worms selection
-                set(hSamples.listWoms(samp), 'string', {' '}, 'value', 1, 'enable', 'off');
+            samp = find(hSamples.listVideos == hObject);
+            valueSelected = get(hObject, 'value');
+            if valueSelected <= 0
+                % no change
+                set(hObject, 'value', samplesListSelection(samp));
             else
-                % The selection is one video, fill in the worm selection and enable it
-                vid = valueSelected - 1; % first line is sample's name
-                nbOfWorms = length(wormIndices{samp}{vid});
-                listNames = cell(1, 1+nbOfWorms);
-                listNames{1} = 'All worms';
-                for worm = 1:nbOfWorms
-                    listNames{1+worm} = ['Worm ', num2str(wormIndices{samp}{vid}(worm))];
+                % change in selection
+                samplesListSelection(samp) = valueSelected;
+                if (valueSelected == 1)
+                    % The selection is the sample's name, disable the individual worms selection
+                    set(hSamples.listWoms(samp), 'string', {' '}, 'value', 1, 'enable', 'off');
+                else
+                    % The selection is one video, fill in the worm selection and enable it
+                    vid = valueSelected - 1; % first line is sample's name
+                    nbOfWorms = length(wormIndices{samp}{vid});
+                    listNames = cell(1, 1+nbOfWorms);
+                    listNames{1} = 'All worms';
+                    for worm = 1:nbOfWorms
+                        listNames{1+worm} = ['Worm ', num2str(wormIndices{samp}{vid}(worm))];
+                    end
+                    set(hSamples.listWoms(samp), 'string', listNames, 'value', 1, 'enable', 'on');
                 end
-                set(hSamples.listWoms(samp), 'string', listNames, 'value', 1, 'enable', 'on');
+                showMeasures(samp);
             end
-            showMeasures(samp);
-        end
-                        catch exception
-                    generateReport(exception)
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -837,18 +837,18 @@ waitfor(mainFigure,'BeingDeleted','on');
 % =========
     function wormSelected(hObject,eventdata)
         try
-        samp = find(hSamples.listWoms == hObject);
-        valueSelected = get(hObject, 'value');
-        if valueSelected <= 0
-            % no change
-            set(hObject, 'value', wormListSelection(samp));
-        else
-            % change in selection
-            wormListSelection(samp) = valueSelected;
-            showMeasures(samp);
-        end
-                        catch exception
-                    generateReport(exception)
+            samp = find(hSamples.listWoms == hObject);
+            valueSelected = get(hObject, 'value');
+            if valueSelected <= 0
+                % no change
+                set(hObject, 'value', wormListSelection(samp));
+            else
+                % change in selection
+                wormListSelection(samp) = valueSelected;
+                showMeasures(samp);
+            end
+        catch exception
+            generateReport(exception)
         end
     end
 
@@ -857,259 +857,259 @@ waitfor(mainFigure,'BeingDeleted','on');
 % =========
     function showMeasures(sampleToShow)
         try
-        set(hLabel, 'string', listOfLabels{statSelected});
-        if nargin <= 0
-            sampleToShow = 1:nbOfSamples;
-        end
-        for samp = sampleToShow
-            % -----------
-            % compute the stats for the sample 'samp'
-            % -----------
-            videoSelected = samplesListSelection(samp) - 1;
-            if videoSelected == 0
-                % -----------
-                % use all videos
-                % -----------
-                vidIdx = 1:length(measures.(listOfMeasures{statSelected}).raw{samp});
-                % -----------
-                % use all worms in all videos
-                % -----------
-                wormSelected = 0;
-            else
-                % -----------
-                % use one video
-                % -----------
-                vidIdx = videoSelected;
-                % -----------
-                % wormSelected: 0 = use all worms, >0 = use only selected worm
-                % -----------
-                wormSelected = get(hSamples.listWoms(samp), 'value') - 1;
+            set(hLabel, 'string', listOfLabels{statSelected});
+            if nargin <= 0
+                sampleToShow = 1:nbOfSamples;
             end
-            % -----------
-            % Process all videos selected in the sample
-            % -----------
-            sumOfValues = 0;
-            sumOfSq = 0;
-            minValue = Inf;
-            maxValue = -Inf;
-            nbDataPoints = 0;
-            
-            % -----------
-            % First pass: compute the mean, std, sem, cimean, min, max
-            % -----------
-            for vid = vidIdx
+            for samp = sampleToShow
                 % -----------
-                % Select which worms to use
+                % compute the stats for the sample 'samp'
                 % -----------
-                if wormSelected <= 0
-                    wormIdx = 1:length(measures.(listOfMeasures{statSelected}).raw{samp}{vid});
+                videoSelected = samplesListSelection(samp) - 1;
+                if videoSelected == 0
+                    % -----------
+                    % use all videos
+                    % -----------
+                    vidIdx = 1:length(measures.(listOfMeasures{statSelected}).raw{samp});
+                    % -----------
+                    % use all worms in all videos
+                    % -----------
+                    wormSelected = 0;
                 else
-                    wormIdx = wormSelected;
+                    % -----------
+                    % use one video
+                    % -----------
+                    vidIdx = videoSelected;
+                    % -----------
+                    % wormSelected: 0 = use all worms, >0 = use only selected worm
+                    % -----------
+                    wormSelected = get(hSamples.listWoms(samp), 'value') - 1;
                 end
                 % -----------
-                % Process all worms selected in the video
+                % Process all videos selected in the sample
                 % -----------
-                values = measures.(listOfMeasures{statSelected}).raw{samp}{vid}(wormIdx);
-                values(isnan(values))=[];
-                nbDataPoints = nbDataPoints + length(wormIdx);
-                sumOfValues = sumOfValues + sum(values);
-                sumOfSq = sumOfSq + sum(values .^ 2);
-                minValue = min([minValue; values],[],1);
-                maxValue = max([maxValue; values],[],1);
-            end
-            meanSample = sumOfValues / nbDataPoints;
-            varSample = sumOfSq/nbDataPoints - meanSample.^2;
-            stdSample = sqrt(varSample);
-            
-            measures.(listOfMeasures{statSelected}).nbDataPoints{samp} = nbDataPoints;
-            measures.(listOfMeasures{statSelected}).mean{samp} = meanSample;
-            measures.(listOfMeasures{statSelected}).std{samp} = sqrt( varSample * nbDataPoints / (nbDataPoints-1) );
-            measures.(listOfMeasures{statSelected}).sem{samp} = stdSample / sqrt(nbDataPoints);
-            measures.(listOfMeasures{statSelected}).cimean{samp} = 1.96 * stdSample / sqrt(nbDataPoints);
-            measures.(listOfMeasures{statSelected}).min{samp} = minValue;
-            measures.(listOfMeasures{statSelected}).max{samp} = maxValue;
-            
-        end
-        minValue = min(cell2mat(measures.(listOfMeasures{statSelected}).min));
-        maxValue = max(cell2mat(measures.(listOfMeasures{statSelected}).max));
-        range = maxValue - minValue;
-        if range <= 0
-            % -----------
-            % only one value, make sure no division by zero, actual value is irrelevant
-            % -----------
-            range = 1;
-        end
-        histoBounds = (0:histoSteps) * range / histoSteps + minValue;
-        namesHisto = cell(1, max(sampleToShow));
-        for samp = sampleToShow
-            % -----------
-            % compute the stats for the sample 'samp'
-            % -----------
-            videoSelected = samplesListSelection(samp) - 1;
-            if videoSelected == 0
-                % -----------
-                % use all videos
-                % -----------
-                vidIdx = 1:length(measures.(listOfMeasures{statSelected}).raw{samp});
-                % -----------
-                % use all worms in all videos
-                % -----------
-                wormSelected = 0;
-            else
-                % -----------
-                % use one video
-                % -----------
-                vidIdx = videoSelected;
-                % -----------
-                % wormSelected: 0 = use all worms, >0 = use only selected worm
-                % -----------
-                wormSelected = get(hSamples.listWoms(samp), 'value') - 1;
-            end
-            
-            % -----------
-            % Second pass: build the histogram
-            % -----------
-            histogram = zeros(1, histoSteps+1);
-            
-            namesHisto{samp} = cell(1, histoSteps+1);
-            
-            measures.(listOfMeasures{statSelected}).histoBounds{samp} = histoBounds;
-            for vid = vidIdx
-                % -----------
-                % Select which worms to use
-                % -----------
-                if wormSelected <= 0
-                    wormIdx = 1:length(measures.(listOfMeasures{statSelected}).raw{samp}{vid});
-                else
-                    wormIdx = wormSelected;
-                end
-                % -----------
-                % Process all worms selected in the video
-                % -----------
-                raw = measures.(listOfMeasures{statSelected}).raw{samp}{vid}(wormIdx);
-                for valIdx = 1:length(raw)
-                    idx = 1 + round(histoSteps * ( raw(valIdx) - minValue ) / range);
-                    if ~isnan(idx)
-                        
-                        % add worm to the context menu
-                        if isempty(namesHisto{samp}{idx})
-                            namesHisto{samp}{idx} = cell(0);
-                        end
-                        namesHisto{samp}{idx}{end+1} = {samplesIdx{samp}{vid} ,  wormIndices{samp}{vid}(valIdx)};
-                        histogram(idx) = histogram(idx) + 1;
-                    end
-                end
-            end
-            totalElements = sum(histogram);
-            if totalElements >= 1
-                measures.(listOfMeasures{statSelected}).histoValuesNotNorm{samp} = histogram;
-                measures.(listOfMeasures{statSelected}).histoValues{samp} = histogram / totalElements;
-                % -----------
-                % Final step: compute the quartiles
-                % -----------
-                cumulNormHisto = cumsum(histogram) / totalElements;
-                q1 = find(cumulNormHisto >= 0.25);
-                measures.(listOfMeasures{statSelected}).quart1{samp} = histoBounds(q1(1));
-                q2 = find(cumulNormHisto >= 0.5);
-                measures.(listOfMeasures{statSelected}).median{samp} = histoBounds(q2(1));
-                q3 = find(cumulNormHisto >= 0.75);
-                measures.(listOfMeasures{statSelected}).quart3{samp} = histoBounds(q3(1));
-            else
-                % -----------
-                % only rejected worms were selected
-                % -----------
-                for stat = 1:nbOfStats
-                    if ~strcmp('raw', listOfStats{stat})
-                        measures.(listOfMeasures{statSelected}).(listOfStats{stat}){samp} = [];
-                    end
-                end
-            end
-            set(hSamples.txtNbWorms(samp), 'string' , [num2str(measures.(listOfMeasures{statSelected}).nbDataPoints{samp}),' ']);
-        end
-        
-        % -----------
-        % Show graphs
-        % -----------
-        minValue = min(cell2mat(measures.(listOfMeasures{statSelected}).min));
-        maxValue = max(cell2mat(measures.(listOfMeasures{statSelected}).max));
-        deltaHisto = (maxValue - minValue) / histoSteps;
-        if deltaHisto <= 0
-            deltaHisto = 1;
-        end
-        xAxisCommon = [ minValue - deltaHisto/2 ,...
-            maxValue + deltaHisto/2 ];
-        for samp = sampleToShow
-            
-            cla(hSamples.plotMean(samp))
-            cla(hSamples.plotQuart(samp))
-            cla(hSamples.plotHisto(samp))
-            
-            if measures.(listOfMeasures{statSelected}).nbDataPoints{samp} > 0
-                % -----------
-                % Mean, std, sem, cimean
-                % -----------
-                hold(hSamples.plotMean(samp), 'on')
-                plot(hSamples.plotMean(samp), measures.(listOfMeasures{statSelected}).mean{samp} + measures.(listOfMeasures{statSelected}).sem{samp}*[-1,0,1], 3*[1,1,1],'+-g','linewidth',2)
-                plot(hSamples.plotMean(samp), measures.(listOfMeasures{statSelected}).mean{samp} + measures.(listOfMeasures{statSelected}).cimean{samp}*[-1,0,1], 2*[1,1,1],'+-b','linewidth',2)
-                plot(hSamples.plotMean(samp), measures.(listOfMeasures{statSelected}).mean{samp} + measures.(listOfMeasures{statSelected}).std{samp}*[-1,0,1], [1,1,1],'+-r','linewidth',2)
-                axis(hSamples.plotMean(samp), [xAxisCommon(1), xAxisCommon(2), 0, 4]);
-                set(hSamples.plotMean(samp),'xtickmode','auto','XMinorGrid','on','ytick',[],'xgrid','on','xticklabel',[],'TickLength',[0 0]);
-                set(hSamples.txtMSE(samp), 'string', [...
-                    num2str(measures.(listOfMeasures{statSelected}).mean{samp},'%5.4g'), ' +/- ',...
-                    num2str(measures.(listOfMeasures{statSelected}).sem{samp},'%5.3g'), ' ']);
-                set(hSamples.txtMCI(samp), 'string', [...
-                    num2str(measures.(listOfMeasures{statSelected}).mean{samp},'%5.4g'), ' +/- ',...
-                    num2str(measures.(listOfMeasures{statSelected}).cimean{samp},'%5.3g'), ' ']);
-                set(hSamples.txtMSD(samp), 'string', [...
-                    num2str(measures.(listOfMeasures{statSelected}).mean{samp},'%5.4g'), ' +/- ',...
-                    num2str(measures.(listOfMeasures{statSelected}).std{samp},'%5.3g'), ' ']);
+                sumOfValues = 0;
+                sumOfSq = 0;
+                minValue = Inf;
+                maxValue = -Inf;
+                nbDataPoints = 0;
                 
                 % -----------
-                % Quartiles
+                % First pass: compute the mean, std, sem, cimean, min, max
                 % -----------
-                hold(hSamples.plotQuart(samp), 'on')
-                plot(hSamples.plotQuart(samp), [measures.(listOfMeasures{statSelected}).min{samp}, measures.(listOfMeasures{statSelected}).quart1{samp}], [1 1], '-r','linewidth',2);
-                plot(hSamples.plotQuart(samp), [measures.(listOfMeasures{statSelected}).quart3{samp}, measures.(listOfMeasures{statSelected}).max{samp}], [1 1], '-r','linewidth',2);
-                plot(hSamples.plotQuart(samp), measures.(listOfMeasures{statSelected}).median{samp}*[1,1], [0.5 1.5], '-r','linewidth',2);
-                plot(hSamples.plotQuart(samp), [measures.(listOfMeasures{statSelected}).quart1{samp}, measures.(listOfMeasures{statSelected}).quart1{samp},...
-                    measures.(listOfMeasures{statSelected}).quart3{samp}, measures.(listOfMeasures{statSelected}).quart3{samp},...
-                    measures.(listOfMeasures{statSelected}).quart1{samp}], [0.5 1.5 1.5 0.5 0.5], '-r','linewidth',2);
-                axis(hSamples.plotQuart(samp), [xAxisCommon(1), xAxisCommon(2), 0, 2]);
-                set(hSamples.plotQuart(samp),'xtickmode','auto','XMinorGrid','on','ytick',[],'xgrid','on','xticklabel',[],'TickLength',[0 0]);
-                set(hSamples.txtQuartiles(samp), 'string', [...
-                    num2str(measures.(listOfMeasures{statSelected}).min{samp},'%5.3g'),' - ',...
-                    num2str(measures.(listOfMeasures{statSelected}).quart1{samp},'%5.3g'),' - ',...
-                    num2str(measures.(listOfMeasures{statSelected}).median{samp},'%5.3g'),' - ',...
-                    num2str(measures.(listOfMeasures{statSelected}).quart3{samp},'%5.3g'),' - ',...
-                    num2str(measures.(listOfMeasures{statSelected}).max{samp},'%5.3g'),' ']);
+                for vid = vidIdx
+                    % -----------
+                    % Select which worms to use
+                    % -----------
+                    if wormSelected <= 0
+                        wormIdx = 1:length(measures.(listOfMeasures{statSelected}).raw{samp}{vid});
+                    else
+                        wormIdx = wormSelected;
+                    end
+                    % -----------
+                    % Process all worms selected in the video
+                    % -----------
+                    values = measures.(listOfMeasures{statSelected}).raw{samp}{vid}(wormIdx);
+                    values(isnan(values))=[];
+                    nbDataPoints = nbDataPoints + length(wormIdx);
+                    sumOfValues = sumOfValues + sum(values);
+                    sumOfSq = sumOfSq + sum(values .^ 2);
+                    minValue = min([minValue; values],[],1);
+                    maxValue = max([maxValue; values],[],1);
+                end
+                meanSample = sumOfValues / nbDataPoints;
+                varSample = sumOfSq/nbDataPoints - meanSample.^2;
+                stdSample = sqrt(varSample);
+                
+                measures.(listOfMeasures{statSelected}).nbDataPoints{samp} = nbDataPoints;
+                measures.(listOfMeasures{statSelected}).mean{samp} = meanSample;
+                measures.(listOfMeasures{statSelected}).std{samp} = sqrt( varSample * nbDataPoints / (nbDataPoints-1) );
+                measures.(listOfMeasures{statSelected}).sem{samp} = stdSample / sqrt(nbDataPoints);
+                measures.(listOfMeasures{statSelected}).cimean{samp} = 1.96 * stdSample / sqrt(nbDataPoints);
+                measures.(listOfMeasures{statSelected}).min{samp} = minValue;
+                measures.(listOfMeasures{statSelected}).max{samp} = maxValue;
+                
+            end
+            minValue = min(cell2mat(measures.(listOfMeasures{statSelected}).min));
+            maxValue = max(cell2mat(measures.(listOfMeasures{statSelected}).max));
+            range = maxValue - minValue;
+            if range <= 0
+                % -----------
+                % only one value, make sure no division by zero, actual value is irrelevant
+                % -----------
+                range = 1;
+            end
+            histoBounds = (0:histoSteps) * range / histoSteps + minValue;
+            namesHisto = cell(1, max(sampleToShow));
+            for samp = sampleToShow
+                % -----------
+                % compute the stats for the sample 'samp'
+                % -----------
+                videoSelected = samplesListSelection(samp) - 1;
+                if videoSelected == 0
+                    % -----------
+                    % use all videos
+                    % -----------
+                    vidIdx = 1:length(measures.(listOfMeasures{statSelected}).raw{samp});
+                    % -----------
+                    % use all worms in all videos
+                    % -----------
+                    wormSelected = 0;
+                else
+                    % -----------
+                    % use one video
+                    % -----------
+                    vidIdx = videoSelected;
+                    % -----------
+                    % wormSelected: 0 = use all worms, >0 = use only selected worm
+                    % -----------
+                    wormSelected = get(hSamples.listWoms(samp), 'value') - 1;
+                end
                 
                 % -----------
-                % Histogram
+                % Second pass: build the histogram
                 % -----------
-                hold(hSamples.plotHisto(samp), 'on')
-                colorSteps = 100;
-                colorsHisto = eval([listColormaps{idxColormap},'(',num2str(2+colorSteps),')']);
-                maxHisto = max(measures.(listOfMeasures{statSelected}).histoValues{samp});
-                widthHisto = measures.(listOfMeasures{statSelected}).histoBounds{samp}(2) - measures.(listOfMeasures{statSelected}).histoBounds{samp}(1);
-                for samHist = 1:histoSteps+1
-                    if measures.(listOfMeasures{statSelected}).histoValues{samp}(samHist) > 0
-                        value = 1+round(measures.(listOfMeasures{statSelected}).histoValues{samp}(samHist) / maxHisto*colorSteps);
-                        x = - deltaHisto/2 + measures.(listOfMeasures{statSelected}).histoBounds{samp}(samHist) ;
-                        xNext = x + widthHisto;
-                        hcmenu = uicontextmenu;
-                        for idxMenu = 1:length(namesHisto{samp}{samHist})
-                            uimenu(hcmenu, 'Label', [fileDB(namesHisto{samp}{samHist}{idxMenu}{1}).name , ' : worm ',  num2str(namesHisto{samp}{samHist}{idxMenu}{2})]);
+                histogram = zeros(1, histoSteps+1);
+                
+                namesHisto{samp} = cell(1, histoSteps+1);
+                
+                measures.(listOfMeasures{statSelected}).histoBounds{samp} = histoBounds;
+                for vid = vidIdx
+                    % -----------
+                    % Select which worms to use
+                    % -----------
+                    if wormSelected <= 0
+                        wormIdx = 1:length(measures.(listOfMeasures{statSelected}).raw{samp}{vid});
+                    else
+                        wormIdx = wormSelected;
+                    end
+                    % -----------
+                    % Process all worms selected in the video
+                    % -----------
+                    raw = measures.(listOfMeasures{statSelected}).raw{samp}{vid}(wormIdx);
+                    for valIdx = 1:length(raw)
+                        idx = 1 + round(histoSteps * ( raw(valIdx) - minValue ) / range);
+                        if ~isnan(idx)
+                            
+                            % add worm to the context menu
+                            if isempty(namesHisto{samp}{idx})
+                                namesHisto{samp}{idx} = cell(0);
+                            end
+                            namesHisto{samp}{idx}{end+1} = {samplesIdx{samp}{vid} ,  wormIndices{samp}{vid}(valIdx)};
+                            histogram(idx) = histogram(idx) + 1;
                         end
-                        fill([x,x,xNext,xNext],[0 1 1 0],colorsHisto(value,:),'parent', hSamples.plotHisto(samp), 'edgecolor', 'c');
-                        % Removed broken property 'UIContextMenu'
                     end
                 end
-                axis(hSamples.plotHisto(samp), [xAxisCommon(1), xAxisCommon(2), 0, 1]);
-                set(hSamples.plotHisto(samp),'xtickmode','auto','XMinorGrid','on','ytick',[],'xgrid','on','XTickLabelMode','auto','ticklength',[0 0]);
+                totalElements = sum(histogram);
+                if totalElements >= 1
+                    measures.(listOfMeasures{statSelected}).histoValuesNotNorm{samp} = histogram;
+                    measures.(listOfMeasures{statSelected}).histoValues{samp} = histogram / totalElements;
+                    % -----------
+                    % Final step: compute the quartiles
+                    % -----------
+                    cumulNormHisto = cumsum(histogram) / totalElements;
+                    q1 = find(cumulNormHisto >= 0.25);
+                    measures.(listOfMeasures{statSelected}).quart1{samp} = histoBounds(q1(1));
+                    q2 = find(cumulNormHisto >= 0.5);
+                    measures.(listOfMeasures{statSelected}).median{samp} = histoBounds(q2(1));
+                    q3 = find(cumulNormHisto >= 0.75);
+                    measures.(listOfMeasures{statSelected}).quart3{samp} = histoBounds(q3(1));
+                else
+                    % -----------
+                    % only rejected worms were selected
+                    % -----------
+                    for stat = 1:nbOfStats
+                        if ~strcmp('raw', listOfStats{stat})
+                            measures.(listOfMeasures{statSelected}).(listOfStats{stat}){samp} = [];
+                        end
+                    end
+                end
+                set(hSamples.txtNbWorms(samp), 'string' , [num2str(measures.(listOfMeasures{statSelected}).nbDataPoints{samp}),' ']);
             end
-        end
-                        catch exception
-                    generateReport(exception)
+            
+            % -----------
+            % Show graphs
+            % -----------
+            minValue = min(cell2mat(measures.(listOfMeasures{statSelected}).min));
+            maxValue = max(cell2mat(measures.(listOfMeasures{statSelected}).max));
+            deltaHisto = (maxValue - minValue) / histoSteps;
+            if deltaHisto <= 0
+                deltaHisto = 1;
+            end
+            xAxisCommon = [ minValue - deltaHisto/2 ,...
+                maxValue + deltaHisto/2 ];
+            for samp = sampleToShow
+                
+                cla(hSamples.plotMean(samp))
+                cla(hSamples.plotQuart(samp))
+                cla(hSamples.plotHisto(samp))
+                
+                if measures.(listOfMeasures{statSelected}).nbDataPoints{samp} > 0
+                    % -----------
+                    % Mean, std, sem, cimean
+                    % -----------
+                    hold(hSamples.plotMean(samp), 'on')
+                    plot(hSamples.plotMean(samp), measures.(listOfMeasures{statSelected}).mean{samp} + measures.(listOfMeasures{statSelected}).sem{samp}*[-1,0,1], 3*[1,1,1],'+-g','linewidth',2)
+                    plot(hSamples.plotMean(samp), measures.(listOfMeasures{statSelected}).mean{samp} + measures.(listOfMeasures{statSelected}).cimean{samp}*[-1,0,1], 2*[1,1,1],'+-b','linewidth',2)
+                    plot(hSamples.plotMean(samp), measures.(listOfMeasures{statSelected}).mean{samp} + measures.(listOfMeasures{statSelected}).std{samp}*[-1,0,1], [1,1,1],'+-r','linewidth',2)
+                    axis(hSamples.plotMean(samp), [xAxisCommon(1), xAxisCommon(2), 0, 4]);
+                    set(hSamples.plotMean(samp),'xtickmode','auto','XMinorGrid','on','ytick',[],'xgrid','on','xticklabel',[],'TickLength',[0 0]);
+                    set(hSamples.txtMSE(samp), 'string', [...
+                        num2str(measures.(listOfMeasures{statSelected}).mean{samp},'%5.4g'), ' +/- ',...
+                        num2str(measures.(listOfMeasures{statSelected}).sem{samp},'%5.3g'), ' ']);
+                    set(hSamples.txtMCI(samp), 'string', [...
+                        num2str(measures.(listOfMeasures{statSelected}).mean{samp},'%5.4g'), ' +/- ',...
+                        num2str(measures.(listOfMeasures{statSelected}).cimean{samp},'%5.3g'), ' ']);
+                    set(hSamples.txtMSD(samp), 'string', [...
+                        num2str(measures.(listOfMeasures{statSelected}).mean{samp},'%5.4g'), ' +/- ',...
+                        num2str(measures.(listOfMeasures{statSelected}).std{samp},'%5.3g'), ' ']);
+                    
+                    % -----------
+                    % Quartiles
+                    % -----------
+                    hold(hSamples.plotQuart(samp), 'on')
+                    plot(hSamples.plotQuart(samp), [measures.(listOfMeasures{statSelected}).min{samp}, measures.(listOfMeasures{statSelected}).quart1{samp}], [1 1], '-r','linewidth',2);
+                    plot(hSamples.plotQuart(samp), [measures.(listOfMeasures{statSelected}).quart3{samp}, measures.(listOfMeasures{statSelected}).max{samp}], [1 1], '-r','linewidth',2);
+                    plot(hSamples.plotQuart(samp), measures.(listOfMeasures{statSelected}).median{samp}*[1,1], [0.5 1.5], '-r','linewidth',2);
+                    plot(hSamples.plotQuart(samp), [measures.(listOfMeasures{statSelected}).quart1{samp}, measures.(listOfMeasures{statSelected}).quart1{samp},...
+                        measures.(listOfMeasures{statSelected}).quart3{samp}, measures.(listOfMeasures{statSelected}).quart3{samp},...
+                        measures.(listOfMeasures{statSelected}).quart1{samp}], [0.5 1.5 1.5 0.5 0.5], '-r','linewidth',2);
+                    axis(hSamples.plotQuart(samp), [xAxisCommon(1), xAxisCommon(2), 0, 2]);
+                    set(hSamples.plotQuart(samp),'xtickmode','auto','XMinorGrid','on','ytick',[],'xgrid','on','xticklabel',[],'TickLength',[0 0]);
+                    set(hSamples.txtQuartiles(samp), 'string', [...
+                        num2str(measures.(listOfMeasures{statSelected}).min{samp},'%5.3g'),' - ',...
+                        num2str(measures.(listOfMeasures{statSelected}).quart1{samp},'%5.3g'),' - ',...
+                        num2str(measures.(listOfMeasures{statSelected}).median{samp},'%5.3g'),' - ',...
+                        num2str(measures.(listOfMeasures{statSelected}).quart3{samp},'%5.3g'),' - ',...
+                        num2str(measures.(listOfMeasures{statSelected}).max{samp},'%5.3g'),' ']);
+                    
+                    % -----------
+                    % Histogram
+                    % -----------
+                    hold(hSamples.plotHisto(samp), 'on')
+                    colorSteps = 100;
+                    colorsHisto = eval([listColormaps{idxColormap},'(',num2str(2+colorSteps),')']);
+                    maxHisto = max(measures.(listOfMeasures{statSelected}).histoValues{samp});
+                    widthHisto = measures.(listOfMeasures{statSelected}).histoBounds{samp}(2) - measures.(listOfMeasures{statSelected}).histoBounds{samp}(1);
+                    for samHist = 1:histoSteps+1
+                        if measures.(listOfMeasures{statSelected}).histoValues{samp}(samHist) > 0
+                            value = 1+round(measures.(listOfMeasures{statSelected}).histoValues{samp}(samHist) / maxHisto*colorSteps);
+                            x = - deltaHisto/2 + measures.(listOfMeasures{statSelected}).histoBounds{samp}(samHist) ;
+                            xNext = x + widthHisto;
+                            hcmenu = uicontextmenu;
+                            for idxMenu = 1:length(namesHisto{samp}{samHist})
+                                uimenu(hcmenu, 'Label', [fileDB(namesHisto{samp}{samHist}{idxMenu}{1}).name , ' : worm ',  num2str(namesHisto{samp}{samHist}{idxMenu}{2})]);
+                            end
+                            fill([x,x,xNext,xNext],[0 1 1 0],colorsHisto(value,:),'parent', hSamples.plotHisto(samp), 'edgecolor', 'c');
+                            % Removed broken property 'UIContextMenu'
+                        end
+                    end
+                    axis(hSamples.plotHisto(samp), [xAxisCommon(1), xAxisCommon(2), 0, 1]);
+                    set(hSamples.plotHisto(samp),'xtickmode','auto','XMinorGrid','on','ytick',[],'xgrid','on','XTickLabelMode','auto','ticklength',[0 0]);
+                end
+            end
+        catch exception
+            generateReport(exception)
         end
     end
 
