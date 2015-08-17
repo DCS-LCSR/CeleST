@@ -18,7 +18,7 @@ factor = 10^precision;
 
 blockSize = 2 + length(fieldnames(listOfWorms));
 
-if (flagShowGUI)
+if flagShowGUI
     hWaitBar = waitbar(0,'Saving segmentation results...');
 end
 nbOfWorms = length(listOfWorms.skel);
@@ -35,9 +35,7 @@ end
 fprintf(fid, header);
 
 for ww = 1:nbOfWorms
-    if flagShowGUI
-        waitbar(ww/nbOfWorms, hWaitBar);
-    end
+    if flagShowGUI && isgraphics(hWaitBar); waitbar(ww/nbOfWorms, hWaitBar); end
     for ff = 1:nbOfFrames
         if (length(listOfWorms.skel{ww}) >= ff) && (~isempty(listOfWorms.skel{ww}{ff}))
             coordX = round(factor*listOfWorms.skel{ww}{ff}(1,:));
@@ -93,7 +91,7 @@ for ww = 1:nbOfWorms
     end
 end
 fclose(fid);
-if flagShowGUI
+if flagShowGUI && isgraphics(hWaitBar) 
     close(hWaitBar)
     pause(0.001)
 end

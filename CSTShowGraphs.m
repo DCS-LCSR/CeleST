@@ -397,7 +397,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                 allUsab = [];
                 allVids = [];
                 allIdx = [];
-                waitbar(valWait, hWait,['Loading usabilities for: ', samplesDef{1,samp}]);
+                if isgraphics(hWait); waitbar(valWait, hWait,['Loading usabilities for: ', samplesDef{1,samp}]); end
                 for vid = 1:nbOfVideos
                     [ measLoaded, wormIdx ] = CSTreadMeasuresFromTXT(fileDB(samplesIdx{samp}{vid}).name, false, {'usability'},true);
                     usabilities = measLoaded.usability;
@@ -414,7 +414,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                 videosToLoad = allVids(idxsorted);
                 wormsToLoad = allIdx(idxsorted);
                 % Re-load only the top worms
-                waitbar(valWait, hWait,['Loading measures for: ', samplesDef{1,samp}]);
+                if isgraphics(hWaitBar); waitbar(valWait, hWait,['Loading measures for: ', samplesDef{1,samp}]); end
                 for idx = 1:length(listOfMeasures)
                     measures.(listOfMeasures{idx}).raw{samp} = cell(1,nbOfVideos);
                 end
@@ -429,7 +429,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     if flagOkToLoad
                         % load the data of each video
                         valWait = valWait + increm;
-                        waitbar(valWait, hWait);
+                        if isgraphics(hWaitBar); waitbar(valWait, hWait); end
                         % check if worms worth keeping
                         wormsWorthKeeping = wormsToLoad(videosToLoad == samplesIdx{samp}{vid});
                         [measLoaded, ~] = CSTreadMeasuresFromTXT(fileDB(samplesIdx{samp}{vid}).name, false, listOfMeasures, true, wormsWorthKeeping);
@@ -486,11 +486,11 @@ waitfor(mainFigure,'BeingDeleted','on');
         % Compute all measures
         hTmp2D = waitbar(0, 'Computing all measures...');
         for sss = 1:length(listOfMeasures)
-            waitbar(sss/length(listOfMeasures), hTmp2D, ['Computing measure ', num2str(sss), ' / ', num2str(length(listOfMeasures))]);
+            if isgraphics(hTmp2D); waitbar(sss/length(listOfMeasures), hTmp2D, ['Computing measure ', num2str(sss), ' / ', num2str(length(listOfMeasures))]); end
             statSelected = sss;
             showMeasures;
         end
-        close(hTmp2D);
+        if isgraphics(hTmp2D); close(hTmp2D); end
         
         % Define the colorbars for histograms
         colorSteps = 100;

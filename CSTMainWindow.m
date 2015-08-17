@@ -526,7 +526,7 @@ if fileToLog > 1; fclose(fileToLog); end
 % Check the flags for the videos
 % ------------
 
-    function checkSequences(hObject, event) %#ok<INUSD>
+    function checkSequences(~, ~)
         try
         if flagConsistentButton; h = waitbar(0,'Checking the consistency of the data...'); end
         ensureUniqueNames
@@ -536,7 +536,7 @@ if fileToLog > 1; fclose(fileToLog); end
             msgbox('There are no samples to check');
         else
             for seq = 1:nb
-                if floor(seq/10) == seq/10 && flagConsistentButton; waitbar(seq/nb,h); end
+                if floor(seq/10) == seq/10 && flagConsistentButton && isgraphics(h); waitbar(seq/nb,h); end
                 % ------------
                 % Check for segmented worms
                 % ------------
@@ -565,7 +565,7 @@ if fileToLog > 1; fclose(fileToLog); end
             end
         end
         if flagConsistentButton
-            close(h)
+            if isgraphics(h); close(h); end
             if ~errorCheck; msgbox('Data is consistent','Success'); end
         end
         flagConsistentButton = true;
@@ -687,7 +687,7 @@ if fileToLog > 1; fclose(fileToLog); end
         end
     end
 
-    function addMultipleVideos(hObject,eventdata)
+    function addMultipleVideos(~,~)
         try
         sampleFileDirs = uipickfiles;
         if ~iscell(sampleFileDirs); return; end
@@ -785,9 +785,7 @@ if fileToLog > 1; fclose(fileToLog); end
             % get the list of all features stored
             % ---------
             featItems = seqNode.getElementsByTagName('feature');
-            if floor(seq/10) == seq/10
-                waitbar((seq-1)/nb,h)
-            end
+            if floor(seq/10) == seq/10 && isgraphics(h); waitbar((seq-1)/nb,h); end
             for count = 1:featItems.getLength
                 currentNode = featItems.item(count-1);
                 featName = char(currentNode.getAttribute('name'));
@@ -817,7 +815,7 @@ if fileToLog > 1; fclose(fileToLog); end
                 fileDB(curr_file).name = '';
             end
         end
-        close(h)
+        if isgraphics(h); close(h); end
     end
 
     function wormFileXMLwrite(xmlFileName,precision)
@@ -831,9 +829,7 @@ if fileToLog > 1; fclose(fileToLog); end
         h = waitbar(0,'Saving the database...');
         nb = length(fileDB);
         for seq=1:nb
-            if floor(seq/10) == seq/10
-                waitbar((seq-1)/nb,h)
-            end
+            if floor(seq/10) == seq/10 && isgraphics(h); waitbar((seq-1)/nb,h); end
             % ---------
             % create a new node for the sequence
             % ---------
@@ -866,7 +862,7 @@ if fileToLog > 1; fclose(fileToLog); end
         % Save the sample XML document.
         % ---------
         xmlwrite(xmlFileName,docNode);
-        close(h)
+        if isgraphics(h); close(h); end
         function writeNode
             % ---------
             % create a new node for the feature

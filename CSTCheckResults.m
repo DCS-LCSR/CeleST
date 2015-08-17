@@ -353,7 +353,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             end
             totWorms = 0;
             for wormToMeasure = 1:nbOfWorms
-                waitbar(wormToMeasure/nbOfWorms,hTmp);
+                if isgraphics(hTmp); waitbar(wormToMeasure/nbOfWorms,hTmp); end
                 if strcmp(measures.status{wormToMeasure}, 'rejected')
                     continue
                 end
@@ -608,7 +608,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     allMeasures = rmfield(allMeasures, finalNamesAllValues{measureIdx});
                 end
             end
-            close(hTmp);
+            if isgraphics(hTmp); close(hTmp); end
             pause(0.001);
             if currentVideo~=0
                 CSTwriteMeasuresToTXT(allMeasures, fileDB(currentVideo).name);
@@ -758,7 +758,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     end
                 end
                 for ww = 1:nbOfWorms
-                    waitbar(ww/nbOfWorms, hWaitBar);
+                    if isgraphics(hWaitBar); waitbar(ww/nbOfWorms, hWaitBar); end
                     for ff = 1:nbOfFrames
                         skel = round(listOfWorms.skel{ww}{ff});
                         flagIn = false;
@@ -771,7 +771,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                         listOfWorms.inGlareZone(ww,ff) = flagIn;
                     end
                 end
-                close(hWaitBar)
+                if isgraphics(hWaitBar); close(hWaitBar); end
                 pause(0.001)
             end
         catch exception
@@ -802,7 +802,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
 % SWITCH THE TWO SELECTED WORMS
 % ============
-    function switchWorms(hObject,eventdata) %#ok<INUSD>
+    function switchWorms(hObject,eventdata)
         try
             frameCutStart = floor(str2double(get(editFrameCutStart, 'string')));
             if isnan(frameCutStart) || frameCutStart < 1 || frameCutStart > nbOfFrames
@@ -1004,7 +1004,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
 % DEFINE A NEW BLOCK STARTING FROM THE CURRENT FRAME
 % ============
-    function splitBlock(hObject,eventdata) %#ok<INUSD>
+    function splitBlock(hObject,eventdata)
         try
             if currentVideo == 0
                 return
@@ -1022,7 +1022,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
 % DEFINE A NEW BLOCK AS THE SINGLE CURRENT FRAME
 % ============
-    function isolateFrame(hObject,eventdata) %#ok<INUSD>
+    function isolateFrame(hObject,eventdata)
         try
             if currentVideo == 0
                 return
@@ -1078,7 +1078,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
 % SWITCH PLAY AND PAUSE VIDEO PLAYING
 % ============
-    function playPauseVideo(hObject,eventdata) %#ok<INUSD>
+    function playPauseVideo(hObject,eventdata)
         try
             if strcmp('Play',get(btnPlayVideo, 'string'))
                 message = 'Pause';
@@ -1104,7 +1104,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
 % SELECT A FRAME FROM ANY OF THE CONTROL OPTIONS IN THE GUI
 % ============
-    function selectFrameByClick(hObject,eventdata) %#ok<INUSD>
+    function selectFrameByClick(hObject,eventdata)
         try
             if currentVideo == 0
                 return
@@ -1200,7 +1200,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
 % DISPLAY THE CURRENT FRAME WITH ALL RELEVANT UPDATES IN THE GUI
 % ============
-    function displayCurrentFrame(hObject,eventdata) %#ok<INUSD>
+    function displayCurrentFrame(hObject,eventdata)
         % -------------------
         % Display the current frame location on all graphs
         % -------------------
@@ -1332,7 +1332,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
 % LOAD THE DATA FOR THE SELECTED VIDEO, THEN UPDATE THE WORM DISPLAY
 % ============
-    function loadVideoContents(hObject,eventdata) %#ok<INUSD>
+    function loadVideoContents(hObject,eventdata)
         try
             if (nargin <= 0) ||  (~isempty(listVideosIdx))
                 % ------------
@@ -1454,7 +1454,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                         % ------------
                         subSamp = (0:(1/nbSamplesCBL):1)';
                         for ff = 1:nbOfFrames
-                            waitbar(ff/nbOfFrames,hTmp);
+                            if isgraphics(hTmp); waitbar(ff/nbOfFrames,hTmp); end
                             bbox = zeros(nbOfWorms,4);
                             for ww = 1:nbOfWorms
                                 % =========
@@ -1610,7 +1610,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                         tmpAfterSelfOverlap = false(nbOfWorms, nbOfFrames);
                         checkWormsAgainstGlare
                         computeBlockSeparatorsAndValidity;
-                        close(hTmp);
+                        if isgraphics(hTmp); close(hTmp); end
                     end
                     newListTmp = cell(1,nbOfWorms);
                     %-------------------
@@ -1672,9 +1672,9 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
 % CHECK IF THE NEW VIDEO HAS DATA TO LOAD
 % ============
-    function checkSelectedVideo(hObject,eventdata) %#ok<INUSD>
+    function checkSelectedVideo(hObject,eventdata)
         try
-            if ~isempty([listVideos.String{:}])
+            if ~isempty(listVideosIdx)
                 tmp = listVideosIdx(get(listVideos,'value'));
                 if ~fileDB(tmp).segmented
                     warndlg(sprintf('The chosen file has not been processed. \nPlease process prior the checking its measures.'),'Warning')
@@ -1697,7 +1697,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
 % SELECT A WORM IN THE LIST, UPDATE ALL THE RELEVANT DISPLAYS IN THE GUI ACCORDINGLY
 % ============
-    function selectWorm(hObject,eventdata) %#ok<INUSD>
+    function selectWorm(hObject,eventdata)
         try
             if ~isempty([listWorms.String{:}])
                 currentWorm = get(listWorms, 'value');
@@ -1876,7 +1876,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
 % SELECT A THRESHOLD
 % ============
-    function selectThreshold(hObject,eventdata) %#ok<INUSD>
+    function selectThreshold(hObject,eventdata)
         try
             if currentVideo == 0
                 return
@@ -1951,7 +1951,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
 % VALIDATE A WORM
 % ============
-    function validateWorm(hObject,eventdata) %#ok<INUSD>
+    function validateWorm(hObject,eventdata)
         try
             if currentVideo == 0
                 return
@@ -1968,7 +1968,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
 % REJECT A WORM
 % ============
-    function rejectWorm(hObject,eventdata) %#ok<INUSD>
+    function rejectWorm(hObject,eventdata)
         try
             if currentVideo == 0
                 return
@@ -2027,7 +2027,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
 % BUILD THE LIST OF VIDEOS TO SHOW, BASED ON THE SELECTED FILTERS
 % ============
-    function setFilteredList(hObject,eventdata) %#ok<INUSD>
+    function setFilteredList(hObject,eventdata)
         try
             newListTmp = cell(length(fileDB),1);
             currentVal = 0;
@@ -2081,7 +2081,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ------------
 % Set the position of the main panel based on the sliders values
 % ------------
-    function setMainPanelPositionBySliders(hObject,eventdata) %#ok<INUSD>
+    function setMainPanelPositionBySliders(hObject,eventdata)
         newPos = get(mainPanel,'position');
         newPos(1) = 5 - get(sliderHoriz,'value');
         newPos(2) = -5 - get(sliderVert,'value');
@@ -2091,7 +2091,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ------------
 % Update the sliders positions when the main figure is resized
 % ------------
-    function resizeMainFigure(hObject,eventdata) %#ok<INUSD>
+    function resizeMainFigure(hObject,eventdata)
         % -------
         % Update the size and position of the sliders
         % -------
