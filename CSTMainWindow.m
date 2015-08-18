@@ -33,7 +33,38 @@ mainDir = strsplit(which('CeleST'),'/');
 mainDir = mainDir(1:(end-2));
 mainDir = strjoin(mainDir,'/');
 
-filenames.curr = mainDir;
+button = questdlg('Please choose a place to save your data','Save Location', 'Choose save location', 'Use default', 'Choose save location');
+if strcmp(button, 'Use default')
+    chosenDataPath = mainDir;
+else
+    chosenDataPath = uigetdir;
+end
+
+% choosePathFlag = true;
+% if exist(fullfile(cd, 'dataPath.txt'), 'file')
+%     fileID = fopen(fullfile(cd, 'dataPath.txt'),'r');
+%     chosenDataPath = fileread(fullfile(cd, 'dataPath.txt'));
+%     % Would you like to change your where you store your data?
+%     button = questdlg(['Your data is currently being saved in: ' chosenDataPath ', would you like to start saving it somewhere else?'],'Save Location','Keep This Location','Change location','Keep This Location');
+%     if strcmp(button, 'Keep This Location')
+%         choosePathFlag = false;
+%     end
+%     fclose(fileID);
+% end
+% if (choosePathFlag)
+%   % Please choose where to save your data to
+%     button = questdlg('Please choose a place to save your data','Choose save location', 'Use default', 'Choose save location');
+%     if strcmp(button, 'Use default')
+%        chosenDataPath = mainDir;
+%     else
+%         chosenDataPath = uigetdir;
+%         fileID = fopen('dataPath.txt','w+');
+%         fprintf(fileID, chosenDataPath);
+%         fclose(fileID);
+%     end
+% end
+
+filenames.curr = chosenDataPath;
 filenames.data = fullfile(filenames.curr, 'Data');
 filenames.log = fullfile(filenames.data, 'log');
 filenames.segmentation = fullfile(filenames.data, 'segmentation');
