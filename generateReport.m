@@ -3,7 +3,7 @@ function generateReport(exception)
 global filenames startTime fileLogID;
 
 % Clean-up CeleST couldn't do, due to error
-disp(['CeleST ending at ' datestr(clock)]);
+disp(['CeleST error at ' datestr(clock)]);
 diary off
 
 

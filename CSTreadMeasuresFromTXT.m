@@ -94,7 +94,7 @@ if fid >= 3
         end
     end
     
-    if flagShowGUI
+    if flagShowGUI && isgraphics(hWaitBar)
         close(hWaitBar)
         pause(0.001)
     end

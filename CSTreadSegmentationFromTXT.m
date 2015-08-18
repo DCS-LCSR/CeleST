@@ -12,7 +12,7 @@ if nargin < 2
     flagShowGUI = true;
 end
 
-if (flagShowGUI)
+if flagShowGUI
     hWaitBar = waitbar(0,'Loading segmentation results...');
 end
 
@@ -65,11 +65,7 @@ if strcmp(line1{1}{1}, 'format') && strcmp(line2{1}{1}, 'block')
     while ischar(tline)
         % read the worm and frame indices
         items = sscanf(tline, 'worm %d frame %d');
-        if flagShowGUI && ww < items(1)
-            if ishandle(hWaitBar)
-                waitbar(items(1)/nbOfWorms, hWaitBar);
-            end
-        end
+        if flagShowGUI && ww < items(1) && isgraphics(hWaitBar); waitbar(items(1)/nbOfWorms, hWaitBar); end
         ww = items(1);
         ff = items(2);
             % read the coordinates
@@ -113,10 +109,8 @@ if strcmp(line1{1}{1}, 'format') && strcmp(line2{1}{1}, 'block')
     end
 end
 fclose(fid);
-if flagShowGUI
-    if ishandle(hWaitBar)
-        close(hWaitBar)
-    end
+if flagShowGUI && isgraphics(hWaitBar)
+    close(hWaitBar)
     pause(0.001)
 end
 
