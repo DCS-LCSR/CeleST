@@ -37,8 +37,35 @@ button = questdlg('Please choose a place to save your data','Save Location', 'Ch
 if strcmp(button, 'Use default')
     chosenDataPath = mainDir;
 else
-    chosenDataPath = uigetdir;
+    button = questdlg('Would you like to create a new data folder or choose an existing one?','Save Location', 'Choose where to put new folder', 'Choose existing folder', 'Choose save location');
+    if strcmp(button, 'Choose where to put new folder')
+        chosenDataPath = uigetdir;
+    else
+        check = false;
+        while ~check
+            chosenDataPath = uigetdir;
+            if (chosenDataPath==0)
+                notDir = warndlg('There was an error in choosing the path. CeleST will use the default data directory.','!! Warning !!');
+                waitfor(notDir)
+                chosenDataPath = mainDir;
+                break
+            end
+            chosenDataPath = strsplit(chosenDataPath,'/');
+            if strcmp(chosenDataPath(end), 'Data')
+                chosenDataPath = chosenDataPath(1:(end-2));
+                chosenDataPath = strjoin(chosenDataPath,'/');
+                check = true;
+            else
+                invalidDataDlg = warndlg('This is not a valid Data folder. Please choose a proper data file.','!! Warning !!');
+                waitfor(invalidDataDlg);
+            end
+        end
+    end
+    
 end
+
+
+    
 
 % choosePathFlag = true;
 % if exist(fullfile(cd, 'dataPath.txt'), 'file')

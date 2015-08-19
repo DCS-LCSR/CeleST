@@ -6,7 +6,7 @@ function CSTProcessVideos
 
 % This function creates a window displaying sequences (frame by frame), where the user can launch the processing per sequence, and manually draw and edit the segmented worms.
 
-global fileDB filterNames filterSelection flagRobustness fileToLog currentImage timingOn timings timingsLabel timingsTime zoneOkForCompleteWorms zoneOkForStartingWorms listOfWorms traceOn colFtlWell mainPnlW mainPnlH;
+global filenames fileDB filterNames filterSelection flagRobustness fileToLog currentImage timingOn timings timingsLabel timingsTime zoneOkForCompleteWorms zoneOkForStartingWorms listOfWorms traceOn colFtlWell mainPnlW mainPnlH;
 
 % ============
 % CREATE THE INTERFACE
@@ -308,7 +308,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                 end
             end
             if any([fileDB(listVideosToProcIdx).segmented]);
-                process = questdlg('Some videos have already been processed and segmented. Old segmentation data may be lost. Process all videos anyway?','CeleST','Process','Cancel','Cancel');
+                process = questdlg('Some videos have already been processed and segmented. Old segmentation and measures data will be lost. Process all videos anyway?','CeleST','Process','Cancel','Cancel');
                 if strcmp(process, 'Process')
                     for seg=1:length(listVideosToProcIdx)
                         fileDB(listVideosToProcIdx(seg)).segmented = 0;
@@ -368,6 +368,9 @@ waitfor(mainFigure,'BeingDeleted','on');
                             flagFinishedProcessing = true;
                         end
                     end
+                    if(fileDB(listVideosToProcIdx(currentVideoIdx)).measured)
+                            delete(fullfile(filenames.measures, ['wormMeas_',fileDB(listVideosToProcIdx(currentVideoIdx)).name,'.txt']));
+                    end  
                 end
             catch em
                 if flagRobustness
