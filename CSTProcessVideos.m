@@ -304,6 +304,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             if ~isempty(get(listVideosNoWell, 'string'))
                 button = questdlg('Some videos have no defined swim well. Processing them might take longer and be less reliable. Process all videos anyway?','CeleST','Process','Cancel','Cancel');
                 if strcmp(button, 'Cancel')
+                    set(btnProcessInterrupt, 'enable', 'off');
                     return
                 end
             end
@@ -314,6 +315,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                         fileDB(listVideosToProcIdx(seg)).segmented = 0;
                     end
                 elseif strcmp(process, 'Cancel')
+                    set(btnProcessInterrupt, 'enable', 'off');
                     return
                 end
             end
