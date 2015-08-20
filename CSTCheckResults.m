@@ -1696,7 +1696,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
     function selectWorm(hObject,eventdata)
         try
-            if ~isempty([listWorms.String{:}])
+            if ~isempty([get(listWorms,'String')])
                 currentWorm = get(listWorms, 'value');
                 if isempty(currentWorm)
                     cla(hAxeLength)
