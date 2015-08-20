@@ -370,6 +370,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     end
                     if(fileDB(listVideosToProcIdx(currentVideoIdx)).measured)
                             delete(fullfile(filenames.measures, ['wormMeas_',fileDB(listVideosToProcIdx(currentVideoIdx)).name,'.txt']));
+                            fileDB(listVideosToProcIdx(seg)).measured = 0;
                     end  
                 end
             catch em
