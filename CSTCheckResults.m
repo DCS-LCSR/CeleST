@@ -926,9 +926,6 @@ waitfor(mainFigure,'BeingDeleted','on');
     end
 
 
-
-
-
 % ************************
 %      BLOCK MANAGEMENT
 % ************************
