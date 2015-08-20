@@ -245,8 +245,10 @@ editable = [true(1,12), false(1,6)];
 tableVideos = uitable('parent',mainPanel,'position',[0 30 mainPanelPosition(3)-330 yFilters-30],'RearrangeableColumn','on','ColumnEditable',[],'CellEditCallback', @tableEdit,'ColumnWidth','auto');
 listVideosIdx = [];
 populateFilters
+checkVideoDirectories
 set(mainFigure,'visible','on')
 pause(0.1)
+
 % ------------
 % Waiting for closure
 % ------------
@@ -289,115 +291,121 @@ if fileToLog > 1; fclose(fileToLog); end
 
     function processVideo(hObject,eventdata) %#ok<INUSD>
         try
-        set(mainFigure,'Visible','off');
-        CSTProcessVideos
-        set(mainFigure,'Visible','on');
-        flagConsistentButton = false;
-        checkSequences
-        populateFilters
-                catch exception
+            set(mainFigure,'Visible','off');
+            CSTProcessVideos
+            set(mainFigure,'Visible','on');
+            flagConsistentButton = false;
+            checkSequences
+            populateFilters
+        catch exception
             generateReport(exception)
         end
     end
 
     function checkResults(hObject,eventdata) %#ok<INUSD>
         try
-        set(mainFigure,'Visible','off');
-        CSTCheckResults
-        set(mainFigure,'Visible','on');
-        flagConsistentButton = false;
-        checkSequences
-        populateFilters
-                catch exception
+            set(mainFigure,'Visible','off');
+            CSTCheckResults
+            set(mainFigure,'Visible','on');
+            flagConsistentButton = false;
+            checkSequences
+            populateFilters
+        catch exception
             generateReport(exception)
         end
     end
 
     function showMeasures(hObject,eventdata) %#ok<INUSD>
         try
-        set(mainFigure,'Visible','off');
-        CSTShowMeasures
-        set(mainFigure,'Visible','on');
-        flagConsistentButton = false;
-        checkSequences
-        populateFilters
-                catch exception
+            set(mainFigure,'Visible','off');
+            CSTShowMeasures
+            set(mainFigure,'Visible','on');
+            flagConsistentButton = false;
+            checkSequences
+            populateFilters
+        catch exception
             generateReport(exception)
         end
     end
 
-    function removeVideos(hObject,eventdata) %#ok<INUSD>
+    function removeVideos(varargin)
         try
-        tmpData = get(tableVideos,'data');
-        listNames = tmpData(:,1);
-        [selection,ok] = listdlg('ListString',listNames, 'name', 'CeleST: remove videos','promptstring', 'Videos to remove from the database:',...
-            'okstring','Remove', 'listsize',[400 300]);
-        vids = {fileDB(selection).name};
-        if ok == 1
-            word = cell(1,length(selection));
-            for tmpSel = 1:length(selection)
-                
-                if tmpSel ~= length(selection)
-                    word{tmpSel} = [ fileDB(listVideosIdx(selection(tmpSel))).name, ', ' ];
-                else
-                    if tmpSel ~= 1
-                        word{tmpSel} = [ ' and ', fileDB(listVideosIdx(selection(tmpSel))).name, '?' ];
+            ok = 0;
+            if nargin < 3
+                tmpData = get(tableVideos,'data');
+                listNames = tmpData(:,1);
+                if ~isempty(listNames)
+                    [selection,ok] = listdlg('ListString',listNames, 'name', 'CeleST: remove videos','promptstring', 'Videos to remove from the database:',...
+                        'okstring','Remove', 'listsize',[400 300]);
+                end
+            else
+                selection = varargin{1};
+                ok = 1;
+            end
+            if ok == 1
+                vids = {fileDB(selection).name};
+                word = cell(1,length(selection));
+                for tmpSel = 1:length(selection)
+                    
+                    if tmpSel ~= length(selection)
+                        word{tmpSel} = [ fileDB(listVideosIdx(selection(tmpSel))).name, ', ' ];
                     else
-                        word{tmpSel} =  [fileDB(listVideosIdx(selection(tmpSel))).name, '?' ];
+                        if tmpSel ~= 1
+                            word{tmpSel} = [ ' and ', fileDB(listVideosIdx(selection(tmpSel))).name, '?' ];
+                        else
+                            word{tmpSel} =  [fileDB(listVideosIdx(selection(tmpSel))).name, '?' ];
+                        end
                     end
                 end
-                
-            end
-            
-            choice = questdlg(['Are you sure you want to remove: ',  strjoin(word)],'Warning Deletion','Yes','Cancel','Cancel');
-            if strcmp(choice,'Yes')
-                fileDB(listVideosIdx(selection)) = [];
-                fields = fieldnames(flt);
-                for field = 1:length(fields)
-                    set(flt.(fields{field}),'value',1)
+                choice = questdlg(['Are you sure you want to remove: ',  strjoin(word)],'Warning Deletion','Yes','Cancel','Cancel');
+                if strcmp(choice,'Yes')
+                    fileDB(listVideosIdx(selection)) = [];
+                    fields = fieldnames(flt);
+                    for field = 1:length(fields)
+                        set(flt.(fields{field}),'value',1)
+                    end
+                    for name = 1:length(vids)
+                        disp(['Removing: ' vids{name}])
+                        % Attempt to delete segmentation data
+                        delete(fullfile(filenames.segmentation,['wormSegm_',vids{name},'.txt']));
+                        % Attempt to delete measures data
+                        delete(fullfile(filenames.measures,['wormMeas_',vids{name},'.txt']));
+                    end
                 end
-                for name = 1:length(vids)
-                    disp(['Removing: ' vids{name}])
-                    % Attempt to delete segmentation data
-                    delete(fullfile(filenames.segmentation,['wormSegm_',vids{name},'.txt']));
-                    % Attempt to delete measures data
-                    delete(fullfile(filenames.measures,['wormMeas_',vids{name},'.txt']));
-                end
+                populateFilters
             end
-            populateFilters
-        end
-                catch exception
+        catch exception
             generateReport(exception)
         end
     end
 
     function tableEdit(hObject,eventdata) %#ok<INUSL>
         try
-        if ~isempty(eventdata.NewData) && (~isnumeric(eventdata.NewData) || ~isnan(eventdata.NewData))
-            fileDB(listVideosIdx(eventdata.Indices(1))).(fieldsIni{eventdata.Indices(2)}) = eventdata.NewData;
-            populateFilters
-        else
-            warndlg('Field is not editable or data is faulty','Data Change Error')
-            tmpData = get(tableVideos,'data');
-            tmpData{eventdata.Indices(1),eventdata.Indices(2)} = fileDB(listVideosIdx(eventdata.Indices(1))).(fieldsIni{eventdata.Indices(2)});
-            set(tableVideos, 'data', tmpData);
-        end
-                catch exception
+            if ~isempty(eventdata.NewData) && (~isnumeric(eventdata.NewData) || ~isnan(eventdata.NewData))
+                fileDB(listVideosIdx(eventdata.Indices(1))).(fieldsIni{eventdata.Indices(2)}) = eventdata.NewData;
+                populateFilters
+            else
+                warndlg('Field is not editable or data is faulty','Data Change Error')
+                tmpData = get(tableVideos,'data');
+                tmpData{eventdata.Indices(1),eventdata.Indices(2)} = fileDB(listVideosIdx(eventdata.Indices(1))).(fieldsIni{eventdata.Indices(2)});
+                set(tableVideos, 'data', tmpData);
+            end
+        catch exception
             generateReport(exception)
         end
     end
 
     function editTable(hObject,eventdata) %#ok<INUSD>
         try
-        if get(btnEdit,'value') == 1
-            set(tableVideos, 'ColumnEditable',editable);
-        else
-            set(tableVideos, 'ColumnEditable',false(1,length(fieldsIni)));
-            flagConsistentButton = false;
-            checkSequences
-            populateFilters
-        end
-                catch exception
+            if get(btnEdit,'value') == 1
+                set(tableVideos, 'ColumnEditable',editable);
+            else
+                set(tableVideos, 'ColumnEditable',false(1,length(fieldsIni)));
+                flagConsistentButton = false;
+                checkSequences
+                populateFilters
+            end
+        catch exception
             generateReport(exception)
         end
     end
@@ -446,93 +454,93 @@ if fileToLog > 1; fclose(fileToLog); end
 % ============
     function setFilteredList(hObject,eventdata) %#ok<INUSD>
         try
-        fieldsToHideInTable = {'glareZones', 'format'};
-        totToHide = length(fieldsToHideInTable);
-        namesToShow = fieldnames(fileDB);
-        field = 1;
-        while field <= length(namesToShow)
-            flagWasRemoved = false;
-            for ffToHide = 1:totToHide
-                if strcmp(namesToShow{field}, fieldsToHideInTable{ffToHide})
-                    namesToShow(field) = [];
-                    flagWasRemoved = true;
-                    break;
-                end
-            end
-            if ~flagWasRemoved
-                field = field + 1;
-            end
-        end
-        set(tableVideos,'columnname',namesToShow);
-        if ~isempty(fileDB)
-            types = cell(1,length(namesToShow));
-            for it = 1:length(namesToShow)
-                test = fileDB(1).(namesToShow{it});
-                if islogical(test)
-                    types{it} = 'logical';
-                elseif isnumeric(test)
-                    types{it} = 'numeric';
-                else
-                    types{it} = 'char';
-                end
-            end
-            types{colWell} = 'logical';
-            set(tableVideos,'columnformat',types)
-        end
-        result = cell(length(fileDB),length(namesToShow));
-        currentVal = 0;
-        listVideosIdx = zeros(1,length(fileDB));
-        fields = fieldnames(flt);
-        
-        for field = 1:length(fields)
-            filterSelection.(fields{field}) = get(flt.(fields{field}),'value');
-        end
-        
-        for vv = 1:length(fileDB)
-            flagKeep = true;
-            for field = 1:length(fields)
-                if (field == colFtlWell)
-                    value = num2str(~isempty(fileDB(vv).(fields{field})));
-                elseif ~ischar(fileDB(vv).(fields{field}))
-                    value = num2str(fileDB(vv).(fields{field}));
-                else
-                    value = fileDB(vv).(fields{field});
-                end
-                options = get(flt.(fields{field}),'string');
-                selIdx = get(flt.(fields{field}),'value');
-                if length(selIdx) >= 1 && selIdx(1) == 1
-                    continue;
-                end
-                try
-                    selection = options(selIdx);
-                catch %#ok<CTCH>
-                    selection = options(1);
-                end
-                cand = 1;
-                while (cand <= length(selection)) && ~strcmpi(value, selection{cand})
-                    cand = cand + 1;
-                end
-                if cand > length(selection)
-                    flagKeep = false;
-                    break
-                end
-            end
-            if flagKeep
-                currentVal = currentVal + 1;
-                tmp = fileDB(vv);
+            fieldsToHideInTable = {'glareZones', 'format'};
+            totToHide = length(fieldsToHideInTable);
+            namesToShow = fieldnames(fileDB);
+            field = 1;
+            while field <= length(namesToShow)
+                flagWasRemoved = false;
                 for ffToHide = 1:totToHide
-                    if isfield(tmp, fieldsToHideInTable{ffToHide})
-                        tmp = rmfield(tmp, fieldsToHideInTable{ffToHide});
+                    if strcmp(namesToShow{field}, fieldsToHideInTable{ffToHide})
+                        namesToShow(field) = [];
+                        flagWasRemoved = true;
+                        break;
                     end
                 end
-                result(currentVal,:) = (struct2cell(tmp))';
-                result{currentVal,colWell} = ~isempty(result{currentVal,colWell});
-                listVideosIdx(currentVal) = vv;
+                if ~flagWasRemoved
+                    field = field + 1;
+                end
             end
-        end
-        set(tableVideos,'data',result(1:currentVal,:));
-        listVideosIdx = listVideosIdx(1:currentVal);
-                catch exception
+            set(tableVideos,'columnname',namesToShow);
+            if ~isempty(fileDB)
+                types = cell(1,length(namesToShow));
+                for it = 1:length(namesToShow)
+                    test = fileDB(1).(namesToShow{it});
+                    if islogical(test)
+                        types{it} = 'logical';
+                    elseif isnumeric(test)
+                        types{it} = 'numeric';
+                    else
+                        types{it} = 'char';
+                    end
+                end
+                types{colWell} = 'logical';
+                set(tableVideos,'columnformat',types)
+            end
+            result = cell(length(fileDB),length(namesToShow));
+            currentVal = 0;
+            listVideosIdx = zeros(1,length(fileDB));
+            fields = fieldnames(flt);
+            
+            for field = 1:length(fields)
+                filterSelection.(fields{field}) = get(flt.(fields{field}),'value');
+            end
+            
+            for vv = 1:length(fileDB)
+                flagKeep = true;
+                for field = 1:length(fields)
+                    if (field == colFtlWell)
+                        value = num2str(~isempty(fileDB(vv).(fields{field})));
+                    elseif ~ischar(fileDB(vv).(fields{field}))
+                        value = num2str(fileDB(vv).(fields{field}));
+                    else
+                        value = fileDB(vv).(fields{field});
+                    end
+                    options = get(flt.(fields{field}),'string');
+                    selIdx = get(flt.(fields{field}),'value');
+                    if length(selIdx) >= 1 && selIdx(1) == 1
+                        continue;
+                    end
+                    try
+                        selection = options(selIdx);
+                    catch %#ok<CTCH>
+                        selection = options(1);
+                    end
+                    cand = 1;
+                    while (cand <= length(selection)) && ~strcmpi(value, selection{cand})
+                        cand = cand + 1;
+                    end
+                    if cand > length(selection)
+                        flagKeep = false;
+                        break
+                    end
+                end
+                if flagKeep
+                    currentVal = currentVal + 1;
+                    tmp = fileDB(vv);
+                    for ffToHide = 1:totToHide
+                        if isfield(tmp, fieldsToHideInTable{ffToHide})
+                            tmp = rmfield(tmp, fieldsToHideInTable{ffToHide});
+                        end
+                    end
+                    result(currentVal,:) = (struct2cell(tmp))';
+                    result{currentVal,colWell} = ~isempty(result{currentVal,colWell});
+                    listVideosIdx(currentVal) = vv;
+                end
+            end
+            set(tableVideos,'data',result(1:currentVal,:));
+            listVideosIdx = listVideosIdx(1:currentVal);
+        catch exception
             generateReport(exception)
         end
     end
@@ -591,48 +599,102 @@ if fileToLog > 1; fclose(fileToLog); end
 
     function checkSequences(~, ~)
         try
-        if flagConsistentButton; h = waitbar(0,'Checking the consistency of the data...'); end
-        ensureUniqueNames
-        nb = length(fileDB);
-        errorCheck = false;
-        if isempty(fileDB)
-            msgbox('There are no samples to check');
-        else
-            for seq = 1:nb
-                if floor(seq/10) == seq/10 && flagConsistentButton && isgraphics(h); waitbar(seq/nb,h); end
-                % ------------
-                % Check for segmented worms
-                % ------------
-                test_segm = fopen(fullfile(filenames.segmentation,['wormSegm_',fileDB(seq).name,'.txt']));
-                fileDB(seq).segmented = (test_segm >= 0);
-                if fileDB(seq).segmented; fclose(test_segm); end
-                % ------------
-                % Check for measures
-                % ------------
-                test_meas = fopen(fullfile(filenames.measures,['wormMeas_',fileDB(seq).name,'.txt']));
-                fileDB(seq).measured = (test_meas >= 0);
-                if fileDB(seq).measured; fclose(test_meas); end
-                % ------------
-                % Check for images
-                % ------------
-                
-                fileDB(seq).images = length(dir(fullfile(fileDB(seq).directory,['*.',fileDB(seq).format])));
-                if isempty(fileDB(seq).images) || isempty(fileDB(seq).duration)
-                    errordlg('Database error encountered. Video may be missing, if so please just re-add it.','Database Error');
-                    errorCheck = true;
-                else
-                    if fileDB(seq).images > 0 && fileDB(seq).duration > 0
-                        fileDB(seq).frames_per_second = fileDB(seq).images / fileDB(seq).duration;
+            if flagConsistentButton; h = waitbar(0,'Checking the consistency of the data...'); end
+            ensureUniqueNames
+            nb = length(fileDB);
+            errorCheck = false;
+            if isempty(fileDB)
+                msgbox('There are no samples to check');
+            else
+                for seq = 1:nb
+                    if floor(seq/10) == seq/10 && flagConsistentButton && isgraphics(h); waitbar(seq/nb,h); end
+                    % ------------
+                    % Check for segmented worms
+                    % ------------
+                    test_segm = fopen(fullfile(filenames.segmentation,['wormSegm_',fileDB(seq).name,'.txt']));
+                    fileDB(seq).segmented = (test_segm >= 0);
+                    if fileDB(seq).segmented; fclose(test_segm); end
+                    % ------------
+                    % Check for measures
+                    % ------------
+                    test_meas = fopen(fullfile(filenames.measures,['wormMeas_',fileDB(seq).name,'.txt']));
+                    fileDB(seq).measured = (test_meas >= 0);
+                    if fileDB(seq).measured; fclose(test_meas); end
+                    % ------------
+                    % Check for images
+                    % ------------
+                    
+                    fileDB(seq).images = length(dir(fullfile(fileDB(seq).directory,['*.',fileDB(seq).format])));
+                    if isempty(fileDB(seq).images) || isempty(fileDB(seq).duration)
+                        errordlg('Database error encountered. Video may be missing, if so please just re-add it.','Database Error');
+                        errorCheck = true;
+                    else
+                        if fileDB(seq).images > 0 && fileDB(seq).duration > 0
+                            fileDB(seq).frames_per_second = fileDB(seq).images / fileDB(seq).duration;
+                        end
                     end
                 end
             end
+            if flagConsistentButton
+                if isgraphics(h); close(h); end
+                if ~errorCheck; msgbox('Data is consistent','Success'); end
+            end
+            flagConsistentButton = true;
+        catch exception
+            generateReport(exception)
         end
-        if flagConsistentButton
-            if isgraphics(h); close(h); end
-            if ~errorCheck; msgbox('Data is consistent','Success'); end
-        end
-        flagConsistentButton = true;
-                catch exception
+    end
+
+% ------------
+% Check that video directories exist with right number/type of images
+% ------------
+
+    function checkVideoDirectories
+        try
+            currDir = 1;
+            filesLeft = length(fileDB);
+            while currDir <= filesLeft
+                if ~exist(fileDB(currDir).directory,'dir')
+                    question = ['The folder for ' fileDB(currDir).name ' appears to have changed or been deleted from ' fileDB(currDir).directory '. Would you like to try and find it''s new location? If the directory has been deleted, consider deleting the sample as well'];
+                    action = questdlg(question, 'Directory Not Found', 'Find Directory', 'Delete Video', 'Ignore', 'Ignore');
+                    switch action
+                        case 'Find Directory'
+                            newPath = '';
+                            search = '';
+                            while isempty(newPath) && ~strcmp(search, 'No')
+                                newPath = uigetdir;
+                                if newPath ~= 0
+                                    [nbImgs, extIdx] = getImagesFromDir(newPath);
+                                    fileDB(currDir).images = nbImgs;
+                                    if nbImgs ~= 0
+                                        fileDB(currDir).directory = newPath;
+                                        fileDB(currDir).format = filenames.listOfExtensions{extIdx};
+                                        fileDB(currDir).duration = 30;
+                                        search = 'No';
+                                    else
+                                        search = questdlg('No Images found in directory would you like to choose a different one?', 'No Images in Directory', 'Yes', 'No', 'No');
+                                        if strcmp(search, 'No')
+                                            fileDB(currDir).format = 'no images';
+                                            fileDB(currDir).duration = 0;
+                                        else
+                                            newPath = '';
+                                        end
+                                    end
+                                else
+                                    newPath = '';
+                                    search = questdlg('No path chosen. Would you like to choose one?', 'No Path Chosen', 'Yes', 'No', 'No');
+                                end
+                            end
+                        case 'Delete Video'
+                            removeVideos(currDir);
+                            filesLeft = filesLeft - 1;
+                        otherwise
+                            disp(['Ignoring directory not found for: ' fileDB(currDir).directory]);
+                    end
+                end
+                currDir = currDir + 1;
+            end
+        catch exception
             generateReport(exception)
         end
     end
@@ -659,91 +721,106 @@ if fileToLog > 1; fclose(fileToLog); end
         end
     end
 
+    function [tmpNbImages, tmpIdx] = getImagesFromDir(folder)
+        tmpIdx = 1;
+        tmpNbImages = 0;
+        while (tmpIdx <= length(filenames.listOfExtensions)) && (tmpNbImages <= 0)
+            tmpNbImages = length(dir(fullfile(folder,['*.',filenames.listOfExtensions{tmpIdx}])));
+            if tmpNbImages <= 0
+                tmpIdx = tmpIdx + 1;
+            end
+        end
+    end
+
     function addOneVideo(hObject,eventdata) %#ok<INUSD>
         try
-        flagOK = false;
-        figureAdd = figure('Visible','on','Position',[50,100,440,500],'Name','CeleST: add a video', 'numbertitle','off','menubar','none');
-        set(figureAdd, 'color', get(mainPanel,'backgroundcolor'));
-        uicontrol('parent', figureAdd, 'style','pushbutton', 'string', 'Add new video', 'position', [20,0,120,30],'callback',@addOK);
-        uicontrol('parent', figureAdd, 'style','pushbutton', 'string', 'Cancel', 'position', [200,0,80,30],'callback',@addCancel );
-        for tmpFF = [1:8,10,11]
-            uicontrol('parent', figureAdd, 'style', 'text', 'string', fieldsIni{tmpFF}, 'position', [0, 500-20*tmpFF, 120, 20]);
-            tmpfield.(fieldsIni{tmpFF}) = uicontrol('parent', figureAdd, 'style', 'edit', 'string', '', 'position', [140, 500-20*tmpFF, 180, 20]);
-        end
-        uicontrol('parent',figureAdd,'style','pushbutton', 'string', 'Browse...', 'position', [320, 500-22.5*8, 80,20],'callback',@addBrowse);
-        for tmpFF = [9,12:20]
-            uicontrol('parent', figureAdd, 'style', 'text', 'string', fieldsIni{tmpFF}, 'position', [0, 500-20*tmpFF, 120, 20]);
-            tmpfield.(fieldsIni{tmpFF}) = uicontrol('parent', figureAdd, 'style', 'text', 'string', '', 'position', [140, 500-20*tmpFF, 180, 20]);
-        end
-        set(tmpfield.directory,'callback',@addCheckDir);
-        waitfor(figureAdd,'BeingDeleted','on');
-        if flagOK
-            ensureUniqueNames
-            populateFilters
-        end
-                catch exception
+            flagOK = false;
+            figureAdd = figure('Visible','on','Position',[50,100,440,500],'Name','CeleST: add a video', 'numbertitle','off','menubar','none');
+            set(figureAdd, 'color', get(mainPanel,'backgroundcolor'));
+            uicontrol('parent', figureAdd, 'style','pushbutton', 'string', 'Add new video', 'position', [20,0,120,30],'callback',@addOK);
+            uicontrol('parent', figureAdd, 'style','pushbutton', 'string', 'Cancel', 'position', [200,0,80,30],'callback',@addCancel );
+            for tmpFF = [1:8,10,11]
+                uicontrol('parent', figureAdd, 'style', 'text', 'string', fieldsIni{tmpFF}, 'position', [0, 500-20*tmpFF, 120, 20]);
+                tmpfield.(fieldsIni{tmpFF}) = uicontrol('parent', figureAdd, 'style', 'edit', 'string', '', 'position', [140, 500-20*tmpFF, 180, 20]);
+            end
+            uicontrol('parent',figureAdd,'style','pushbutton', 'string', 'Browse...', 'position', [320, 500-22.5*8, 80,20],'callback',@addBrowse);
+            for tmpFF = [9,12:20]
+                uicontrol('parent', figureAdd, 'style', 'text', 'string', fieldsIni{tmpFF}, 'position', [0, 500-20*tmpFF, 120, 20]);
+                tmpfield.(fieldsIni{tmpFF}) = uicontrol('parent', figureAdd, 'style', 'text', 'string', '', 'position', [140, 500-20*tmpFF, 180, 20]);
+            end
+            set(tmpfield.directory,'callback',@addCheckDir);
+            waitfor(figureAdd,'BeingDeleted','on');
+            if flagOK
+                ensureUniqueNames
+                populateFilters
+            end
+        catch exception
             generateReport(exception)
         end
         function addBrowse(hObject,eventdata) %#ok<INUSD>
-            newDir = get(tmpfield.directory, 'string');
-            if isempty(newDir) && length(fileDB) >= 1
-                newDir = fileDB(end).directory;
-            end
-            newDir = uigetdir(newDir);
-            if newDir ~= 0
-                [pathstr, name] = fileparts(newDir); %#ok<ASGLU>
-                set(tmpfield.name,'String',name);
-                set(tmpfield.directory, 'String', newDir);
-                addCheckDir;
+            try
+                newDir = get(tmpfield.directory, 'string');
+                if isempty(newDir) && length(fileDB) >= 1
+                    newDir = fileDB(end).directory;
+                end
+                newDir = uigetdir(newDir);
+                if newDir ~= 0
+                    [pathstr, name] = fileparts(newDir); %#ok<ASGLU>
+                    set(tmpfield.name,'String',name);
+                    set(tmpfield.directory, 'String', newDir);
+                    addCheckDir;
+                end
+            catch exception
+                generateReport(exception)
             end
         end
         function addCheckDir(hObject,eventdata) %#ok<INUSD>
-            tmpIdx = 1;
-            tmpNbImages = 0;
-            while (tmpIdx <= length(filenames.listOfExtensions)) && (tmpNbImages <= 0)
-                tmpNbImages = length(dir(fullfile(get(tmpfield.directory,'string'),['*.',filenames.listOfExtensions{tmpIdx}])));
-                if tmpNbImages <= 0
-                    tmpIdx = tmpIdx + 1;
+            try
+                [nbImgs, extIdx] = getImagesFromDir(get(tmpfield.directory,'string'));
+                if nbImgs > 0
+                    set(tmpfield.images, 'string', nbImgs);
+                    set(tmpfield.format, 'string', filenames.listOfExtensions{extIdx});
+                    set(tmpfield.duration,'string', '30')
+                else
+                    set(tmpfield.images, 'string', '0');
+                    set(tmpfield.format, 'string', 'no images');
                 end
-            end
-            if tmpNbImages > 0
-                set(tmpfield.images, 'string', tmpNbImages);
-                set(tmpfield.format, 'string', filenames.listOfExtensions{tmpIdx});
-                set(tmpfield.duration,'string', '30')
-            else
-                set(tmpfield.images, 'string', '0');
-                set(tmpfield.format, 'string', 'no images');
+            catch exception
+                generateReport(exception)
             end
         end
         function addOK(hObject,eventdata) %#ok<INUSD>
-            if strcmp(get(tmpfield.name,'string'),'') || strcmp(get(tmpfield.directory,'string'),'')
-                errordlg('Missing one or more required field','Input Error')
-            else
-                
-                tmpNewVideo = struct(fileDB);
-                tmpNewVideo(1).name = get(tmpfield.name,'string');
-                tmpNewVideo(1).date = get(tmpfield.date,'string');
-                tmpNewVideo(1).gene = get(tmpfield.gene,'string');
-                tmpNewVideo(1).age = str2double(get(tmpfield.age,'string'));
-                tmpNewVideo(1).set = str2double(get(tmpfield.set,'string'));
-                tmpNewVideo(1).trial = str2double(get(tmpfield.trial,'string'));
-                tmpNewVideo(1).note = get(tmpfield.note,'string');
-                tmpNewVideo(1).author = get(tmpfield.author,'string');
-                tmpNewVideo(1).directory = get(tmpfield.directory,'string');
-                tmpNewVideo(1).images = str2double(get(tmpfield.images,'string'));
-                tmpNewVideo(1).duration = str2double(get(tmpfield.duration,'string'));
-                tmpNewVideo(1).frames_per_second = tmpNewVideo(1).images / tmpNewVideo(1).duration;
-                tmpNewVideo(1).mm_per_pixel = 1;
-                tmpNewVideo(1).well = [];
-                tmpNewVideo(1).segmented = false;
-                tmpNewVideo(1).worms = 0;
-                tmpNewVideo(1).measured = false;
-                tmpNewVideo(1).format = get(tmpfield.format,'string');
-                tmpNewVideo(1).glareZones = cell(1,0);
-                fileDB(end+1) = tmpNewVideo(1);
-                flagOK = true;
+            try
+                if strcmp(get(tmpfield.name,'string'),'') || strcmp(get(tmpfield.directory,'string'),'')
+                    errordlg('Missing one or more required field','Input Error')
+                else
+                    tmpNewVideo = struct(fileDB);
+                    tmpNewVideo(1).name = get(tmpfield.name,'string');
+                    tmpNewVideo(1).date = get(tmpfield.date,'string');
+                    tmpNewVideo(1).gene = get(tmpfield.gene,'string');
+                    tmpNewVideo(1).age = str2double(get(tmpfield.age,'string'));
+                    tmpNewVideo(1).set = str2double(get(tmpfield.set,'string'));
+                    tmpNewVideo(1).trial = str2double(get(tmpfield.trial,'string'));
+                    tmpNewVideo(1).note = get(tmpfield.note,'string');
+                    tmpNewVideo(1).author = get(tmpfield.author,'string');
+                    tmpNewVideo(1).directory = get(tmpfield.directory,'string');
+                    tmpNewVideo(1).images = str2double(get(tmpfield.images,'string'));
+                    tmpNewVideo(1).duration = str2double(get(tmpfield.duration,'string'));
+                    tmpNewVideo(1).frames_per_second = tmpNewVideo(1).images / tmpNewVideo(1).duration;
+                    tmpNewVideo(1).mm_per_pixel = 1;
+                    tmpNewVideo(1).well = [];
+                    tmpNewVideo(1).segmented = false;
+                    tmpNewVideo(1).worms = 0;
+                    tmpNewVideo(1).measured = false;
+                    tmpNewVideo(1).format = get(tmpfield.format,'string');
+                    tmpNewVideo(1).glareZones = cell(1,0);
+                    fileDB(end+1) = tmpNewVideo(1);
+                    flagOK = true;
+                end
+                close(figureAdd);
+            catch exception
+                generateReport(exception)
             end
-            close(figureAdd);
         end
         function addCancel(hObject,eventdata) %#ok<INUSD>
             close(figureAdd);
@@ -752,80 +829,80 @@ if fileToLog > 1; fclose(fileToLog); end
 
     function addMultipleVideos(~,~)
         try
-        sampleFileDirs = uipickfiles;
-        if ~iscell(sampleFileDirs); return; end
-        for i = 1:numel(sampleFileDirs)
-            sampleFileDir = sampleFileDirs{i};
-            if isdir(sampleFileDir)
-                [~, name] = fileparts(sampleFileDir);
-                sampleName = name;
+            sampleFileDirs = uipickfiles;
+            if ~iscell(sampleFileDirs); return; end
+            for i = 1:numel(sampleFileDirs)
+                sampleFileDir = sampleFileDirs{i};
+                if isdir(sampleFileDir)
+                    [~, name] = fileparts(sampleFileDir);
+                    sampleName = name;
+                    
+                    tmpIdx = 1;
+                    tmpNbImages = 0;
+                    while (tmpIdx <= length(filenames.listOfExtensions)) && (tmpNbImages <= 0)
+                        tmpNbImages = length(dir(fullfile(sampleFileDir,['*.',filenames.listOfExtensions{tmpIdx}])));
+                        if tmpNbImages <= 0
+                            tmpIdx = tmpIdx + 1;
+                        end
+                    end
+                    if tmpNbImages > 0
+                        sampleNbImages = tmpNbImages;
+                        sampleFormat = filenames.listOfExtensions{tmpIdx};
+                        sampleDuration = 30;
+                        
+                    else
+                        sampleNbImages = '0';
+                        sampleFormat = 'no images';
+                    end
+                    
+                    tmpNewVideo = struct(fileDB);
+                    tmpNewVideo(1).name = sampleName;
+                    tmpNewVideo(1).date = '';
+                    tmpNewVideo(1).gene = '';
+                    tmpNewVideo(1).age = NaN;
+                    tmpNewVideo(1).set = NaN;
+                    tmpNewVideo(1).trial = NaN;
+                    tmpNewVideo(1).note = '';
+                    tmpNewVideo(1).author = '';
+                    tmpNewVideo(1).directory = sampleFileDir;
+                    tmpNewVideo(1).images = sampleNbImages;
+                    tmpNewVideo(1).duration = sampleDuration;
+                    tmpNewVideo(1).frames_per_second = tmpNewVideo(1).images / tmpNewVideo(1).duration;
+                    tmpNewVideo(1).mm_per_pixel = 1;
+                    tmpNewVideo(1).well = [];
+                    tmpNewVideo(1).segmented = false;
+                    tmpNewVideo(1).worms = 0;
+                    tmpNewVideo(1).measured = false;
+                    tmpNewVideo(1).format = sampleFormat;
+                    tmpNewVideo(1).glareZones = cell(1,0);
+                    fileDB(end+1) = tmpNewVideo(1);
+                end
                 
-                tmpIdx = 1;
-                tmpNbImages = 0;
-                while (tmpIdx <= length(filenames.listOfExtensions)) && (tmpNbImages <= 0)
-                    tmpNbImages = length(dir(fullfile(sampleFileDir,['*.',filenames.listOfExtensions{tmpIdx}])));
-                    if tmpNbImages <= 0
-                        tmpIdx = tmpIdx + 1;
+                
+                
+            end
+            flagNameWarning = false;
+            for entry = 2:length(fileDB)
+                entryName = fileDB(entry).name;
+                newName = entryName;
+                count = 1;
+                for before = 1:(entry-1)
+                    if strcmp(newName, fileDB(before).name)
+                        newName = [entryName, '_', num2str(count)];
+                        count = count + 1;
                     end
                 end
-                if tmpNbImages > 0
-                    sampleNbImages = tmpNbImages;
-                    sampleFormat = filenames.listOfExtensions{tmpIdx};
-                    sampleDuration = 30;
-                    
-                else
-                    sampleNbImages = '0';
-                    sampleFormat = 'no images';
-                end
-                
-                tmpNewVideo = struct(fileDB);
-                tmpNewVideo(1).name = sampleName;
-                tmpNewVideo(1).date = '';
-                tmpNewVideo(1).gene = '';
-                tmpNewVideo(1).age = NaN;
-                tmpNewVideo(1).set = NaN;
-                tmpNewVideo(1).trial = NaN;
-                tmpNewVideo(1).note = '';
-                tmpNewVideo(1).author = '';
-                tmpNewVideo(1).directory = sampleFileDir;
-                tmpNewVideo(1).images = sampleNbImages;
-                tmpNewVideo(1).duration = sampleDuration;
-                tmpNewVideo(1).frames_per_second = tmpNewVideo(1).images / tmpNewVideo(1).duration;
-                tmpNewVideo(1).mm_per_pixel = 1;
-                tmpNewVideo(1).well = [];
-                tmpNewVideo(1).segmented = false;
-                tmpNewVideo(1).worms = 0;
-                tmpNewVideo(1).measured = false;
-                tmpNewVideo(1).format = sampleFormat;
-                tmpNewVideo(1).glareZones = cell(1,0);
-                fileDB(end+1) = tmpNewVideo(1);
-            end
-            
-            
-            
-        end
-        flagNameWarning = false;
-        for entry = 2:length(fileDB)
-            entryName = fileDB(entry).name;
-            newName = entryName;
-            count = 1;
-            for before = 1:(entry-1)
-                if strcmp(newName, fileDB(before).name)
-                    newName = [entryName, '_', num2str(count)];
-                    count = count + 1;
+                if ~strcmp(newName, entryName)
+                    flagNameWarning = true;
+                    if traceOn; fprintf(fileToLog, ['  changing name ', entryName, ' -> ', newName, '\n']); end
+                    fileDB(entry).name = newName;
                 end
             end
-            if ~strcmp(newName, entryName)
-                flagNameWarning = true;
-                if traceOn; fprintf(fileToLog, ['  changing name ', entryName, ' -> ', newName, '\n']); end
-                fileDB(entry).name = newName;
+            if flagNameWarning
+                warndlg('Some of these video names already exist. They have been automatically renamed.','Warning')
             end
-        end
-        if flagNameWarning
-            warndlg('Some of these video names already exist. They have been automatically renamed.','Warning')
-        end
-        populateFilters
-                catch exception
+            populateFilters
+        catch exception
             generateReport(exception)
         end
     end
