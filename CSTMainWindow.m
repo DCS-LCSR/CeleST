@@ -35,16 +35,19 @@ mainDir = strjoin(mainDir,'/');
 
 check = false;
 while ~check
-    chosenDataPath = 0;
-    button = questdlg('Please choose a place to save your data','Save Location', 'Choose save location', 'Use default', 'Choose save location');
+    
+    button = questdlg('Please choose a place to save your data','Save Location', 'Choose save location', 'Use default', 'Quit', 'Choose save location');
     if strcmp(button, 'Use default')
         chosenDataPath = mainDir;
         check = true;
-    else
-        button = questdlg('Would you like to create a new data folder or choose an existing one?','Save Location', 'Choose where to put new folder', 'Choose existing folder', 'Choose save location');
-        if strcmp(button, 'Choose where to put new folder')
+    elseif strcmp(button, 'Choose save location')
+        button = questdlg('Would you like to create a new data folder or choose an existing one?','Save Location', 'Choose where to put new folder', 'Choose existing data folder', 'Save Location');
+        if strcmp(button, '')
+            chosenDataPath = 0;
+        elseif strcmp(button, 'Choose where to put new folder')
             chosenDataPath = uigetdir;
         else
+            chosenDataPath = 0;
             chosenDataPath = uigetdir;
             if ~(chosenDataPath==0)
                 chosenDataPath = strsplit(chosenDataPath,'/');
@@ -54,47 +57,22 @@ while ~check
                     check = true;
                 else
                     chosenDataPath = 0;
-                    invalidDataDlg = warndlg('This is not a valid Data folder. Please choose a proper data file.','!! Warning !!');
-                    waitfor(invalidDataDlg);
                 end
             end
         end
-    end
-    if (chosenDataPath==0)
-        errorButton = questdlg('There was an error in choosing a save location. Would you like to choose again or use the default?','Save Location', 'Choose Again', 'Use Default', 'Use Default');
-        if strcmp(errorButton, 'Use default')
-            chosenDataPath = mainDir;
-            check = true;
+        if(chosenDataPath == 0)
+            errorButton = questdlg('There was an error in choosing a save location. Would you like to choose again or use the default?','Save Location', 'Try Again', 'Quit', 'Try Again');
+            if strcmp(errorButton, 'Quit')
+                return
+            end
         end
-    else
-        check = true;
+    elseif strcmp(button, 'Quit')
+        return
     end
+    
 end
 
 
-% choosePathFlag = true;
-% if exist(fullfile(cd, 'dataPath.txt'), 'file')
-%     fileID = fopen(fullfile(cd, 'dataPath.txt'),'r');
-%     chosenDataPath = fileread(fullfile(cd, 'dataPath.txt'));
-%     % Would you like to change your where you store your data?
-%     button = questdlg(['Your data is currently being saved in: ' chosenDataPath ', would you like to start saving it somewhere else?'],'Save Location','Keep This Location','Change location','Keep This Location');
-%     if strcmp(button, 'Keep This Location')
-%         choosePathFlag = false;
-%     end
-%     fclose(fileID);
-% end
-% if (choosePathFlag)
-%   % Please choose where to save your data to
-%     button = questdlg('Please choose a place to save your data','Choose save location', 'Use default', 'Choose save location');
-%     if strcmp(button, 'Use default')
-%        chosenDataPath = mainDir;
-%     else
-%         chosenDataPath = uigetdir;
-%         fileID = fopen('dataPath.txt','w+');
-%         fprintf(fileID, chosenDataPath);
-%         fclose(fileID);
-%     end
-% end
 
 filenames.curr = chosenDataPath;
 filenames.data = fullfile(filenames.curr, 'Data');
