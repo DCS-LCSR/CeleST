@@ -46,6 +46,7 @@ while ~check
             chosenDataPath = 0;
         elseif strcmp(button, 'Choose where to put new folder')
             chosenDataPath = uigetdir;
+            check = true;
         else
             chosenDataPath = 0;
             chosenDataPath = uigetdir;
