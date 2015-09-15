@@ -120,7 +120,7 @@ se = strel('square',7);
 % -----------
 % Distance in pixel between vertices in the candidate border surrounding the worms
 % -----------
-%stepSize = 0.2;
+%stepSize = 0.2; % Previous parameter from 'Lab' Version
 stepSize = 0.1;
 % -----------
 % Neighborhood to mark as part of the candidate border, around vertices of that border, to check when the border get closed
@@ -141,7 +141,7 @@ worm = 0;
 % -----------
 % Minimum gradient intensity used to normalize gradient vectors into unit vector (to avoid division by zero or by very small number)
 % -----------
-%gradientMinimum = 0.01;
+% gradientMinimum = 0.01; % Previous parameter from 'Lab' Version
 gradientMinimum = 0.001;
 
 % -----------

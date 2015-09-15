@@ -14,7 +14,7 @@ global filenames fileDB traceOn timingOn timings timingsLabel timingsTime plotAl
 % ===============
 traceOn = true;
 timingOn = true;
-plotAllOn = false;
+plotAllOn = true;
 flagRobustness = true;
 logToFile = true;
 flagAutomation = false;
