@@ -120,8 +120,8 @@ se = strel('square',7);
 % -----------
 % Distance in pixel between vertices in the candidate border surrounding the worms
 % -----------
-%stepSize = 0.2; % Previous parameter from 'Lab' Version
-stepSize = 0.1;
+stepSize = 0.2; % Previous parameter from 'Lab' Version
+% stepSize = 0.1;
 % -----------
 % Neighborhood to mark as part of the candidate border, around vertices of that border, to check when the border get closed
 % -----------

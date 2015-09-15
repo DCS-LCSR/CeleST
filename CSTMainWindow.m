@@ -14,7 +14,7 @@ global filenames fileDB traceOn timingOn timings timingsLabel timingsTime plotAl
 % ===============
 traceOn = true;
 timingOn = true;
-plotAllOn = true;
+plotAllOn = false;
 flagRobustness = true;
 logToFile = true;
 flagAutomation = false;
@@ -36,12 +36,12 @@ mainDir = strjoin(mainDir,'/');
 check = false;
 while ~check
     
-    button = questdlg('Please choose a place to save your data','Save Location', 'Choose save location', 'Use default', 'Quit', 'Choose save location');
+    button = questdlg('Please choose a place to save your data', 'Save Location', 'Choose save location', 'Use default', 'Quit', 'Choose save location');
     if strcmp(button, 'Use default')
         chosenDataPath = mainDir;
         check = true;
     elseif strcmp(button, 'Choose save location')
-        button = questdlg('Would you like to create a new data folder or choose an existing one?','Save Location', 'Choose where to put new folder', 'Choose existing data folder', 'Save Location');
+        button = questdlg('Would you like to create a new data folder or choose an existing one?','Save Location', 'Choose where to put new folder', 'Choose existing data folder', 'Choose existing data folder');
         if strcmp(button, '')
             chosenDataPath = 0;
         elseif strcmp(button, 'Choose where to put new folder')
