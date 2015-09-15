@@ -35,16 +35,20 @@ mainDir = strjoin(mainDir,'/');
 
 check = false;
 while ~check
-    chosenDataPath = 0;
-    button = questdlg('Please choose a place to save your data','Save Location', 'Choose save location', 'Use default', 'Choose save location');
+    
+    button = questdlg('Please choose a place to save your data','Save Location', 'Choose save location', 'Use default', 'Quit', 'Choose save location');
     if strcmp(button, 'Use default')
         chosenDataPath = mainDir;
         check = true;
-    else
-        button = questdlg('Would you like to create a new data folder or choose an existing one?','Save Location', 'Choose where to put new folder', 'Choose existing folder', 'Choose save location');
-        if strcmp(button, 'Choose where to put new folder')
+    elseif strcmp(button, 'Choose save location')
+        button = questdlg('Would you like to create a new data folder or choose an existing one?','Save Location', 'Choose where to put new folder', 'Choose existing data folder', 'Save Location');
+        if strcmp(button, '')
+            chosenDataPath = 0;
+        elseif strcmp(button, 'Choose where to put new folder')
             chosenDataPath = uigetdir;
+            check = true;
         else
+            chosenDataPath = 0;
             chosenDataPath = uigetdir;
             if ~(chosenDataPath==0)
                 chosenDataPath = strsplit(chosenDataPath,'/');
@@ -54,47 +58,22 @@ while ~check
                     check = true;
                 else
                     chosenDataPath = 0;
-                    invalidDataDlg = warndlg('This is not a valid Data folder. Please choose a proper data file.','!! Warning !!');
-                    waitfor(invalidDataDlg);
                 end
             end
         end
-    end
-    if (chosenDataPath==0)
-        errorButton = questdlg('There was an error in choosing a save location. Would you like to choose again or use the default?','Save Location', 'Choose Again', 'Use Default', 'Use Default');
-        if strcmp(errorButton, 'Use default')
-            chosenDataPath = mainDir;
-            check = true;
+        if(chosenDataPath == 0)
+            errorButton = questdlg('There was an error in choosing a save location. Would you like to choose again or use the default?','Save Location', 'Try Again', 'Quit', 'Try Again');
+            if strcmp(errorButton, 'Quit')
+                return
+            end
         end
-    else
-        check = true;
+    elseif strcmp(button, 'Quit')
+        return
     end
+    
 end
 
 
-% choosePathFlag = true;
-% if exist(fullfile(cd, 'dataPath.txt'), 'file')
-%     fileID = fopen(fullfile(cd, 'dataPath.txt'),'r');
-%     chosenDataPath = fileread(fullfile(cd, 'dataPath.txt'));
-%     % Would you like to change your where you store your data?
-%     button = questdlg(['Your data is currently being saved in: ' chosenDataPath ', would you like to start saving it somewhere else?'],'Save Location','Keep This Location','Change location','Keep This Location');
-%     if strcmp(button, 'Keep This Location')
-%         choosePathFlag = false;
-%     end
-%     fclose(fileID);
-% end
-% if (choosePathFlag)
-%   % Please choose where to save your data to
-%     button = questdlg('Please choose a place to save your data','Choose save location', 'Use default', 'Choose save location');
-%     if strcmp(button, 'Use default')
-%        chosenDataPath = mainDir;
-%     else
-%         chosenDataPath = uigetdir;
-%         fileID = fopen('dataPath.txt','w+');
-%         fprintf(fileID, chosenDataPath);
-%         fclose(fileID);
-%     end
-% end
 
 filenames.curr = chosenDataPath;
 filenames.data = fullfile(filenames.curr, 'Data');
@@ -206,7 +185,7 @@ scrsz = get(0,'ScreenSize');
 mainW = min(mainPnlW, scrsz(3) - 10);
 mainH = min(mainPnlH, scrsz(4) - 100);
 mainPanelPosition = [2, mainH-mainPnlH-2, mainPnlW, mainPnlH];
-mainFigure = figure('Visible','off','Position',[5,40,mainW,mainH], 'Name',['CeleST: Main Window | ' filenames.data],'numbertitle','off', 'menubar', 'none', 'resizefcn', @resizeMainFigure);
+mainFigure = figure('Visible','off','Position',[5,40,mainW,mainH], 'Name',['CeleST: Main Window | Data Location: ' filenames.data],'numbertitle','off', 'menubar', 'none', 'resizefcn', @resizeMainFigure);
 mainPanel = uipanel('parent', mainFigure,'BorderType', 'none','units','pixels', 'position', mainPanelPosition);
 sliderHoriz = uicontrol('parent',mainFigure,'style','slider','position',[0 0 mainW-20 20],'max', 1,'min',0, 'value',0,'callback',@setMainPanelPositionBySliders);
 sliderVert = uicontrol('parent',mainFigure,'style','slider','position',[mainW-20 20 20 mainH-20],'max', max(1,-mainPanelPosition(2)),'min',0, 'value',max(1,-mainPanelPosition(2)),'callback',@setMainPanelPositionBySliders);
@@ -383,6 +362,8 @@ if fileToLog > 1; fclose(fileToLog); end
         try
             if ~isempty(eventdata.NewData) && (~isnumeric(eventdata.NewData) || ~isnan(eventdata.NewData))
                 fileDB(listVideosIdx(eventdata.Indices(1))).(fieldsIni{eventdata.Indices(2)}) = eventdata.NewData;
+                ensureUniqueNames
+                % code to change filenames for segmentation and measures 
                 populateFilters
             else
                 warndlg('Field is not editable or data is faulty','Data Change Error')
