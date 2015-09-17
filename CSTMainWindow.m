@@ -33,47 +33,10 @@ mainDir = strsplit(which('CeleST'),'/');
 mainDir = mainDir(1:(end-2));
 mainDir = strjoin(mainDir,'/');
 
-check = false;
-while ~check
-    
-    button = questdlg('Please choose a place to save your data', 'Save Location', 'Choose save location', 'Use default', 'Quit', 'Choose save location');
-    if strcmp(button, 'Use default')
-        chosenDataPath = mainDir;
-        check = true;
-    elseif strcmp(button, 'Choose save location')
-        button = questdlg('Would you like to create a new data folder or choose an existing one?','Save Location', 'Choose where to put new folder', 'Choose existing data folder', 'Choose existing data folder');
-        if strcmp(button, '')
-            chosenDataPath = 0;
-        elseif strcmp(button, 'Choose where to put new folder')
-            chosenDataPath = uigetdir;
-            check = true;
-        else
-            chosenDataPath = 0;
-            chosenDataPath = uigetdir;
-            if ~(chosenDataPath==0)
-                chosenDataPath = strsplit(chosenDataPath,'/');
-                if strcmp(chosenDataPath(end), 'Data')
-                    chosenDataPath = chosenDataPath(1:(end-1));
-                    chosenDataPath = strjoin(chosenDataPath,'/');
-                    check = true;
-                else
-                    chosenDataPath = 0;
-                end
-            end
-        end
-        if(chosenDataPath == 0)
-            errorButton = questdlg('There was an error in choosing a save location. Would you like to choose again or use the default?','Save Location', 'Try Again', 'Quit', 'Try Again');
-            if strcmp(errorButton, 'Quit')
-                return
-            end
-        end
-    elseif strcmp(button, 'Quit')
-        return
-    end
-    
+chosenDataPath = chooseSaveLocation;
+if ~chosenDataPath
+    return
 end
-
-
 
 filenames.curr = chosenDataPath;
 filenames.data = fullfile(filenames.curr, 'Data');
@@ -194,17 +157,18 @@ set(mainFigure, 'color', get(mainPanel,'backgroundcolor'));
 filterH = 100;
 filterW = 150;
 hFilters = filterH + 20;
-yFilters = mainPnlH - hFilters - 5 - 70;
-uicontrol('parent',mainPanel,'style','pushbutton','string','Add one video...','position',[10 yFilters+hFilters+40 150 30],'callback',@addOneVideo);
-btnEdit = uicontrol('parent',mainPanel,'style','togglebutton','string','Toggle Edit Table','position',[10 yFilters+hFilters+10 150 30],'callback',@editTable);
-uicontrol('parent',mainPanel,'style','pushbutton','string','Remove videos...','position',[160 yFilters+hFilters+10 150 30],'callback',@removeVideos);
-uicontrol('parent',mainPanel,'style','pushbutton','string','Check consistency','position',[310 yFilters+hFilters+40 150 30],'callback',@checkSequences);
-uicontrol('parent',mainPanel,'style','pushbutton','string','Add multiple videos','position',[160 yFilters+hFilters+40 150 30],'callback',@addMultipleVideos);
+yFilters = mainPnlH - hFilters - 75;
+uicontrol('parent',mainPanel,'style','pushbutton','string','Add one video','position',[10 yFilters+hFilters+40 145 30],'callback',@addOneVideo);
+uicontrol('parent',mainPanel,'style','pushbutton','string','Add multiple videos','position',[10 yFilters+hFilters+10 145 30],'callback',@addMultipleVideos);
+uicontrol('parent',mainPanel,'style','pushbutton','string','Remove videos','position',[155 yFilters+hFilters+40 145 30],'callback',@removeVideos);
+btnEdit = uicontrol('parent',mainPanel,'style','togglebutton','string','Toggle Edit Table','position',[155 yFilters+hFilters+10 145 30],'callback',@editTable);
+uicontrol('parent',mainPanel,'style','pushbutton','string','Check consistency','position',[300 yFilters+hFilters+40 145 30],'callback',@checkSequences);
 
-uicontrol('parent',mainPanel,'style','pushbutton','string','1. Process videos...','position',[500 yFilters+hFilters+10 170 60],'callback',@processVideo);
-uicontrol('parent',mainPanel,'style','pushbutton','string','2. Compute measures...','position',[700 yFilters+hFilters+10 170 60],'callback',@checkResults);
-uicontrol('parent',mainPanel,'style','pushbutton','string','3. Display results...','position',[900 yFilters+hFilters+10 170 60],'callback',@showMeasures);
-uicontrol('parent',mainPanel,'style','pushbutton','string','Quit','position',[1100 yFilters+hFilters+10 170 60],'callback',@closeWindow);
+uicontrol('parent',mainPanel,'style','pushbutton','string','1. Process videos','position',[470 yFilters+hFilters+10 160 60],'callback',@processVideo);
+uicontrol('parent',mainPanel,'style','pushbutton','string','2. Compute measures','position',[650 yFilters+hFilters+10 160 60],'callback',@checkResults);
+uicontrol('parent',mainPanel,'style','pushbutton','string','3. Display results','position',[830 yFilters+hFilters+10 160 60],'callback',@showMeasures);
+uicontrol('parent',mainPanel,'style','pushbutton','string','<html>Report Bug /<br>Send Suggestion','position',[1010 yFilters+hFilters+10 160 60],'callback',{@generateReport,'user'});
+uicontrol('parent',mainPanel,'style','pushbutton','string','Quit','position',[1190 yFilters+hFilters+10 160 60],'callback',@closeWindow);
 
 
 % ----------
@@ -363,7 +327,7 @@ if fileToLog > 1; fclose(fileToLog); end
             if ~isempty(eventdata.NewData) && (~isnumeric(eventdata.NewData) || ~isnan(eventdata.NewData))
                 fileDB(listVideosIdx(eventdata.Indices(1))).(fieldsIni{eventdata.Indices(2)}) = eventdata.NewData;
                 ensureUniqueNames
-                % code to change filenames for segmentation and measures 
+                % code to change filenames for segmentation and measures
                 populateFilters
             else
                 warndlg('Field is not editable or data is faulty','Data Change Error')
@@ -626,6 +590,53 @@ if fileToLog > 1; fclose(fileToLog); end
         end
     end
 
+    function saveLoc = chooseSaveLocation
+        try
+            check = false;
+            while ~check
+                button = questdlg('Please choose a place to save your data', 'Save Location', 'Choose save location', 'Use default', 'Quit', 'Choose save location');
+                if strcmp(button, 'Use default')
+                    saveLoc = mainDir;
+                    check = true;
+                elseif strcmp(button, 'Choose save location')
+                    button = questdlg('Would you like to create a new data folder or choose an existing one?','Save Location', 'Choose where to put new folder', 'Choose existing data folder', 'Choose existing data folder');
+                    if strcmp(button, '')
+                        saveLoc = 0;
+                    elseif strcmp(button, 'Choose where to put new folder')
+                        saveLoc = uigetdir;
+                        check = true;
+                    else
+                        saveLoc = 0;
+                        saveLoc = uigetdir;
+                        if ~(saveLoc==0)
+                            saveLoc = strsplit(saveLoc,'/');
+                            if strcmp(saveLoc(end), 'Data')
+                                saveLoc = saveLoc(1:(end-1));
+                                saveLoc = strjoin(saveLoc,'/');
+                                check = true;
+                            else
+                                saveLoc = 0;
+                            end
+                        end
+                    end
+                    if(saveLoc == 0)
+                        errorButton = questdlg('There was an error in choosing a save location. Would you like to choose again or use the default?','Save Location', 'Try Again', 'Quit', 'Try Again');
+                        if strcmp(errorButton, 'Quit')
+                            saveLoc = 0;
+                            return
+                        end
+                    end
+                elseif strcmp(button, 'Quit')
+                    saveLoc = 0;
+                    return
+                end
+                
+            end
+        catch exception
+            generateReport(exception)
+        end
+    end
+
 % ------------
 % Check that video directories exist with right number/type of images
 % ------------
@@ -812,51 +823,42 @@ if fileToLog > 1; fclose(fileToLog); end
         try
             sampleFileDirs = uipickfiles;
             if ~iscell(sampleFileDirs); return; end
+            template = commonPropertySet;
             for i = 1:numel(sampleFileDirs)
-                sampleFileDir = sampleFileDirs{i};
-                if isdir(sampleFileDir)
-                    [~, name] = fileparts(sampleFileDir);
-                    sampleName = name;
+                tmpNewVideo = template;
+                tmpDir = sampleFileDirs{i};
+                if isdir(tmpDir)
+                    tmpNewVideo.directory = tmpDir;
+                    [~, tmpNewVideo.name] = fileparts(tmpDir);
                     
                     tmpIdx = 1;
                     tmpNbImages = 0;
                     while (tmpIdx <= length(filenames.listOfExtensions)) && (tmpNbImages <= 0)
-                        tmpNbImages = length(dir(fullfile(sampleFileDir,['*.',filenames.listOfExtensions{tmpIdx}])));
+                        tmpNbImages = length(dir(fullfile(tmpNewVideo.directory,['*.',filenames.listOfExtensions{tmpIdx}])));
                         if tmpNbImages <= 0
                             tmpIdx = tmpIdx + 1;
                         end
                     end
                     if tmpNbImages > 0
-                        sampleNbImages = tmpNbImages;
-                        sampleFormat = filenames.listOfExtensions{tmpIdx};
-                        sampleDuration = 30;
+                        tmpNewVideo.images = tmpNbImages;
+                        tmpNewVideo.format = filenames.listOfExtensions{tmpIdx};
+                        if isempty(tmpNewVideo.duration)
+                            tmpNewVideo.duration = 30;
+                        end
                         
                     else
-                        sampleNbImages = '0';
-                        sampleFormat = 'no images';
+                        tmpNewVideo.images = '0';
+                        tmpNewVideo.format = 'no images';
                     end
                     
-                    tmpNewVideo = struct(fileDB);
-                    tmpNewVideo(1).name = sampleName;
-                    tmpNewVideo(1).date = '';
-                    tmpNewVideo(1).gene = '';
-                    tmpNewVideo(1).age = NaN;
-                    tmpNewVideo(1).set = NaN;
-                    tmpNewVideo(1).trial = NaN;
-                    tmpNewVideo(1).note = '';
-                    tmpNewVideo(1).author = '';
-                    tmpNewVideo(1).directory = sampleFileDir;
-                    tmpNewVideo(1).images = sampleNbImages;
-                    tmpNewVideo(1).duration = sampleDuration;
-                    tmpNewVideo(1).frames_per_second = tmpNewVideo(1).images / tmpNewVideo(1).duration;
-                    tmpNewVideo(1).mm_per_pixel = 1;
-                    tmpNewVideo(1).well = [];
-                    tmpNewVideo(1).segmented = false;
-                    tmpNewVideo(1).worms = 0;
-                    tmpNewVideo(1).measured = false;
-                    tmpNewVideo(1).format = sampleFormat;
-                    tmpNewVideo(1).glareZones = cell(1,0);
-                    fileDB(end+1) = tmpNewVideo(1);
+                    tmpNewVideo.frames_per_second = tmpNewVideo.images / tmpNewVideo.duration;
+                    tmpNewVideo.mm_per_pixel = 1;
+                    tmpNewVideo.well = [];
+                    tmpNewVideo.segmented = false;
+                    tmpNewVideo.worms = 0;
+                    tmpNewVideo.measured = false;
+                    tmpNewVideo.glareZones = cell(1,0);
+                    fileDB(end+1) = tmpNewVideo;
                 end
                 
                 
@@ -885,6 +887,41 @@ if fileToLog > 1; fclose(fileToLog); end
             populateFilters
         catch exception
             generateReport(exception)
+        end
+    end
+
+    function propertyTemplate = commonPropertySet
+        try
+            propList = struct(fileDB);
+            propList(1).author = '';
+            propList(1).date = '';
+            propList(1).gene = '';
+            propList(1).age = NaN;
+            propList(1).set = NaN;
+            propList(1).trial = NaN;
+            propList(1).note = '';
+            
+            figureCommonProp = figure('Visible','on','Position',[50,100,400,500],'Name','CeleST: Set Common Properties', 'numbertitle','off','menubar','none');
+            set(figureCommonProp, 'color', get(mainPanel,'backgroundcolor'));
+            uicontrol('parent', figureCommonProp, 'style','pushbutton', 'string', 'Finish', 'position', [125,25,150,30],'callback', @propFinish);
+            
+            emptyField = [2:8,11,20];
+            for tmpFF = 1:length(emptyField)
+                uicontrol('parent', figureCommonProp, 'style', 'text', 'string', fieldsIni{emptyField(tmpFF)}, 'HorizontalAlignment', 'left', 'position', [25, 475-20*tmpFF, 120, 20]);
+                tmpfield.(fieldsIni{emptyField(tmpFF)}) = uicontrol('parent', figureCommonProp, 'style', 'edit', 'string', '', 'position', [125, 475-20*tmpFF, 250, 20], 'Tag', fieldsIni{emptyField(tmpFF)}, 'Callback', @fillTemplate);
+            end
+            
+            waitfor(figureCommonProp,'BeingDeleted','on');
+            propertyTemplate = propList(1);
+            
+        catch exception
+            generateReport(exception);
+        end
+        function fillTemplate(~,eventdata)
+            propList(1).(eventdata.Source.Tag) = eventdata.Source.String;
+        end
+        function propFinish(~, ~)
+            close(figureCommonProp);
         end
     end
 

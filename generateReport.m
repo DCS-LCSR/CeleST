@@ -1,26 +1,44 @@
-function generateReport(exception)
+function generateReport(varargin)
 
 global filenames startTime fileLogID;
 
-% Clean-up CeleST couldn't do, due to error
-disp(['CeleST error at ' datestr(clock)]);
-diary off
-
-
-% Get error report
-errEncountered = getReport(exception, 'extended', 'hyperlinks', 'off');
+% if nargin > 1
+    % Let log know user is sending report at time
+    disp(['CeleST user report at ' datestr(clock)]);
+    
+    errName = 'Send Report about bug, behavioral issue, or send a suggestion';
+    instructions = ['If you encountered a bug, system froze, or some other behavioral issue, '...
+    'please include which window you were working with and/or what you were doing when the problem occurred. '...
+    'Otherwise feel free to send a suggestion'];
+    
+    message = 'User Report';
+% else
+%     % Clean-up CeleST couldn't do, due to error
+%     disp(['CeleST error at ' datestr(clock)]);
+%     diary off
+%     % Get error report
+%     errEncountered = getReport(varargin{1}, 'extended', 'hyperlinks', 'off');
+%     
+%     errName = 'Report System Error';
+%     instructions = ['An error has occurred. Please type a brief message describing what you were doing prior to the error. '...
+%         'Some useful information may include which window you were using or what was pressed prior to the error'];
+%     
+%     message = ['Error Stack:' 10 errEncountered];
+% end
 
 % Error Reporting Window appears when error is caught
-errWindow = figure('Name', 'Report Error', 'Menubar', 'none', 'Visible', 'off');
-errMessage = uicontrol(errWindow, 'Style', 'edit', 'Units', 'Normalized', 'Position', [0.1 0.25 0.8 0.5]);
-uicontrol(errWindow, 'Style', 'text', 'String', 'An error has occurred. Please type a brief message describing what you were doing prior to the error. Some useful information may include which window you were using or what was pressed prior to the error', 'Units', 'Normalized', 'Position', [0.05 0.8 0.9 0.15]);
-uicontrol(errWindow, 'Style', 'pushbutton', 'String', 'Send Report', 'Units', 'Normalized', 'Position', [0.1 0.1 0.35 0.1], 'Callback', @SendReport);
-uicontrol(errWindow, 'Style', 'pushbutton', 'String', 'Don''t Send', 'Units', 'Normalized', 'Position', [0.55 0.1 0.35 0.1], 'Callback', @DontSend);
+errWindow = figure('Name', errName, 'NumberTitle', 'off','Menubar', 'none', 'Position', [100 100 650 500], 'Visible', 'off');
+uicontrol(errWindow, 'Style', 'text', 'String', 'Sender Name', 'Position', [50 365 100 30]);
+errSender = uicontrol(errWindow, 'Style', 'edit', 'Position', [160 370 365 30]);
+uicontrol(errWindow, 'Style', 'text', 'String', instructions, 'Position', [50 410 550 70]);
+errMessage = uicontrol(errWindow, 'Style', 'edit', 'Position', [50 85 550 275]);
+uicontrol(errWindow, 'Style', 'pushbutton', 'String', 'Send', 'Position', [75 20 225 50], 'Callback', @SendReport);
+uicontrol(errWindow, 'Style', 'pushbutton', 'String', 'Cancel', 'Position', [325 20 250 50], 'Callback', @DontSend);
 
 set(errWindow, 'Visible', 'on');
 waitfor(errWindow, 'BeingDeleted','on');
 
-    function SendReport(hObject, eventdata)
+    function SendReport(~, ~)
         % Check for Blank Textbox
         if isempty(get(errMessage, 'String'))
             answer = questdlg('Are you sure you want to send the report with no body in the message?', 'Empty Body Encountered', 'Yes', 'No', 'No');
@@ -41,20 +59,29 @@ waitfor(errWindow, 'BeingDeleted','on');
         props.setProperty('mail.smtp.socketFactory.port','465');
         
         % Create Message
-        message = ['Error Stack:' 10 errEncountered 10 10 'User message' 10 get(errMessage, 'String')];
+        message = [message 10 10 'User message:' 10 get(errMessage, 'String')];
         
         % Get Attachments
         attachments = {[filenames.log '/comWinLog'],fileLogID};
         
         % Send Mail
-        sendmail(recipients,['CeleST Bug Report on ' startTime], message, attachments);
+        try
+            if isempty(get(errSender, 'String'))
+                sender = '';
+            else
+                sender =  [' from ' get(errSender, String)];
+            end
+            sendmail(recipients,['CeleST Bug Report on ' startTime sender], message, attachments);
+        catch
+            msgbox('Report could not be sent, please check your internet connection')
+        end
         close(errWindow);
     end
-    function DontSend(hObject, eventdata)
+    function DontSend(~, ~)
         close(errWindow);
     end
     function [sender, passphrase, recipients] = getEmailInfo()
-        configFID = fopen([filenames.curr '/bugreportinfo']);
+        configFID = fopen([filenames.curr '/CeleST/bugreportinfo']);
         configInfo = textscan(configFID, '%s', 'delimiter', '\n');
         configInfo = configInfo{1};
         sender = configInfo{1};
