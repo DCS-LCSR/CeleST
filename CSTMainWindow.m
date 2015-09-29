@@ -630,7 +630,6 @@ if fileToLog > 1; fclose(fileToLog); end
                     saveLoc = 0;
                     return
                 end
-                
             end
         catch exception
             generateReport(exception)
@@ -845,10 +844,10 @@ if fileToLog > 1; fclose(fileToLog); end
                         if isempty(tmpNewVideo.duration)
                             tmpNewVideo.duration = 30;
                         end
-                        
                     else
                         tmpNewVideo.images = '0';
                         tmpNewVideo.format = 'no images';
+                        tmpNewVideo.duration = 0;
                     end
                     
                     tmpNewVideo.frames_per_second = tmpNewVideo.images / tmpNewVideo.duration;
