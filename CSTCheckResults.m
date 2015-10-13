@@ -10,6 +10,7 @@ global filenames fileDB colFtlWell mainPnlW mainPnlH filterNames filterSelection
 thresholdDistPixel = 4;
 flagShowCurvaturePlots = false;
 flagPlotCurvOnly = false;
+flagShowHeadTail = true;
 totalWormsChecked = 0;
 allMeasures = struct();
 % ----------
@@ -29,7 +30,7 @@ nbSamplesCBL = 24;
 % ----------
 % Measures to be computed
 % ----------
-measures.status = cell(1,0);
+listOfWorms.status = cell(1,0);
 measures.highThr = [];
 measures.lowThr = [];
 measures.prevThr = [];
@@ -193,8 +194,8 @@ btnPlayVideo = uicontrol('parent',pnlNavigate,'style','togglebutton','string','P
 pnlValidity = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 525 3*544+25 90]);
 hAxeValid = axes('parent', pnlValidity, 'units','pixels','position',[25 10 3*544 30],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
 uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Validity of the segmented body: ','position',[25 55 250 20]);
-txtValid = uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Valid frames: - / - = - %','position',[275 55 220 20], 'foregroundcolor', [0.1 0.5 0.1]);
-txtReject = uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Rejected frames: - / - = - %','position',[445 55 230 20], 'foregroundcolor' , [0.7 0 0]);
+txtValid = uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Valid frames: - / - = - %','position',[300 55 275 20], 'foregroundcolor', [0.1 0.5 0.1]);
+txtReject = uicontrol('parent',pnlValidity,'style','text','HorizontalAlignment', 'left','string','Rejected frames: - / - = - %','position',[575 55 275 20], 'foregroundcolor' , [0.7 0 0]);
 nextBlockBtn = uicontrol('parent',pnlValidity,'style','pushbutton','string','Next block','position',[875 55 100 35],'callback',@selectNextBlock);
 switchValidityBtn = uicontrol('parent',pnlValidity,'style','pushbutton','string','Switch validity (right click)','position',[1015 55 190 35],'callback',@switchValidity);
 splitBlockBtn = uicontrol('parent',pnlValidity,'style','pushbutton','string','Split block (double click)','position',[1215 55 190 35],'callback',@splitBlock);
@@ -347,14 +348,19 @@ waitfor(mainFigure,'BeingDeleted','on');
             allMeasures.('Curling_All') = NaN(nbOfWorms, nbOfFrames);
             allMeasures.usability = NaN(1,nbOfWorms);
             negativeThreshold = -1;
-            oldNames = {'status','highThr', 'lowThr', 'prevThr', 'highThrDef', 'lowThrDef', 'prevThrDef', 'usability', 'manualSeparators', 'separators'};
+            oldNames = {'status', 'highThr', 'lowThr', 'prevThr', 'highThrDef', 'lowThrDef', 'prevThrDef', 'usability', 'manualSeparators', 'separators'};
             for oldIdx = 1:length(oldNames)
-                allMeasures.(oldNames{oldIdx}) = measures.(oldNames{oldIdx});
+                if strcmp(oldNames{oldIdx}, 'status')
+                    allMeasures.(oldNames{oldIdx}) = listOfWorms.status;
+                else
+                    allMeasures.(oldNames{oldIdx}) = measures.(oldNames{oldIdx});
+                end
             end
+                                    
             totWorms = 0;
             for wormToMeasure = 1:nbOfWorms
                 if isgraphics(hTmp); waitbar(wormToMeasure/nbOfWorms,hTmp); end
-                if strcmp(measures.status{wormToMeasure}, 'rejected')
+                if strcmp(listOfWorms.status{wormToMeasure}, 'rejected')
                     continue
                 end
                 totWorms = totWorms + 1;
@@ -611,7 +617,8 @@ waitfor(mainFigure,'BeingDeleted','on');
             if isgraphics(hTmp); close(hTmp); end
             pause(0.001);
             if currentVideo~=0
-                CSTwriteMeasuresToTXT(allMeasures, fileDB(currentVideo).name);
+                CSTwriteSegmentationToTXT(listOfWorms, fileDB(currentVideo).name)
+                CSTwriteMeasuresToTXT(allMeasures, fileDB(currentVideo).name, true, listOfWorms.status);
                 fileDB(currentVideo).measured = true;
                 fileDB(currentVideo).worms = totWorms;
                 populateFilters
@@ -859,7 +866,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     measures.prevThrDef(worm2) = 25;
                     measures.prevThr(worm2) = measures.prevThrDef(worm2);
                     listOfWorms.outOfPrevious(worm2,:) = (listOfWorms.overlapPrev(worm2,:)*100 < measures.prevThr(worm2));
-                    measures.status{worm2} = '';
+                    listOfWorms.status{worm2} = '';
                     measures.manualSeparators{worm2} = [];
                     measures.separators{worm2} = [];
                     tmpAfterSelfOverlap(worm2,:) = false;
@@ -906,8 +913,8 @@ waitfor(mainFigure,'BeingDeleted','on');
                         end
                     end
                 end
-                measures.status{worm1} = 'unchecked';
-                measures.status{worm2} = 'unchecked';
+                listOfWorms.status{worm1} = 'unchecked';
+                listOfWorms.status{worm2} = 'unchecked';
                 computeBlockSeparatorsAndValidity
                 % ---------
                 % Update the interface
@@ -915,7 +922,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                 nbOfWorms = length(listOfWorms.skel);
                 newListTmp = cell(1,nbOfWorms);
                 for tmp = 1:nbOfWorms
-                    newListTmp{tmp} = ['Worm ', num2str(tmp), ' : ', measures.status{tmp}];
+                    newListTmp{tmp} = ['Worm ', num2str(tmp), ' : ', listOfWorms.status{tmp}];
                 end
                 set(listWorms, 'string', newListTmp);
                 selectWorm;
@@ -948,7 +955,7 @@ waitfor(mainFigure,'BeingDeleted','on');
         % Define the block separators
         % ------------
         for ww = 1:nbOfWorms
-            if ~strcmp(measures.status{ww}, 'rejected')
+            if ~strcmp(listOfWorms.status{ww}, 'rejected')
                 measures.separators{ww} = unique(sort([...
                     1, 1+nbOfFrames, ...
                     measures.manualSeparators{ww}(:)',...
@@ -1256,7 +1263,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             set(hMainBox, 'xdata', bbox([1 1 2 2 1]), 'ydata', bbox([3 4 4 3 3]));
         end
         for otherWorm = [1:currentWorm-1 , currentWorm+1:nbOfWorms]
-            if ~strcmp('rejected', measures.status{otherWorm})
+            if ~strcmp('rejected', listOfWorms.status{otherWorm})
                 tmp = mean(listOfWorms.skel{otherWorm}{currentFrame},2);
                 if listOfWorms.valid(otherWorm,currentFrame)
                     colourOther = colorAccepted;
@@ -1298,6 +1305,11 @@ waitfor(mainFigure,'BeingDeleted','on');
             set(hSubImage,  'cdata', currentImage(bbox(3):bbox(4), bbox(1):bbox(2)));
             set(hSubWorm, 'xdata', tmpDraw(1,:), 'ydata', tmpDraw(2,:), 'color', colour);
         end
+        if flagShowHeadTail
+            hold(hAxeCurrentWorm, 'on')
+            text(tmpDraw(1,1),tmpDraw(2,1),'Head','Color','r','FontWeight','bold','Parent',hAxeCurrentWorm);
+            text(tmpDraw(1,round(length(tmpDraw)/2)),tmpDraw(2,round(length(tmpDraw)/2)),'Tail','Color','r','FontWeight','bold','Parent',hAxeCurrentWorm);
+        end
         axis(hAxeCurrentWorm, 'equal', 'off', 'image', 'tight')
         hold(hAxeCurrentWorm, 'on')
         if isempty(hCBLSub) || ~ishandle(hCBLSub)
@@ -1310,7 +1322,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             end
         else
             set(hSubImage,  'cdata', currentImage(bbox(3):bbox(4), bbox(1):bbox(2)));
-            axis(hAxeCurrentWorm, 'equal', 'off', 'image', 'tight')
+            axis(hAxeCurrentWorm, 'equal', 'off', 'image', 'tight listOfWorms.outOfLengths ')
             if flagShowCBLSub && ~isempty(listOfWorms.cblSubSampled{currentWorm}{currentFrame})
                 set(hCBLSub, 'xdata', listOfWorms.cblSubSampled{currentWorm}{currentFrame}(1,:) - bbox(1)+1, 'ydata', listOfWorms.cblSubSampled{currentWorm}{currentFrame}(2,:) - bbox(3)+1);
             end
@@ -1358,7 +1370,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     longueurs = arrayfun(@(c) length(c.name),imageFiles);
                     if min(longueurs) < max(longueurs)
                         nbOfElementsTmp = length(imageFiles);
-                        listOfNamesTmp = cell(1,nbOfElementsTmp);
+                        listOfNamesTmp = cell(1,nbOfElementsTmp); listOfWorms.outOfLengths 
                         for n = 1:nbOfElementsTmp
                             listOfNamesTmp{n} = imageFiles(n).name;
                         end
@@ -1601,7 +1613,9 @@ waitfor(mainFigure,'BeingDeleted','on');
                         % --------
                         % Compute the blocks and separators
                         % --------
-                        measures.status = cell(1,nbOfWorms);
+                        if isempty([listOfWorms.status{:}])
+                            listOfWorms.status = cell(1,nbOfWorms);
+                        end
                         measures.manualSeparators = cell(nbOfWorms,1);
                         measures.separators = cell(nbOfWorms,1);
                         tmpAfterSelfOverlap = false(nbOfWorms, nbOfFrames);
@@ -1623,18 +1637,20 @@ waitfor(mainFigure,'BeingDeleted','on');
                             existingStatus = cell(1,nbOfWormsTmp);
                             for ww = 1:nbOfWormsTmp
                                 existingStatus{ww} = fgetl(fidTmp);
-                                measures.status{ww} = existingStatus{ww};
+                                if isempty(listOfWorms.status{ww})
+                                    listOfWorms.status{ww} = existingStatus{ww};
+                                end
                             end
                         end
                     end
                     for tmp = 1:nbOfWorms
-                        if isempty(measures.status{tmp})
-                            measures.status{tmp} = 'unchecked';
+                        if isempty(listOfWorms.status{tmp})
+                            listOfWorms.status{tmp} = 'unchecked';
+                            if sum(listOfWorms.valid(tmp,:)) < 50
+                                listOfWorms.status{tmp} = 'rejected';
+                            end
                         end
-                        if sum(listOfWorms.valid(tmp,:)) < 50
-                            measures.status{tmp} = 'rejected';
-                        end
-                        newListTmp{tmp} = ['Worm ', num2str(tmp), ' : ', measures.status{tmp}];
+                        newListTmp{tmp} = ['Worm ', num2str(tmp), ' : ', listOfWorms.status{tmp}];
                     end
                     set(listWorms, 'string', newListTmp, 'value',1);
                     set(txtVideoLoaded,'string',fileDB(currentVideo).name);
@@ -1674,11 +1690,10 @@ waitfor(mainFigure,'BeingDeleted','on');
             if ~isempty(listVideosIdx)
                 tmp = listVideosIdx(get(listVideos,'value'));
                 if ~fileDB(tmp).segmented
-                    warndlg(sprintf('The chosen file has not been processed. \nPlease process prior the checking its measures.'),'Warning')
+                    warndlg(sprintf('The chosen file has not been processed. \nPlease process prior to checking its measures.'),'Warning')
                 else
                     if (~isempty(listVideosIdx)) && (strcmp(get(mainFigure, 'Visible'),'on')) && (get(listVideos,'Value')~=currentVideo)
                         loadVideoContents(hObject,eventdata)
-                        selectWorm
                     end
                 end
             end
@@ -1696,7 +1711,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
     function selectWorm(hObject,eventdata)
         try
-            if ~isempty([get(listWorms,'String')])
+            if ~isempty(get(listWorms,'String'))
                 currentWorm = get(listWorms, 'value');
                 if isempty(currentWorm)
                     cla(hAxeLength)
@@ -1711,7 +1726,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     newListTmp = {};
                     wormSwitchIdx = [];
                     for otherWorm = [1:currentWorm-1 , currentWorm+1:nbOfWorms]
-                        %                 if ~strcmp('rejected', measures.status{otherWorm})
+                        %                 if ~strcmp('rejected', listOfWorms.status{otherWorm})
                         newListTmp{end+1} = ['Worm ', num2str(otherWorm)]; %#ok<AGROW>
                         wormSwitchIdx(end+1) = otherWorm; %#ok<AGROW>
                         %                 end
@@ -1953,9 +1968,9 @@ waitfor(mainFigure,'BeingDeleted','on');
             if currentVideo == 0
                 return
             end
-            measures.status{currentWorm} = 'valid';
+            listOfWorms.status{currentWorm} = 'valid';
             tmp = get(listWorms,'string');
-            tmp{currentWorm} = ['Worm ', num2str(currentWorm), ' : ', measures.status{currentWorm}];
+            tmp{currentWorm} = ['Worm ', num2str(currentWorm), ' : ', listOfWorms.status{currentWorm}];
             set(listWorms,'string', tmp);
         catch exception
             generateReport(exception)
@@ -1970,9 +1985,9 @@ waitfor(mainFigure,'BeingDeleted','on');
             if currentVideo == 0
                 return
             end
-            measures.status{currentWorm} = 'rejected';
+            listOfWorms.status{currentWorm} = 'rejected';
             tmp = get(listWorms,'string');
-            tmp{currentWorm} = ['Worm ', num2str(currentWorm), ' : ', measures.status{currentWorm}];
+            tmp{currentWorm} = ['Worm ', num2str(currentWorm), ' : ', listOfWorms.status{currentWorm}];
             set(listWorms,'string', tmp);
         catch exception
             generateReport(exception)

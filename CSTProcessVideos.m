@@ -276,7 +276,9 @@ waitfor(mainFigure,'BeingDeleted','on');
         fileDB(videoBeingProcessed).worms = length(listOfWorms.skel);
         fileDB(videoBeingProcessed).segmented = true;
         try
+            tic
             CSTwriteSegmentationToTXT(listOfWorms, fileDB(videoBeingProcessed).name);
+            toc
         catch em
             if flagRobustness
                 try

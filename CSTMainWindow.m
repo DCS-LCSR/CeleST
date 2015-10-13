@@ -6,7 +6,7 @@ function CSTMainWindow
 % THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 clear('global')
-global filenames fileDB traceOn timingOn timings timingsLabel timingsTime plotAllOn flagRobustness fileToLog flagAutomation flagInterfaceFreeze flagConsistentButton filterNames filterSelection colFtlWell mainPnlW mainPnlH fieldsIni listVideosIdx tableVideos startTime fileLogID;
+global filenames fileDB traceOn timingOn timings timingsLabel timingsTime plotAllOn flagRobustness fileToLog flagAutomation flagInterfaceFreeze flagConsistentButton filterNames filterSelection colFtlWell mainPnlW mainPnlH fieldsIni listVideosIdx tableVideos startTime fileLogID version;
 
 
 % ===============
@@ -25,6 +25,7 @@ timingsLabel = {'load image', 'preprocess', 'find borders', 'compute appearance'
     'detect overlap risk', 'track cbl', 'adjust model'};
 timings = zeros(1,length(timingsLabel));
 timingsTime = zeros(1,length(timingsLabel));
+version = '3';
 
 % ===============
 % Directories
@@ -823,6 +824,7 @@ if fileToLog > 1; fclose(fileToLog); end
             sampleFileDirs = uipickfiles;
             if ~iscell(sampleFileDirs); return; end
             template = commonPropertySet;
+
             for i = 1:numel(sampleFileDirs)
                 tmpNewVideo = template;
                 tmpDir = sampleFileDirs{i};
@@ -843,13 +845,14 @@ if fileToLog > 1; fclose(fileToLog); end
                         tmpNewVideo.format = filenames.listOfExtensions{tmpIdx};
                         if isempty(tmpNewVideo.duration)
                             tmpNewVideo.duration = 30;
+                        elseif ischar(tmpNewVideo.duration)
+                            tmpNewVideo.duration = str2double(tmpNewVideo);
                         end
                     else
                         tmpNewVideo.images = '0';
                         tmpNewVideo.format = 'no images';
                         tmpNewVideo.duration = 0;
                     end
-                    
                     tmpNewVideo.frames_per_second = tmpNewVideo.images / tmpNewVideo.duration;
                     tmpNewVideo.mm_per_pixel = 1;
                     tmpNewVideo.well = [];
@@ -857,7 +860,7 @@ if fileToLog > 1; fclose(fileToLog); end
                     tmpNewVideo.worms = 0;
                     tmpNewVideo.measured = false;
                     tmpNewVideo.glareZones = cell(1,0);
-                    fileDB(end+1) = tmpNewVideo;
+                    fileDB(end+1) = tmpNewVideo; %#okAGROW
                 end
                 
                 

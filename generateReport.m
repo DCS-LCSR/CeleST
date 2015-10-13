@@ -14,7 +14,6 @@ if nargin > 1
     errEncountered = 'User Report';
     message = errEncountered;
 else
-    % Clean-up CeleST couldn't do, due to error
     disp(['CeleST error at ' datestr(clock)]);
     diary off
     % Get error report
