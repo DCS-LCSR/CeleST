@@ -276,9 +276,7 @@ waitfor(mainFigure,'BeingDeleted','on');
         fileDB(videoBeingProcessed).worms = length(listOfWorms.skel);
         fileDB(videoBeingProcessed).segmented = true;
         try
-            tic
             CSTwriteSegmentationToTXT(listOfWorms, fileDB(videoBeingProcessed).name);
-            toc
         catch em
             if flagRobustness
                 try
@@ -336,7 +334,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     if ~fileDB(videoBeingProcessed).segmented
                         imageFiles = dir(fullfile(fileDB(videoBeingProcessed).directory,['*.',fileDB(videoBeingProcessed).format]));
                         totalFrames = length(imageFiles);
-                        if ~isempty(totalFrames)
+                        if totalFrames ~= 0
                             cla(axesImage);
                             currentImageForDisplay = imread( fullfile( fileDB(videoBeingProcessed).directory, imageFiles(1).name) );
                             imagesc(currentImageForDisplay,'parent', axesImage);
@@ -369,8 +367,8 @@ waitfor(mainFigure,'BeingDeleted','on');
                             else
                                 disp('processing finished')
                             end
-                            flagFinishedProcessing = true;
                         end
+                        flagFinishedProcessing = true;
                     end
                     if(fileDB(listVideosToProcIdx(currentVideoIdx)).measured)
                             delete(fullfile(filenames.measures, ['wormMeas_',fileDB(listVideosToProcIdx(currentVideoIdx)).name,'.txt']));
@@ -402,7 +400,7 @@ waitfor(mainFigure,'BeingDeleted','on');
 
 
     function launchProcessingInterrupt(hObject,eventdata)
-        response = questdlg('Would you like to cancel your current video processing or wait for it to finish?','Cancel Processing','Cancel','Don''t Cancel','Wait');
+        response = questdlg('Would you like to cancel your current video processing or wait for it to finish?','Cancel Processing','Cancel','Don''t Cancel','Don''t Cancel');
         if strcmp(response, 'Cancel')
             flagCancel = true;
         end

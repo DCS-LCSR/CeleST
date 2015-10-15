@@ -6,7 +6,7 @@ function listOfWorms = CSTreadSegmentationFromTXT(videoName, flagShowGUI)
 
 % Read segmentation results from txt file, returns a struct array with all the fields
 
-global filenames;
+global filenames CeleSTVersion; % CeleSTVersion is for implementation of data consistency check
 
 if nargin < 2
     flagShowGUI = true;

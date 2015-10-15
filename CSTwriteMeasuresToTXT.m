@@ -4,7 +4,7 @@ function CSTwriteMeasuresToTXT(listOfMeasures, videoName, flagShowGUI, status)
 % The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 % THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-global filenames version;
+global filenames CeleSTVersion;
 
 if nargin < 3
     flagShowGUI = true;
@@ -18,7 +18,7 @@ if fid >= 3
     nbOfWorms = length(listOfMeasures.(listOfFields{1}));
     nbOfFields = length(listOfFields);
     % Header
-    fprintf(fid,['version ', version,'\n']);
+    fprintf(fid,['version ', CeleSTVersion,'\n']);
     fprintf(fid,['fields ', num2str(nbOfFields),'\n']);
     fprintf(fid,['worms ', num2str(nbOfWorms),'\n']);
     

@@ -6,7 +6,7 @@ function [listOfMeasures, listOfWormIdx] = CSTreadMeasuresFromTXT(videoName, fla
 
 % Read segmentation listOfMeasures from txt file, returns a struct array with all the fields
 
-global filenames;
+global filenames CeleSTVersion;
 
 if nargin <= 1
     flagShowGUI = true;
@@ -28,6 +28,13 @@ fid = fopen(fullfile(filenames.measures, ['wormMeas_',videoName,'.txt']),'r');
 if fid >= 3
     if (flagShowGUI)
         hWaitBar = waitbar(0,'Loading measures...');
+    end
+    line1 = fgetl(fid);
+    fileVersion = sscanf(line1, 'version %s');
+    if isempty(fileVersion)
+        nbOfFields = sscanf(line1, 'fields %d');
+    elseif ~strcmp(fileVersion, CeleSTVersion)
+        ... % temporary until update script implementation
     end
     nbOfFields = sscanf(fgetl(fid), 'fields %d');
     nbOfWorms = sscanf(fgetl(fid), 'worms %d');

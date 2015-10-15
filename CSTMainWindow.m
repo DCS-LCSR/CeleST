@@ -6,7 +6,7 @@ function CSTMainWindow
 % THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 clear('global')
-global filenames fileDB traceOn timingOn timings timingsLabel timingsTime plotAllOn flagRobustness fileToLog flagAutomation flagInterfaceFreeze flagConsistentButton filterNames filterSelection colFtlWell mainPnlW mainPnlH fieldsIni listVideosIdx tableVideos startTime fileLogID version;
+global filenames fileDB traceOn timingOn timings timingsLabel timingsTime plotAllOn flagRobustness fileToLog flagAutomation flagInterfaceFreeze flagConsistentButton filterNames filterSelection colFtlWell mainPnlW mainPnlH fieldsIni listVideosIdx tableVideos startTime fileLogID CeleSTVersion;
 
 
 % ===============
@@ -25,7 +25,7 @@ timingsLabel = {'load image', 'preprocess', 'find borders', 'compute appearance'
     'detect overlap risk', 'track cbl', 'adjust model'};
 timings = zeros(1,length(timingsLabel));
 timingsTime = zeros(1,length(timingsLabel));
-version = '3';
+CeleSTVersion = '3';
 
 % ===============
 % Directories
@@ -40,7 +40,7 @@ if ~chosenDataPath
 end
 
 filenames.curr = chosenDataPath;
-filenames.data = fullfile(filenames.curr, 'Data');
+filenames.data = fullfile(filenames.curr, 'data');
 filenames.log = fullfile(filenames.data, 'log');
 filenames.segmentation = fullfile(filenames.data, 'segmentation');
 filenames.export = fullfile(filenames.data, 'export');
@@ -611,7 +611,7 @@ if fileToLog > 1; fclose(fileToLog); end
                         saveLoc = uigetdir;
                         if ~(saveLoc==0)
                             saveLoc = strsplit(saveLoc,'/');
-                            if strcmp(saveLoc(end), 'Data')
+                            if strcmp(saveLoc(end), 'data')
                                 saveLoc = saveLoc(1:(end-1));
                                 saveLoc = strjoin(saveLoc,'/');
                                 check = true;
