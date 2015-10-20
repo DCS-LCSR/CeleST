@@ -16,7 +16,6 @@ traceOn = true;
 timingOn = true;
 plotAllOn = false;
 flagRobustness = true;
-logToFile = true;
 flagAutomation = false;
 flagInterfaceFreeze = true;
 flagConsistentButton = true;
@@ -26,6 +25,8 @@ timingsLabel = {'load image', 'preprocess', 'find borders', 'compute appearance'
 timings = zeros(1,length(timingsLabel));
 timingsTime = zeros(1,length(timingsLabel));
 CeleSTVersion = '3';
+startupDataCheck = false;
+logToFile = true;
 
 % ===============
 % Directories
@@ -190,6 +191,7 @@ tableVideos = uitable('parent',mainPanel,'position',[0 30 mainPanelPosition(3)-3
 listVideosIdx = [];
 populateFilters
 checkVideoDirectories
+checkSequences
 set(mainFigure,'visible','on')
 pause(0.1)
 
@@ -581,6 +583,10 @@ if fileToLog > 1; fclose(fileToLog); end
                     end
                 end
             end
+            if ~startupDataCheck
+                updateData
+                startupDataCheck = true;
+            end
             if flagConsistentButton
                 if isgraphics(h); close(h); end
                 if ~errorCheck; msgbox('Data is consistent','Success'); end
@@ -610,10 +616,10 @@ if fileToLog > 1; fclose(fileToLog); end
                         saveLoc = 0;
                         saveLoc = uigetdir;
                         if ~(saveLoc==0)
-                            saveLoc = strsplit(saveLoc,'/');
-                            if strcmp(saveLoc(end), 'data')
-                                saveLoc = saveLoc(1:(end-1));
-                                saveLoc = strjoin(saveLoc,'/');
+                            tmpCont = dir(saveLoc);
+                            foldersInDir = sort({tmpCont([tmpCont.isdir]).name});
+                            foldersNeeded = {'export','file_management','log','segmentation','measures'};
+                            if strcmp(foldersInDir, foldersNeeded)
                                 check = true;
                             else
                                 saveLoc = 0;
@@ -621,7 +627,7 @@ if fileToLog > 1; fclose(fileToLog); end
                         end
                     end
                     if(saveLoc == 0)
-                        errorButton = questdlg('There was an error in choosing a save location. Would you like to choose again or use the default?','Save Location', 'Try Again', 'Quit', 'Try Again');
+                        errorButton = questdlg('Either no directory was chosen or the necessary folders are not present. Would you like to choose again or use the default?','Save Location', 'Try Again', 'Quit', 'Try Again');
                         if strcmp(errorButton, 'Quit')
                             saveLoc = 0;
                             return

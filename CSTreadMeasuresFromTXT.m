@@ -29,15 +29,19 @@ if fid >= 3
     if (flagShowGUI)
         hWaitBar = waitbar(0,'Loading measures...');
     end
+    
     line1 = fgetl(fid);
     fileVersion = sscanf(line1, 'version %s');
     if isempty(fileVersion)
-        nbOfFields = sscanf(line1, 'fields %d');
-    elseif ~strcmp(fileVersion, CeleSTVersion)
-        ... % temporary until update script implementation
+        nbOfFields = sscanf(fgetl(fid), 'fields %d');
+    else
+        if ~strcmp(fileVersion, CeleSTVersion)
+            updateData
+        end
+        nbOfFields = sscanf(fgetl(fid), 'fields %d');
     end
-    nbOfFields = sscanf(fgetl(fid), 'fields %d');
     nbOfWorms = sscanf(fgetl(fid), 'worms %d');
+    
     for ff = 1:nbOfFields
         field = fgetl(fid);
         if strcmp(field, 'status')
@@ -63,7 +67,7 @@ if fid >= 3
             for ww = 1:nbOfWorms
                 listOfMeasures.(field){ww} = str2num(fgetl(fid)); %#ok<ST2NM>
             end
-
+            
         else
             if flagOnlyUsable
                 line = fgetl(fid);
@@ -75,9 +79,9 @@ if fid >= 3
                 end
             else
                 listOfMeasures.(field) = sscanf(fgetl(fid), '%f ');
-                    if ~flagLoadAllWorms
-                        listOfMeasures.(field) = listOfMeasures.(field)(listOfWormsToLoad);
-                    end
+                if ~flagLoadAllWorms
+                    listOfMeasures.(field) = listOfMeasures.(field)(listOfWormsToLoad);
+                end
             end
         end
     end
