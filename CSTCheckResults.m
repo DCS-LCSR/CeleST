@@ -1310,8 +1310,8 @@ waitfor(mainFigure,'BeingDeleted','on');
         if flagShowHeadTail
             hold(hAxeCurrentWorm, 'on')
             if isempty(hShowHead) || ~ishandle(hShowHead)
-                hShowHead = text(tmpDraw(1,1),tmpDraw(2,1),'Head','Color','r','FontWeight','bold','Parent',hAxeCurrentWorm);
-                hShowTail = text(tmpDraw(1,round(length(tmpDraw)/2)),tmpDraw(2,round(length(tmpDraw)/2)),'Tail','Color','r','FontWeight','bold','Parent',hAxeCurrentWorm);
+                hShowHead = text(tmpDraw(1,1),tmpDraw(2,1),'\leftarrow Head','Color','r','FontWeight','bold','Parent',hAxeCurrentWorm);
+                hShowTail = text(tmpDraw(1,round(length(tmpDraw)/2)),tmpDraw(2,round(length(tmpDraw)/2)),'\leftarrow Tail','Color','r','FontWeight','bold','Parent',hAxeCurrentWorm);
             else
                 set(hShowHead, 'Position', [tmpDraw(1,1),tmpDraw(2,1)]);
                 set(hShowTail, 'Position', [tmpDraw(1,round(length(tmpDraw)/2)),tmpDraw(2,round(length(tmpDraw)/2))]);
