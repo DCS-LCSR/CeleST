@@ -18,10 +18,8 @@ end
 
 fid = fopen(fullfile(filenames.segmentation, ['wormSegm_',videoName,'.txt']));
 line1 = textscan(fgetl(fid), '%s %s');
-% flagDataOutOfDate = false;
 
  if strcmp(line1{1}{1}, 'version')
-%     flagDataOutOfDate = true;
      line1 = textscan(fgetl(fid), '%s %s');
  end
 

@@ -10,9 +10,9 @@ global filenames fileDB colFtlWell mainPnlW mainPnlH filterNames filterSelection
 thresholdDistPixel = 4;
 flagShowCurvaturePlots = false;
 flagPlotCurvOnly = false;
-flagShowHeadTail = true;
 totalWormsChecked = 0;
 allMeasures = struct();
+tmpDraw = [];
 % ----------
 % Variables storing the currently displayed video, frame, worm
 % ----------
@@ -155,11 +155,12 @@ switchWormsBtn = uicontrol('parent',pnlSwitch,'style','pushbutton','String','Swi
 % ----------
 % Switch head and tail
 % ----------
-pnlSwitchHeadTail = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [380 yFilters-335 2*filterW 50]);
+pnlSwitchHeadTail = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [320 yFilters-335 2*filterW 50]);
+toggleLabelHeadTail = uicontrol('parent',pnlSwitchHeadTail,'Style','checkbox','String','Label Head/Tail','position',[0 25 150 25], 'Callback', @labelHeadTail);
 uicontrol('parent',pnlSwitchHeadTail,'style','text','HorizontalAlignment', 'left','String','From ','position',[0 0 40 20]);
-editFrameSwitchHTStart = uicontrol('parent',pnlSwitchHeadTail,'style','edit','string','1','position',[40 2 50 25]);
-uicontrol('parent',pnlSwitchHeadTail,'style','text','HorizontalAlignment', 'left','String','to ','position',[90 00 20 20]);
-editFrameSwitchHTEnd = uicontrol('parent',pnlSwitchHeadTail,'style','edit','string','-','position',[110 2 50 25]);
+editFrameSwitchHTStart = uicontrol('parent',pnlSwitchHeadTail,'Style','edit','String','1','position',[40 2 50 25]);
+uicontrol('parent',pnlSwitchHeadTail,'style','text','HorizontalAlignment', 'left','String','to ','position',[90 0 20 20]);
+editFrameSwitchHTEnd = uicontrol('parent',pnlSwitchHeadTail,'Style','edit','String','-','position',[110 2 50 25]);
 switchHTBtn = uicontrol('parent',pnlSwitchHeadTail,'style','pushbutton','String','Switch H / T','position',[160 2 120 25],'callback', @switchHeadTail);
 % ----------
 % Video of all field
@@ -326,6 +327,30 @@ waitfor(mainFigure,'BeingDeleted','on');
         end
     end
 
+    function labelHeadTail(hObject, eventdata)
+        try
+            if ~isempty(tmpDraw)
+                if get(toggleLabelHeadTail, 'Value')
+                    hold(hAxeCurrentWorm, 'on')
+                    if isempty(hShowHead) || ~ishandle(hShowHead)
+                        hShowHead = text(tmpDraw(1,1),tmpDraw(2,1),'\leftarrow Head','Color','r','FontWeight','bold','Parent',hAxeCurrentWorm);
+                        hShowTail = text(tmpDraw(1,round(length(tmpDraw)/2)),tmpDraw(2,round(length(tmpDraw)/2)),'\leftarrow Tail','Color','r','FontWeight','bold','Parent',hAxeCurrentWorm);
+                    else
+                        set(hShowHead, 'Position', [tmpDraw(1,1),tmpDraw(2,1)], 'Visible', 'on');
+                        set(hShowTail, 'Position', [tmpDraw(1,round(length(tmpDraw)/2)),tmpDraw(2,round(length(tmpDraw)/2))], 'Visible', 'on');
+                    end
+                    set(hShowHead, 'Visible', 'on');
+                    set(hShowTail, 'Visible', 'on');
+                else
+                    set(hShowHead, 'Visible', 'off');
+                    set(hShowTail, 'Visible', 'off');
+                end
+            end
+        catch exception
+            generateReport(exception)
+        end
+    end
+
     function updateMeasureForCurrentVideo(hObject, eventdata)
         try
             for item = 1:length(listToDisable)
@@ -358,7 +383,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     allMeasures.(oldNames{oldIdx}) = measures.(oldNames{oldIdx});
                 end
             end
-                                    
+            
             totWorms = 0;
             for wormToMeasure = 1:nbOfWorms
                 if isgraphics(hTmp); waitbar(wormToMeasure/nbOfWorms,hTmp); end
@@ -1307,16 +1332,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             set(hSubImage,  'cdata', currentImage(bbox(3):bbox(4), bbox(1):bbox(2)));
             set(hSubWorm, 'xdata', tmpDraw(1,:), 'ydata', tmpDraw(2,:), 'color', colour);
         end
-        if flagShowHeadTail
-            hold(hAxeCurrentWorm, 'on')
-            if isempty(hShowHead) || ~ishandle(hShowHead)
-                hShowHead = text(tmpDraw(1,1),tmpDraw(2,1),'\leftarrow Head','Color','r','FontWeight','bold','Parent',hAxeCurrentWorm);
-                hShowTail = text(tmpDraw(1,round(length(tmpDraw)/2)),tmpDraw(2,round(length(tmpDraw)/2)),'\leftarrow Tail','Color','r','FontWeight','bold','Parent',hAxeCurrentWorm);
-            else
-                set(hShowHead, 'Position', [tmpDraw(1,1),tmpDraw(2,1)]);
-                set(hShowTail, 'Position', [tmpDraw(1,round(length(tmpDraw)/2)),tmpDraw(2,round(length(tmpDraw)/2))]);
-            end
-        end
+        labelHeadTail
         axis(hAxeCurrentWorm, 'equal', 'off', 'image', 'tight')
         hold(hAxeCurrentWorm, 'on')
         if isempty(hCBLSub) || ~ishandle(hCBLSub)
@@ -1377,7 +1393,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                     longueurs = arrayfun(@(c) length(c.name),imageFiles);
                     if min(longueurs) < max(longueurs)
                         nbOfElementsTmp = length(imageFiles);
-                        listOfNamesTmp = cell(1,nbOfElementsTmp); listOfWorms.outOfLengths 
+                        listOfNamesTmp = cell(1,nbOfElementsTmp); listOfWorms.outOfLengths
                         for n = 1:nbOfElementsTmp
                             listOfNamesTmp{n} = imageFiles(n).name;
                         end
