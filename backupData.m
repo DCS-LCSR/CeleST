@@ -2,6 +2,8 @@ function backupData(original)
 % backup data directory with folder named by current date and '_backup'
 % then recursively copy files from data folder into backup
 
+flagDisplayCopying = true;
+
 if ~(ischar(original) && isdir(original))
     disp('Invalid Input, Path must be an existing directory provided as a string');
 end
@@ -9,15 +11,15 @@ end
 originalFiles = dir(original);
 backupName = fullfile(original, '_backup_');
 
-disp(['Creating backup data directory: %s', backupName]);
+disp(['Creating backup data directory: ', backupName]);
 if isdir(backupName)
-    disp(['%s is already a directory. ', backupName]);
+    disp([backupName ' is already a directory.']);
     success = 0;
 else
     success = mkdir(backupName);
 end
 if ~success
-    disp(['Could not make directory: %s', backupName]);
+    disp(['Could not make directory: ' backupName]);
 end
 
 copyDataFolder(original, backupName, originalFiles);
@@ -36,12 +38,15 @@ copyDataFolder(original, backupName, originalFiles);
             if dc(f).isdir
                 copyDataFolder(source, target, dir(source));
             else
+                if flagDisplayCopying
+                    disp(['Copying ' dc(f).name]);
+                end
                 if exist(target,'file') == 0
-                    copyfile(source, target, 'f');
+                    copyfile(source, dest, 'f');
                 else
                     cbFile = dir(target);
                     if dc(f).datenum > cbFile.datenum
-                        copyfile(source, target, 'f');
+                        copyfile(source, dest, 'f');
                     end
                 end
             end

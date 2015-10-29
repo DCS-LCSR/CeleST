@@ -582,10 +582,10 @@ if fileToLog > 1; fclose(fileToLog); end
                     end
                 end
             end
-%            if ~startupDataCheck
-%                updateData
-%                startupDataCheck = true;
-%            end
+           if ~startupDataCheck
+               updateData
+               startupDataCheck = true;
+           end
             if flagConsistentButton
                 if isgraphics(h); close(h); end
                 if ~errorCheck; msgbox('Data is consistent','Success'); end

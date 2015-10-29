@@ -1,9 +1,9 @@
 function updateData
 global fileDB filenames CeleSTVersion;
 
+flagDataBackedUp = false;
+
 try
-    backupData(filenames.data);
-    
     dbLen = 1:length(fileDB);
     segmented = dbLen([fileDB(:).segmented]);
     measured = dbLen([fileDB(:).measured]);
@@ -16,6 +16,9 @@ try
                 version = sscanf(line1, 'version %s');
                 
                 if ~strcmp(version, CeleSTVersion)
+                    if ~flagDataBackedUp
+                        backupData
+                    end
                     fileOut = {['version ' CeleSTVersion]};
                     if isempty(version)
                         fileOut{end+1} = line1;
@@ -45,6 +48,9 @@ try
                 version = sscanf(line1, 'version %s');
                 
                 if ~strcmp(version, CeleSTVersion)
+                    if ~flagDataBackedUp
+                        backupData
+                    end
                     fileOut = {['version ' CeleSTVersion]};
                     if isempty(version)
                         fileOut{end+1} = line1;
@@ -70,18 +76,22 @@ try
                     for i = 1:length(fileOut)
                         fprintf(tmpMeasFID, '%s\n', fileOut{i});
                     end
-                    fclose(tmpMeasFID);
+                    
                 end
             end
         end
+        fclose(tmpMeasFID);
         
         tmpSegFID = fopen(fullfile(filenames.segmentation,['wormSegm_',fileDB(measAndSegCheck).name,'.txt']), 'r');
         if tmpSegFID >= 3
             line1 = fgetl(tmpSegFID);
-            if line1 ~= 1
+            if line1 ~= -1
                 version = sscanf(line1, 'version %s');
                 
                 if ~strcmp(version, CeleSTVersion)
+                    if ~flagDataBackedUp
+                        backupData
+                    end
                     fileOut = {['version ' CeleSTVersion]};
                     if isempty(version)
                         fileOut{end+1} = line1;
@@ -99,16 +109,16 @@ try
                         fileOut{end+1} = textLine;
                         textLine = fgetl(tmpSegFID);
                     end
+                    fclose(tmpSegFID);
+                    
+                    tmpSegFID = fopen(fullfile(filenames.segmentation,['wormSegm_',fileDB(measAndSegCheck).name,'.txt']), 'w');
+                    for i = 1:length(fileOut)
+                        fprintf(tmpSegFID, '%s\n', fileOut{i});
+                    end
                 end
-                fclose(tmpSegFID);
-                
-                tmpSegFID = fopen(fullfile(filenames.segmentation,['wormSegm_',fileDB(measAndSegCheck).name,'.txt']), 'w');
-                for i = 1:length(fileOut)
-                    fprintf(tmpSegFID, '%s\n', fileOut{i});
-                end
-                fclose(tmpSegFID);
             end
         end
+        fclose(tmpSegFID);
     end
 catch exception
     generateReport(exception)
