@@ -47,7 +47,7 @@ filenames.export = fullfile(filenames.data, 'export');
 filenames.file_management = fullfile(filenames.data, 'file_management');
 filenames.measures = fullfile(filenames.data, 'measures');
 filenames.listOfExtensions = {'bmp', 'tif', 'tiff', 'png', 'jpg'};
-
+q
 % ===============
 % Data base fields
 % ===============
@@ -627,6 +627,7 @@ if fileToLog > 1; fclose(fileToLog); end
                         end
                     end
                     if(saveLoc == 0)
+                        check = false;
                         errorButton = questdlg('Either no directory was chosen or the necessary folders are not present. Would you like to choose again or use the default?','Save Location', 'Try Again', 'Quit', 'Try Again');
                         if strcmp(errorButton, 'Quit')
                             saveLoc = 0;
