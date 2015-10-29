@@ -583,10 +583,10 @@ if fileToLog > 1; fclose(fileToLog); end
                     end
                 end
             end
-            if ~startupDataCheck
-                updateData
-                startupDataCheck = true;
-            end
+%            if ~startupDataCheck
+%                updateData
+%                startupDataCheck = true;
+%            end
             if flagConsistentButton
                 if isgraphics(h); close(h); end
                 if ~errorCheck; msgbox('Data is consistent','Success'); end
@@ -619,7 +619,7 @@ if fileToLog > 1; fclose(fileToLog); end
                             tmpCont = dir(saveLoc);
                             foldersInDir = sort({tmpCont([tmpCont.isdir]).name});
                             foldersNeeded = {'export','file_management','log','segmentation','measures'};
-                            if strcmp(foldersInDir, foldersNeeded)
+                            if intersect(foldersInDir, foldersNeeded)==(foldersNeeded)
                                 check = true;
                             else
                                 saveLoc = 0;
