@@ -40,8 +40,7 @@ if ~chosenDataPath
     return
 end
 
-filenames.curr = chosenDataPath;
-filenames.data = fullfile(filenames.curr, 'data');
+filenames.data = chosenDataPath;
 filenames.log = fullfile(filenames.data, 'log');
 filenames.segmentation = fullfile(filenames.data, 'segmentation');
 filenames.export = fullfile(filenames.data, 'export');
@@ -50,7 +49,7 @@ filenames.measures = fullfile(filenames.data, 'measures');
 filenames.listOfExtensions = {'bmp', 'tif', 'tiff', 'png', 'jpg'};
 
 % ===============
-% Data base fieldsroundTruth
+% Data base fields
 % ===============
 fieldsIni = cell(1,24);
 fieldsIni{ 1} = 'name';
@@ -603,7 +602,7 @@ if fileToLog > 1; fclose(fileToLog); end
             while ~check
                 button = questdlg('Please choose a place to save your data', 'Save Location', 'Choose save location', 'Use default', 'Quit', 'Choose save location');
                 if strcmp(button, 'Use default')
-                    saveLoc = mainDir;
+                    saveLoc = fullfile(mainDir, 'data');
                     check = true;
                 elseif strcmp(button, 'Choose save location')
                     button = questdlg('Would you like to create a new data folder or choose an existing one?','Save Location', 'Choose where to put new folder', 'Choose existing data folder', 'Choose existing data folder');
@@ -618,8 +617,9 @@ if fileToLog > 1; fclose(fileToLog); end
                         if ~(saveLoc==0)
                             tmpCont = dir(saveLoc);
                             foldersInDir = sort({tmpCont([tmpCont.isdir]).name});
-                            foldersNeeded = {'export','file_management','log','segmentation','measures'};
-                            if intersect(foldersInDir, foldersNeeded)==(foldersNeeded)
+                            foldersNeeded = {'export','file_management','log','measures','segmentation'};
+
+                            if isequal(intersect(foldersInDir, foldersNeeded), foldersNeeded)
                                 check = true;
                             else
                                 saveLoc = 0;
