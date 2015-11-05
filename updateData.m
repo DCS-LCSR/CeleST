@@ -4,6 +4,10 @@ global fileDB filenames CeleSTVersion;
 flagDataBackedUp = false;
 
 try
+    if isempty(fileDB)
+        return
+    end
+    
     dbLen = 1:length(fileDB);
     segmented = dbLen([fileDB(:).segmented]);
     measured = dbLen([fileDB(:).measured]);

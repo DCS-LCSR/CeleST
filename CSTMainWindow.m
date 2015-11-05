@@ -852,7 +852,7 @@ if fileToLog > 1; fclose(fileToLog); end
                         if isempty(tmpNewVideo.duration)
                             tmpNewVideo.duration = 30;
                         elseif ischar(tmpNewVideo.duration)
-                            tmpNewVideo.duration = str2double(tmpNewVideo);
+                            tmpNewVideo.duration = str2double(tmpNewVideo.duration);
                         end
                     else
                         tmpNewVideo.images = '0';

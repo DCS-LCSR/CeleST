@@ -95,7 +95,7 @@ waitfor(errWindow, 'BeingDeleted','on');
         end
     end
     function setEmailInfo()
-        configFID = fopen([filenames.curr '/CeleST/bugreportinfo']);
+        configFID = fopen([filenames.data '/bugreportinfo']);
         configInfo = textscan(configFID, '%s', 'delimiter', '\n');
         configInfo = configInfo{1};
         sender = configInfo{1};
