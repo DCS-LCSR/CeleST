@@ -47,7 +47,7 @@ filenames.export = fullfile(filenames.data, 'export');
 filenames.file_management = fullfile(filenames.data, 'file_management');
 filenames.measures = fullfile(filenames.data, 'measures');
 filenames.listOfExtensions = {'bmp', 'tif', 'tiff', 'png', 'jpg'};
-q
+
 % ===============
 % Data base fields
 % ===============
@@ -329,7 +329,14 @@ if fileToLog > 1; fclose(fileToLog); end
             if ~isempty(eventdata.NewData) && (~isnumeric(eventdata.NewData) || ~isnan(eventdata.NewData))
                 fileDB(listVideosIdx(eventdata.Indices(1))).(fieldsIni{eventdata.Indices(2)}) = eventdata.NewData;
                 ensureUniqueNames
-                % code to change filenames for segmentation and measures
+                if eventdata.Indices(2) == 1
+                    if fileDB(listVideosIdx(eventdata.Indices(1))).segmented
+                        movefile(fullfile(filenames.segmentation, ['wormSegm_',eventdata.PreviousData,'.txt']),fullfile(filenames.segmentation, ['wormSegm_',eventdata.NewData,'.txt']))
+                    end
+                    if fileDB(listVideosIdx(eventdata.Indices(1))).measured
+                        movefile(fullfile(filenames.measures, ['wormMeas_',eventdata.PreviousData,'.txt']),fullfile(filenames.measures, ['wormMeas_',eventdata.NewData,'.txt']))
+                    end
+                end
                 populateFilters
             else
                 warndlg('Field is not editable or data is faulty','Data Change Error')
@@ -831,13 +838,15 @@ if fileToLog > 1; fclose(fileToLog); end
             sampleFileDirs = uipickfiles;
             if ~iscell(sampleFileDirs); return; end
             template = commonPropertySet;
-
+            suffix = template.suffix;
+            template = rmfield(template, 'suffix');
             for i = 1:numel(sampleFileDirs)
                 tmpNewVideo = template;
                 tmpDir = sampleFileDirs{i};
                 if isdir(tmpDir)
                     tmpNewVideo.directory = tmpDir;
                     [~, tmpNewVideo.name] = fileparts(tmpDir);
+                    tmpNewVideo.name = [tmpNewVideo.name suffix];
                     
                     tmpIdx = 1;
                     tmpNbImages = 0;
@@ -914,10 +923,13 @@ if fileToLog > 1; fclose(fileToLog); end
             set(figureCommonProp, 'color', get(mainPanel,'backgroundcolor'));
             uicontrol('parent', figureCommonProp, 'style','pushbutton', 'string', 'Finish', 'position', [125,25,150,30],'callback', @propFinish);
             
+            uicontrol('parent', figureCommonProp, 'style', 'text', 'string', 'suffix', 'HorizontalAlignment', 'left', 'position', [25, 475-20, 120, 20]);
+            tmpfield.suffix = uicontrol('parent', figureCommonProp, 'style', 'edit', 'string', '', 'position', [125, 475-20, 250, 20], 'Tag', 'suffix', 'Callback', @fillTemplate);
+            
             emptyField = [2:8,11,20];
             for tmpFF = 1:length(emptyField)
-                uicontrol('parent', figureCommonProp, 'style', 'text', 'string', fieldsIni{emptyField(tmpFF)}, 'HorizontalAlignment', 'left', 'position', [25, 475-20*tmpFF, 120, 20]);
-                tmpfield.(fieldsIni{emptyField(tmpFF)}) = uicontrol('parent', figureCommonProp, 'style', 'edit', 'string', '', 'position', [125, 475-20*tmpFF, 250, 20], 'Tag', fieldsIni{emptyField(tmpFF)}, 'Callback', @fillTemplate);
+                uicontrol('parent', figureCommonProp, 'style', 'text', 'string', fieldsIni{emptyField(tmpFF)}, 'HorizontalAlignment', 'left', 'position', [25, 475-20*(tmpFF+1), 120, 20]);
+                tmpfield.(fieldsIni{emptyField(tmpFF)}) = uicontrol('parent', figureCommonProp, 'style', 'edit', 'string', '', 'position', [125, 475-20*(tmpFF+1), 250, 20], 'Tag', fieldsIni{emptyField(tmpFF)}, 'Callback', @fillTemplate);
             end
             
             waitfor(figureCommonProp,'BeingDeleted','on');
