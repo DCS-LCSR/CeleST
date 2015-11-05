@@ -97,6 +97,7 @@ waitfor(errWindow, 'BeingDeleted','on');
     function setEmailInfo()
         configFID = fopen([filenames.data '/bugreportinfo']);
         configInfo = textscan(configFID, '%s', 'delimiter', '\n');
+        fclose(configFID);
         configInfo = configInfo{1};
         sender = configInfo{1};
         passphrase = configInfo{2};
@@ -104,7 +105,6 @@ waitfor(errWindow, 'BeingDeleted','on');
         if length(configInfo) > 2
             mailInfo.recipients = configInfo(3:end);
         end
-        mailInfo.recipients = 'robotics.herrera@gmail.com';
         setpref('Internet','SMTP_Server','smtp.gmail.com');
         setpref('Internet','E_mail',sender);
         setpref('Internet','SMTP_Username',sender);

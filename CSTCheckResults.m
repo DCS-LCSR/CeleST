@@ -386,7 +386,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             
             totWorms = 0;
             for wormToMeasure = 1:nbOfWorms
-                if isgraphics(hTmp); waitbar(wormToMeasure/nbOfWorms,hTmp); end
+                if isgraphics(hTmp); waitbar(wormToMeasure/nbOfWorms,hTmp,['Calculating Measures for Worm:' num2str(wormToMeasure) ' of ' num2str(nbOfWorms)]); end
                 if strcmp(listOfWorms.status{wormToMeasure}, 'rejected')
                     continue
                 end
@@ -641,15 +641,17 @@ waitfor(mainFigure,'BeingDeleted','on');
                     allMeasures = rmfield(allMeasures, finalNamesAllValues{measureIdx});
                 end
             end
-            if isgraphics(hTmp); close(hTmp); end
             pause(0.001);
             if currentVideo~=0
+                if isgraphics(hTmp); waitbar(wormToMeasure/nbOfWorms,hTmp,'Writing Data...'); end
                 CSTwriteSegmentationToTXT(listOfWorms, fileDB(currentVideo).name)
                 CSTwriteMeasuresToTXT(allMeasures, fileDB(currentVideo).name, true, listOfWorms.status);
                 fileDB(currentVideo).measured = true;
                 fileDB(currentVideo).worms = totWorms;
                 populateFilters
             end
+            if isgraphics(hTmp); close(hTmp); end
+            pause(0.001);
             for item = 1:length(listToDisable)
                 set(listToDisable{item}, 'enable', 'on');
             end

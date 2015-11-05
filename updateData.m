@@ -22,6 +22,7 @@ try
                 if ~strcmp(version, CeleSTVersion)
                     if ~flagDataBackedUp
                         backupData
+                        flagDataBackedUp = true;
                     end
                     fileOut = {['version ' CeleSTVersion]};
                     if isempty(version)
@@ -38,9 +39,9 @@ try
                     for i = 1:length(fileOut)
                         fprintf(tmpFID, '%s\n', fileOut{i});
                     end
-                    fclose(tmpFID);
                 end
             end
+            fclose(tmpFID);
         end
     end
     
@@ -54,6 +55,7 @@ try
                 if ~strcmp(version, CeleSTVersion)
                     if ~flagDataBackedUp
                         backupData
+                        flagDataBackedUp = true;
                     end
                     fileOut = {['version ' CeleSTVersion]};
                     if isempty(version)
@@ -83,8 +85,9 @@ try
                     
                 end
             end
+            fclose(tmpMeasFID);
         end
-        fclose(tmpMeasFID);
+        
         
         tmpSegFID = fopen(fullfile(filenames.segmentation,['wormSegm_',fileDB(measAndSegCheck).name,'.txt']), 'r');
         if tmpSegFID >= 3
@@ -95,6 +98,7 @@ try
                 if ~strcmp(version, CeleSTVersion)
                     if ~flagDataBackedUp
                         backupData
+                        flagDataBackedUp = true;
                     end
                     fileOut = {['version ' CeleSTVersion]};
                     if isempty(version)
@@ -121,8 +125,8 @@ try
                     end
                 end
             end
+            fclose(tmpSegFID);
         end
-        fclose(tmpSegFID);
     end
 catch exception
     generateReport(exception)
