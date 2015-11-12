@@ -50,7 +50,14 @@ waitfor(errWindow, 'BeingDeleted','on');
         end
         
         % Setup
-        setEmailInfo();
+        setpref('Internet','SMTP_Server','smtp.gmail.com');
+        setpref('Internet','E_mail','celestbugreport@gmail.com');
+        setpref('Internet','SMTP_Username','celestbugreport@gmail.com');
+        setpref('Internet','SMTP_Password','CElegans1');
+        props = java.lang.System.getProperties;
+        props.setProperty('mail.smtp.auth','true');
+        props.setProperty('mail.smtp.socketFactory.class', 'javax.net.ssl.SSLSocketFactory');
+        props.setProperty('mail.smtp.socketFactory.port','465');
         
         % Create Message
         mailInfo.message = [message 10 10 'User message:' 10 get(errMessage, 'String')];
@@ -66,7 +73,7 @@ waitfor(errWindow, 'BeingDeleted','on');
                 mailInfo.sender = [' from ' get(errSender, 'String')];
             end
             if retry == 1
-                sendmail(mailInfo.recipients,['CeleST Bug Report on ' startTime mailInfo.sender], mailInfo.message, mailInfo.attachments);
+                sendmail('celestbugreport@gmail.com',['CeleST Bug Report on ' startTime mailInfo.sender], mailInfo.message, mailInfo.attachments);
                 msgbox('Message sent successfully');
             end
         catch
@@ -93,25 +100,5 @@ waitfor(errWindow, 'BeingDeleted','on');
         if isgraphics(window)
             close(window);
         end
-    end
-    function setEmailInfo()
-        configFID = fopen([filenames.data '/bugreportinfo']);
-        configInfo = textscan(configFID, '%s', 'delimiter', '\n');
-        fclose(configFID);
-        configInfo = configInfo{1};
-        sender = configInfo{1};
-        passphrase = configInfo{2};
-        mailInfo.recipients = '';
-        if length(configInfo) > 2
-            mailInfo.recipients = configInfo(3:end);
-        end
-        setpref('Internet','SMTP_Server','smtp.gmail.com');
-        setpref('Internet','E_mail',sender);
-        setpref('Internet','SMTP_Username',sender);
-        setpref('Internet','SMTP_Password',passphrase);
-        props = java.lang.System.getProperties;
-        props.setProperty('mail.smtp.auth','true');
-        props.setProperty('mail.smtp.socketFactory.class', 'javax.net.ssl.SSLSocketFactory');
-        props.setProperty('mail.smtp.socketFactory.port','465');
     end
 end
