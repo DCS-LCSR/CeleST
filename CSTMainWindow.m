@@ -580,7 +580,7 @@ if fileToLog > 1; fclose(fileToLog); end
                     
                     fileDB(seq).images = length(dir(fullfile(fileDB(seq).directory,['*.',fileDB(seq).format])));
                     if isempty(fileDB(seq).images) || isempty(fileDB(seq).duration)
-                        errordlg('Database error encountered. Video may be missing, if so please just re-add it.','Database Error');
+                        errordlg('Database error encountered: Inconsistent Data. Video may be missing, or moved, if so please just re-add it.','Database Error');
                         errorCheck = true;
                     else
                         if fileDB(seq).images > 0 && fileDB(seq).duration > 0
@@ -593,10 +593,10 @@ if fileToLog > 1; fclose(fileToLog); end
                updateData
                startupDataCheck = true;
            end
-            if flagConsistentButton
+%             if flagConsistentButton
                 if isgraphics(h); close(h); end
-                if ~errorCheck; msgbox('Data is consistent','Success'); end
-            end
+%                 if ~errorCheck; msgbox('Data is consistent','Success'); end
+%             end
             flagConsistentButton = true;
         catch exception
             generateReport(exception)
