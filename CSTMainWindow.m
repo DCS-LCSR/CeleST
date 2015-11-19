@@ -556,7 +556,6 @@ if fileToLog > 1; fclose(fileToLog); end
             if flagConsistentButton; h = waitbar(0,'Checking the consistency of the data...'); end
             ensureUniqueNames
             nb = length(fileDB);
-            errorCheck = false;
             if isempty(fileDB)
                 msgbox('There are no samples to check');
             else
@@ -581,7 +580,6 @@ if fileToLog > 1; fclose(fileToLog); end
                     fileDB(seq).images = length(dir(fullfile(fileDB(seq).directory,['*.',fileDB(seq).format])));
                     if isempty(fileDB(seq).images) || isempty(fileDB(seq).duration)
                         errordlg('Database error encountered: Inconsistent Data. Video may be missing, or moved, if so please just re-add it.','Database Error');
-                        errorCheck = true;
                     else
                         if fileDB(seq).images > 0 && fileDB(seq).duration > 0
                             fileDB(seq).frames_per_second = fileDB(seq).images / fileDB(seq).duration;
@@ -589,14 +587,13 @@ if fileToLog > 1; fclose(fileToLog); end
                     end
                 end
             end
-           if ~startupDataCheck
-               updateData
-               startupDataCheck = true;
-           end
-%             if flagConsistentButton
+            if ~startupDataCheck
+                updateData
+                startupDataCheck = true;
+            end
+            if flagConsistentButton
                 if isgraphics(h); close(h); end
-%                 if ~errorCheck; msgbox('Data is consistent','Success'); end
-%             end
+            end
             flagConsistentButton = true;
         catch exception
             generateReport(exception)
@@ -625,7 +622,7 @@ if fileToLog > 1; fclose(fileToLog); end
                             tmpCont = dir(saveLoc);
                             foldersInDir = sort({tmpCont([tmpCont.isdir]).name});
                             foldersNeeded = {'export','file_management','log','measures','segmentation'};
-
+                            
                             if isequal(intersect(foldersInDir, foldersNeeded), foldersNeeded)
                                 check = true;
                             else
