@@ -972,6 +972,13 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
     function computeBlockSeparatorsAndValidity
         % ------------
+        % Ensure there are worms to compute Separators and Validity for
+        % ------------
+        if ~nbOfWorms
+            return;
+        end
+        
+        % ------------
         % Find the frames at the end of a self-overlap zone
         % ------------
         tmpAfterSelfOverlap = [false(nbOfWorms,1) , listOfWorms.selfOverlap(:,1:end-1) & ~listOfWorms.selfOverlap(:,2:end) ];
@@ -1440,6 +1447,14 @@ waitfor(mainFigure,'BeingDeleted','on');
                     % ------------
                     listOfWorms = CSTreadSegmentationFromTXT(fileDB(currentVideo).name);
                     nbOfWorms = length(listOfWorms.skel);
+                    
+                    % ------------
+                    % Check if worms were found
+                    % ------------
+                    if ~nbOfWorms
+                        msgbox({'> No Worms were found during video processing.', '> This could be due to lack of worms in the video or an incorrectly selected well. If this was not the case, please report this.', '', '> Segmentation Cannot Be Loaded.'});
+                    end
+                    
                     % ------------
                     % Check the presence of measures
                     % ------------
@@ -1737,7 +1752,8 @@ waitfor(mainFigure,'BeingDeleted','on');
 % ============
     function selectWorm(hObject,eventdata)
         try
-            if ~isempty(get(listWorms,'String'))
+            wormString = get(listWorms, 'String');
+            if ~isempty(wormString{1})
                 currentWorm = get(listWorms, 'value');
                 if isempty(currentWorm)
                     cla(hAxeLength)

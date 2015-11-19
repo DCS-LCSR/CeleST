@@ -556,9 +556,7 @@ if fileToLog > 1; fclose(fileToLog); end
             if flagConsistentButton; h = waitbar(0,'Checking the consistency of the data...'); end
             ensureUniqueNames
             nb = length(fileDB);
-            if isempty(fileDB)
-                msgbox('There are no samples to check');
-            else
+            if ~isempty(fileDB)
                 for seq = 1:nb
                     if floor(seq/10) == seq/10 && flagConsistentButton && isgraphics(h); waitbar(seq/nb,h); end
                     % ------------
