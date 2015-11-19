@@ -352,11 +352,19 @@ waitfor(mainFigure,'BeingDeleted','on');
         end
     end
 
+    function setAllEnable(action)
+        for item = 1:length(listToDisable)
+            set(listToDisable{item}, 'enable', action);
+        end
+    end
+
     function updateMeasureForCurrentVideo(hObject, eventdata)
         try
-            for item = 1:length(listToDisable)
-                set(listToDisable{item}, 'enable', 'off');
+            if currentVideo == 0
+                return
             end
+            
+            setAllEnable('off');
             
             hTmp = waitbar(0,'Saving the results...');
             pause(0.001)
@@ -653,9 +661,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             end
             if isgraphics(hTmp); close(hTmp); end
             pause(0.001);
-            for item = 1:length(listToDisable)
-                set(listToDisable{item}, 'enable', 'on');
-            end
+            setAllEnable('on');
         catch exception
             generateReport(exception)
         end
@@ -974,8 +980,8 @@ waitfor(mainFigure,'BeingDeleted','on');
         % ------------
         % Ensure there are worms to compute Separators and Validity for
         % ------------
-        if ~nbOfWorms
-            return;
+        if nbOfWorms == 0
+            return
         end
         
         % ------------
@@ -1378,6 +1384,12 @@ waitfor(mainFigure,'BeingDeleted','on');
         try
             if (nargin <= 0) ||  (~isempty(listVideosIdx))
                 % ------------
+                % Set up in case a revert is needed
+                % ------------
+                prevVideo = currentVideo;
+                prevListOfWorms = listOfWorms;
+                
+                % ------------
                 % Check if the video should be loaded from user selection in GUI, or from arguments passed through API
                 % ------------
                 if nargin <= 0
@@ -1386,56 +1398,8 @@ waitfor(mainFigure,'BeingDeleted','on');
                     currentVideo = listVideosIdx(get(listVideos,'value'));
                 end
                 
-                for item = 1:length(listToDisable)
-                    set(listToDisable{item}, 'enable', 'off');
-                end
+                setAllEnable('off');
                 
-                % ------------
-                % Check the presence of image files
-                % ------------
-                imageFiles = dir(fullfile(fileDB(currentVideo).directory,['*.',fileDB(currentVideo).format]));
-                if ~isempty(imageFiles)
-                    % ----------------
-                    % Special case: when images have filenames with different lengths
-                    % (capture1 -> capture500), extract the number from the file name, use it to
-                    % sort the list of files, and re-order the files
-                    % ...............
-                    longueurs = arrayfun(@(c) length(c.name),imageFiles);
-                    if min(longueurs) < max(longueurs)
-                        nbOfElementsTmp = length(imageFiles);
-                        listOfNamesTmp = cell(1,nbOfElementsTmp); listOfWorms.outOfLengths
-                        for n = 1:nbOfElementsTmp
-                            listOfNamesTmp{n} = imageFiles(n).name;
-                        end
-                        fctTmp = @(cellule) str2double(strrep(regexpi(cellule,'[0-9]*\.','match'),'.',''));
-                        results = cellfun(fctTmp,listOfNamesTmp);
-                        [valTmp, idxTmp] = sort(results); %#ok<ASGLU>
-                        for n=1:nbOfElementsTmp
-                            imageFiles(n).name = listOfNamesTmp{idxTmp(n)};
-                        end
-                    end
-                    % ...............
-                end
-                
-                currentFrame = 1;
-                set(editCurrentFrame, 'string', int2str(currentFrame));
-                try
-                    currentImage = imread( fullfile( fileDB(currentVideo).directory, imageFiles(currentFrame).name) );
-                catch %#ok<CTCH>
-                    currentImage = zeros(500);
-                end
-                xImage = size(currentImage,2);
-                yImage = size(currentImage,1);
-                % ------------
-                % Update the display with the total number of images
-                % ------------
-                nbOfFrames = length(imageFiles);
-                set(txtMaxFrame,'string', num2str(nbOfFrames));
-                valueStartFrame = 1;
-                valueEndFrame = nbOfFrames;
-                set(editStartFrame, 'string', num2str(valueStartFrame));
-                set(editEndFrame, 'string', num2str(valueEndFrame));
-                set(editFrameSwitchHTEnd, 'string', num2str(valueEndFrame));
                 % ------------
                 % Check the presence of segmentation results
                 % ------------
@@ -1451,9 +1415,61 @@ waitfor(mainFigure,'BeingDeleted','on');
                     % ------------
                     % Check if worms were found
                     % ------------
-                    if ~nbOfWorms
-                        msgbox({'> No Worms were found during video processing.', '> This could be due to lack of worms in the video or an incorrectly selected well. If this was not the case, please report this.', '', '> Segmentation Cannot Be Loaded.'});
+                    if nbOfWorms == 0
+                        msgbox({'> No Worms were found during video processing.', '> This could be due to lack of worms in the video or an incorrectly selected well. If this was not the case, please report this.', '', '> Segmentation Cannot Be Loaded. Previous Video will be displayed'});
+                        currentVideo = prevVideo;
+                        set(listVideos, 'Value', prevVideo);
+                        listOfWorms = prevListOfWorms;
+                        setAllEnable('on');
+                        return
                     end
+                    
+                    % ------------
+                    % Check the presence of image files
+                    % ------------
+                    imageFiles = dir(fullfile(fileDB(currentVideo).directory,['*.',fileDB(currentVideo).format]));
+                    if ~isempty(imageFiles)
+                        % ----------------
+                        % Special case: when images have filenames with different lengths
+                        % (capture1 -> capture500), extract the number from the file name, use it to
+                        % sort the list of files, and re-order the files
+                        % ...............
+                        longueurs = arrayfun(@(c) length(c.name),imageFiles);
+                        if min(longueurs) < max(longueurs)
+                            nbOfElementsTmp = length(imageFiles);
+                            listOfNamesTmp = cell(1,nbOfElementsTmp); listOfWorms.outOfLengths
+                            for n = 1:nbOfElementsTmp
+                                listOfNamesTmp{n} = imageFiles(n).name;
+                            end
+                            fctTmp = @(cellule) str2double(strrep(regexpi(cellule,'[0-9]*\.','match'),'.',''));
+                            results = cellfun(fctTmp,listOfNamesTmp);
+                            [valTmp, idxTmp] = sort(results); %#ok<ASGLU>
+                            for n=1:nbOfElementsTmp
+                                imageFiles(n).name = listOfNamesTmp{idxTmp(n)};
+                            end
+                        end
+                        % ...............
+                    end
+                    
+                    currentFrame = 1;
+                    set(editCurrentFrame, 'string', int2str(currentFrame));
+                    try
+                        currentImage = imread( fullfile( fileDB(currentVideo).directory, imageFiles(currentFrame).name) );
+                    catch %#ok<CTCH>
+                        currentImage = zeros(500);
+                    end
+                    xImage = size(currentImage,2);
+                    yImage = size(currentImage,1);
+                    % ------------
+                    % Update the display with the total number of images
+                    % ------------
+                    nbOfFrames = length(imageFiles);
+                    set(txtMaxFrame,'string', num2str(nbOfFrames));
+                    valueStartFrame = 1;
+                    valueEndFrame = nbOfFrames;
+                    set(editStartFrame, 'string', num2str(valueStartFrame));
+                    set(editEndFrame, 'string', num2str(valueEndFrame));
+                    set(editFrameSwitchHTEnd, 'string', num2str(valueEndFrame));
                     
                     % ------------
                     % Check the presence of measures
@@ -1707,9 +1723,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                 colormap(gray(255))
                 selectWorm
                 
-                for item = 1:length(listToDisable)
-                    set(listToDisable{item}, 'enable', 'on');
-                end
+                setAllEnable('on');
                 
             else
                 % ------------
@@ -2269,7 +2283,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             spatialFreq =[];
             dynamicAmplitude =[];
             attenuation =[];
-            return;
+            return
         end
         fftw('planner', 'exhaustive');
         nbOfFourTransformDurations = length(listOfFourTransformDurations);
