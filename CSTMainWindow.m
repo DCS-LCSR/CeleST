@@ -913,6 +913,7 @@ if fileToLog > 1; fclose(fileToLog); end
             propList(1).set = NaN;
             propList(1).trial = NaN;
             propList(1).note = '';
+            propList(1).suffix = '';
             
             figureCommonProp = figure('Visible','on','Position',[50,100,400,500],'Name','CeleST: Set Common Properties', 'numbertitle','off','menubar','none');
             set(figureCommonProp, 'color', get(mainPanel,'backgroundcolor'));
