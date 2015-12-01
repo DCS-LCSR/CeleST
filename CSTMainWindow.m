@@ -792,7 +792,7 @@ if fileToLog > 1; fclose(fileToLog); end
         end
         function addOK(hObject,eventdata) %#ok<INUSD>
             try
-                if strcmp(get(tmpfield.name,'string'),'') || strcmp(get(tmpfield.directory,'string'),'')
+                if isempty(get(tmpfield.name,'string')) || isempty(get(tmpfield.directory,'string'))
                     errordlg('Missing one or more required field','Input Error')
                 else
                     tmpNewVideo = struct(fileDB);
@@ -817,8 +817,8 @@ if fileToLog > 1; fclose(fileToLog); end
                     tmpNewVideo(1).glareZones = cell(1,0);
                     fileDB(end+1) = tmpNewVideo(1);
                     flagOK = true;
+                    close(figureAdd);
                 end
-                close(figureAdd);
             catch exception
                 generateReport(exception)
             end
