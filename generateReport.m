@@ -36,7 +36,7 @@ errWindow = figure('Name', errName, 'NumberTitle', 'off','Menubar', 'none', 'Pos
 uicontrol(errWindow, 'Style', 'text', 'String', 'Sender Name', 'Position', [50 365 100 30]);
 errSender = uicontrol(errWindow, 'Style', 'edit', 'Position', [160 370 365 30]);
 uicontrol(errWindow, 'Style', 'text', 'String', instructions, 'Position', [50 410 550 70]);
-errMessage = uicontrol(errWindow, 'Style', 'edit', 'Position', [50 85 550 275]);
+errMessage = uicontrol(errWindow, 'Style', 'edit', 'HorizontalAlignment', 'left', 'Max', 1337, 'Min', 0, 'Position', [50 85 550 275]);
 uicontrol(errWindow, 'Style', 'pushbutton', 'String', 'Send', 'Position', [75 20 225 50], 'Callback', @SendReport);
 uicontrol(errWindow, 'Style', 'pushbutton', 'String', 'Cancel', 'Position', [325 20 250 50], 'Callback', {@DontSend, errWindow});
 
