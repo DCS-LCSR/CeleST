@@ -7,17 +7,19 @@ function generateReport(varargin)
 
 global filenames startTime fileLogID mailInfo;
 
+read = {'This window allows you to send a message about a suggestion, an issue, or an error that occurred.',...
+    'Inputting an e-mail in the return address box will let us get back to once the issue has been resolved'};
+
 if nargin > 1
     % Let log know user is sending report at time
     disp(['CeleST user report at ' datestr(clock)]);
     
     errName = 'Send Report about bug, behavioral issue, or send a suggestion';
-    instructions = ['If you encountered a bug, system froze, or some other behavioral issue, '...
-        'please include which window you were working with and/or what you were doing when the problem occurred. '...
-        'Otherwise feel free to send a suggestion'];
+    instructions = {'If you encountered a bug, the system froze, or there was some other behavioral issue,',...
+        'please include which window you were working with and/or what you were doing when the problem occurred.',...
+        'Otherwise feel free to send a suggestion'};
     
     errEncountered = 'User Report';
-    message = errEncountered;
 else
     disp(['CeleST error at ' datestr(clock)]);
     diary off
@@ -25,17 +27,20 @@ else
     errEncountered = getReport(varargin{1}, 'extended', 'hyperlinks', 'off');
     
     errName = 'Report System Error';
-    instructions = ['An error has occurred. Please type a brief message describing what you were doing prior to the error. '...
-        'Some useful information may include which window you were using or what was pressed prior to the error'];
-    
-    message = ['Error Stack:' 10 errEncountered];
+    instructions = {'An error has occurred.',...
+        'Please type a brief message describing what you were doing prior to the error. ',...
+        'Some useful information may include which window you were using or what was pressed prior to the error'};
 end
 
 % Error Reporting Window appears when error is caught
-errWindow = figure('Name', errName, 'NumberTitle', 'off','Menubar', 'none', 'Position', [100 100 650 500], 'Visible', 'off');
-uicontrol(errWindow, 'Style', 'text', 'String', 'Sender Name', 'Position', [50 365 100 30]);
-errSender = uicontrol(errWindow, 'Style', 'edit', 'Position', [160 370 365 30]);
-uicontrol(errWindow, 'Style', 'text', 'String', instructions, 'Position', [50 410 550 70]);
+errWindow = figure('Name', errName, 'NumberTitle', 'off','Menubar', 'none', 'Position', [100 100 650 550], 'Visible', 'off');
+uicontrol(errWindow, 'Style', 'text', 'String', read, 'HorizontalAlignment', 'left', 'Position', [70 510 510 30]);
+uicontrol(errWindow, 'Style', 'text', 'String', instructions, 'HorizontalAlignment', 'left', 'Position', [70 465 510 45]);
+uicontrol(errWindow, 'Style', 'text', 'String', {'Return Address:','(E-mail)'}, 'HorizontalAlignment', 'left', 'Position', [70 420 80 30]);
+errSender = uicontrol(errWindow, 'Style', 'edit', 'Position', [160 425 365 30]);
+uicontrol(errWindow, 'Style', 'text', 'String', 'Subject: ', 'HorizontalAlignment', 'left', 'Position', [70 380 80 30]);
+errSubject = uicontrol(errWindow, 'Style', 'edit', 'Position', [160 390 365 30]);
+uicontrol(errWindow, 'Style', 'text', 'String', 'Message: ', 'HorizontalAlignment', 'left', 'Position', [70 365 80 15]);
 errMessage = uicontrol(errWindow, 'Style', 'edit', 'HorizontalAlignment', 'left', 'Max', 1337, 'Min', 0, 'Position', [50 85 550 275]);
 uicontrol(errWindow, 'Style', 'pushbutton', 'String', 'Send', 'Position', [75 20 225 50], 'Callback', @SendReport);
 uicontrol(errWindow, 'Style', 'pushbutton', 'String', 'Cancel', 'Position', [325 20 250 50], 'Callback', {@DontSend, errWindow});
@@ -65,23 +70,21 @@ waitfor(errWindow, 'BeingDeleted','on');
         props.setProperty('mail.smtp.socketFactory.port','465');
         
         % Create Message
-        mailInfo.message = [message 10 10 'User message:' 10 get(errMessage, 'String')];
+        mailInfo.message = [['CeleST Bug Report at: ' 10 startTime 10 10],...
+            ['Error Stack:' 10 errEncountered 10 10],...
+            ['From :' get(errSender, 'String') 10 10],... 
+            ['User message:' 10 get(errMessage, 'String')]];
         
         % Get Attachments
         mailInfo.attachments = {[filenames.log '/comWinLog'],fileLogID};
         
         % Send Mail
         try
-            if isempty(get(errSender, 'String'))
-                mailInfo.sender = '';
-            else
-                mailInfo.sender = [' from ' get(errSender, 'String')];
-            end
             if retry == 1
-                sendmail('celestbugreport@gmail.com',['CeleST Bug Report on ' startTime mailInfo.sender], mailInfo.message, mailInfo.attachments);
+                sendmail('celestbugreport@gmail.com', get(errSubject, 'String'), mailInfo.message, mailInfo.attachments);
                 msgbox('Message sent successfully');
             end
-        catch
+        catch 
             if isgraphics(retryWindow)
                 retry = -1;
                 close(retryWindow)
