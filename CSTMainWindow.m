@@ -31,18 +31,14 @@ logToFile = true;
 matver = regexp(version,'R\w*','match','once');
 if ~strcmpi(matver,'R2015b')
     msgbox( {['Celest was built for MATLAB R2015b, but is currently being run on MATLAB ' matver ','], '', ...
-    ['CeleST''s behavior on MATLAB ' matver ' is undefined and could potentially lead to data loss.'], '', ...
-    'Please run CeleST on MATLAB R2015b or refer to the installation guide to ensure the proper runtime was installed.'}, ...
-    'Warning: Wrong MATLAB version detected' );
+        ['CeleST''s behavior on MATLAB ' matver ' is undefined and could potentially lead to data loss.'], '', ...
+        'Please run CeleST on MATLAB R2015b or refer to the installation guide to ensure the proper runtime was installed.'}, ...
+        'Warning: Wrong MATLAB version detected' );
 end
 
 % ===============
 % Directories
 % ===============
-mainDir = strsplit(which('CeleST'),'/');
-mainDir = mainDir(1:(end-2));
-mainDir = strjoin(mainDir,'/');
-
 chosenDataPath = chooseSaveLocation;
 if ~chosenDataPath
     return
@@ -609,39 +605,51 @@ if fileToLog > 1; fclose(fileToLog); end
     function saveLoc = chooseSaveLocation
         try
             check = false;
+            pathHist = [ctfroot '/dataLocations.mat'];
+            oldPathsExist = exist(pathHist,'file');
+            if oldPathsExist
+                load(pathHist);
+                disableButton = 0;
+            else
+                paths = {};
+                disableButton = 2;
+            end
             while ~check
-                button = questdlg('Please choose a place to save your data', 'Save Location', 'Choose Save Location', 'Previously Used Locations', 'Quit', 'Choose Save Location');
-                if strcmp(button, 'Use default')
-                    saveLoc = fullfile(mainDir, 'data');
-                    check = true;
-                elseif strcmp(button, 'Choose save location')
-                    button = questdlg('Would you like to create a new data folder or choose an existing one?','Save Location', 'Choose where to put new folder', 'Choose existing data folder', 'Choose existing data folder');
-                    if strcmp(button, '')
-                        saveLoc = 0;
-                    elseif strcmp(button, 'Choose where to put new folder')
-                        saveLoc = uigetdir;
-                        check = true;
-                    else
-                        saveLoc = 0;
-                        saveLoc = uigetdir;
-                        if ~(saveLoc==0)
-                            tmpCont = dir(saveLoc);
-                            foldersInDir = sort({tmpCont([tmpCont.isdir]).name});
-                            foldersNeeded = {'export','file_management','log','measures','segmentation'};
-                            
-                            if isequal(intersect(foldersInDir, foldersNeeded), foldersNeeded)
-                                check = true;
-                            else
-                                saveLoc = 0;
-                            end
-                        end
-                    end
-                    if(saveLoc == 0)
+                button = modalQuestDialog('Please choose a place to save your data', 'Save Location', 'Choose Save Location', 'Previously Used Locations', 'Quit', disableButton);
+                if strcmp(button, 'Choose Save Location')
+                    saveLoc = uigetdir;
+                    if saveLoc == 0
                         check = false;
                         errorButton = questdlg('Either no directory was chosen or the necessary folders are not present. Would you like to choose again or use the default?','Save Location', 'Try Again', 'Quit', 'Try Again');
                         if strcmp(errorButton, 'Quit')
                             saveLoc = 0;
                             return
+                        end
+                    else
+                        check = true;
+                        if ~any(strcmp(saveLoc,paths))
+                            paths{end+1} = saveLoc; %#ok<AGROW>
+                        end
+                        save(pathHist,'paths')
+                    end
+                elseif strcmp(button, 'Previously Used Locations')
+                    dispPaths = cell(length(paths),1);
+                    for tmpPath = 1:length(paths)
+                        if isdir(paths{tmpPath})
+                            dispPaths{tmpPath} = paths{tmpPath};
+                        end
+                        dispPaths(cellfun('isempty',dispPaths)) = [];
+                        [s, ok] = listdlg('Name','Choose Save Location','PromptString','Please choose a directory','ListString',dispPaths,'SelectionMode','single');
+                        if ok == 0
+                            check = false;
+                            errorButton = questdlg('Either no directory was chosen or the necessary folders are not present. Would you like to choose again or use the default?','Save Location', 'Try Again', 'Quit', 'Try Again');
+                            if strcmp(errorButton, 'Quit')
+                                saveLoc = 0;
+                                return
+                            end
+                        else
+                            saveLoc = dispPaths{s};
+                            check = true;
                         end
                     end
                 elseif strcmp(button, 'Quit')
@@ -651,6 +659,29 @@ if fileToLog > 1; fclose(fileToLog); end
             end
         catch exception
             generateReport(exception)
+        end
+        function btnStr = modalQuestDialog(varargin)
+            try
+                btns = varargin(3:end-1);
+                btnStr = '';
+                modalHandles = struct;
+                
+                modalHandles.fig = figure('Name',varargin{2},'Menubar','none','NumberTitle','off','Units','pixels', 'Position',[450 350 600 120],'WindowStyle','modal','CloseRequestFcn','');
+                uicontrol(modalHandles.fig,'Style','text','String',varargin{1},'Position',[100 80 400 30]);
+                for btnNumber=1:length(btns)
+                    modalHandles.(['btn_' num2str(btnNumber)]) = uicontrol(modalHandles.fig,'Style','pushbutton','String',btns{btnNumber},'Position',[15+195*(btnNumber-1) 15 180 60],'Callback',{@mqdBtnCallback,modalHandles});
+                    if btnNumber == varargin{end}
+                        set(modalHandles.(['btn_' num2str(btnNumber)]),'Enable','off')
+                    end
+                end
+                waitfor(modalHandles.fig,'BeingDeleted','on');
+            catch subException
+                generateReport(subException)
+            end
+            function mqdBtnCallback(hObject,~,handles)
+                btnStr = get(hObject,'String');
+                delete(handles.fig)
+            end
         end
     end
 
