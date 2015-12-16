@@ -277,6 +277,7 @@ waitfor(mainFigure,'BeingDeleted','on');
         fileDB(videoBeingProcessed).worms = length(listOfWorms.skel);
         fileDB(videoBeingProcessed).segmented = true;
         try
+            disp('Writing Segmentation Results...')
             CSTwriteSegmentationToTXT(listOfWorms, fileDB(videoBeingProcessed).name);
         catch em
             if flagRobustness
@@ -289,6 +290,7 @@ waitfor(mainFigure,'BeingDeleted','on');
             else
                 rethrow(em)
             end
+            generateReport(em)
         end
         if traceOn; fprintf(fileToLog, ['end of processing sequence ', num2str(videoBeingProcessed),'\n']); end
         for tt = 1:length(timingsLabel)

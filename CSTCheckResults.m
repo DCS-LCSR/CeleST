@@ -209,9 +209,9 @@ isolateFrameBtn = uicontrol('parent',pnlValidity,'style','pushbutton','string','
 % ----------
 % Panel for glare zones
 % ----------
-pnlGlase = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 460 3*544+25 60]);
-hAxeGlare = axes('parent', pnlGlase, 'units','pixels','position',[25 10 3*544 30],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
-uicontrol('parent',pnlGlase,'style','text','HorizontalAlignment', 'left','string','Within glare zones: ','position',[25 42 200 20]);
+pnlGlare = uipanel('parent',mainPanel,'BorderType', 'none','units','pixels', 'position', [1 460 3*544+25 60]);
+hAxeGlare = axes('parent', pnlGlare, 'units','pixels','position',[25 10 3*544 30],'xtick',[],'ytick',[],'color',[.5 .5 .5],'ButtonDownFcn', @selectFrameByClick);
+uicontrol('parent',pnlGlare,'style','text','HorizontalAlignment', 'left','string','Within glare zones: ','position',[25 42 200 20]);
 
 
 % ----------
@@ -368,22 +368,21 @@ waitfor(mainFigure,'BeingDeleted','on');
             
             hTmp = waitbar(0,'Saving the results...');
             pause(0.001)
-            finalNames = {'Wave_Initiation_Rate_Median', 'Wave_Initiation_Rate_Range', 'Body_Wave_Number_Median', 'Body_Wave_Number_Range', 'Asymmetry_Median', 'Asymmetry_Range', 'Reverse_Swimming', ...
-                'Curling', 'Stretch_Median', 'Stretch_Range', 'Attenuation_Median', 'Attenuation_Range', 'Traveling_Speed_Mean', 'Brush_Stroke_Median', 'Brush_Stroke_Range', 'Activity_Index_Median', 'Activity_Index_Range'...
-                , 'Wave_Initiation_Rate_10' 'Body_Wave_Number_10', 'Asymmetry_10', 'Stretch_10', 'Attenuation_10', 'Brush_Stroke_10', 'Activity_Index_10'...
+            finalNames = {'Wave_Initiation_Rate_Median', 'Wave_Initiation_Rate_Range', 'Body_Wave_Number_Median', 'Body_Wave_Number_Range', 'Asymmetry_Median', 'Asymmetry_Range', ...
+                'Curling', 'Stretch_Median', 'Stretch_Range', 'Traveling_Speed_Mean', 'Brush_Stroke_Median', 'Brush_Stroke_Range', 'Activity_Index_Median', 'Activity_Index_Range'...
+                , 'Wave_Initiation_Rate_10' 'Body_Wave_Number_10', 'Asymmetry_10', 'Stretch_10', 'Brush_Stroke_10', 'Activity_Index_10'...
                 };
             for measureIdx = 1:length(finalNames)
                 allMeasures.(finalNames{measureIdx}) = NaN(1,nbOfWorms);
             end
-            finalNamesAllValues = {'Wave_Initiation_Rate_All', 'Body_Wave_Number_All', 'Asymmetry_All', 'Reverse_Swimming_All', ...
-                'Curling_All', 'Stretch_All', 'Attenuation_All', 'Traveling_Speed_All', 'Brush_Stroke_All', 'Activity_Index_All'...
+            finalNamesAllValues = {'Wave_Initiation_Rate_All', 'Body_Wave_Number_All', 'Asymmetry_All', ...
+                'Curling_All', 'Stretch_All', 'Traveling_Speed_All', 'Brush_Stroke_All', 'Activity_Index_All'...
                 };
             for measureIdx = 1:length(finalNamesAllValues)
                 allMeasures.(finalNamesAllValues{measureIdx}) = zeros(nbOfWorms,2*nbOfFrames);
             end
             allMeasures.('Curling_All') = NaN(nbOfWorms, nbOfFrames);
             allMeasures.usability = NaN(1,nbOfWorms);
-            negativeThreshold = -1;
             oldNames = {'status', 'highThr', 'lowThr', 'prevThr', 'highThrDef', 'lowThrDef', 'prevThrDef', 'usability', 'manualSeparators', 'separators'};
             for oldIdx = 1:length(oldNames)
                 if strcmp(oldNames{oldIdx}, 'status')
@@ -409,7 +408,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                 %-----------------
                 flagSmoothCurvature = true;
                 flagSuperSampleCurvature = true;
-                [ temporalFreq , spatialFreq , dynamicAmplitude , attenuation , curvature ] = CSTComputeMeasuresFromBody(listOfWorms.skel{wormToMeasure}, flagSmoothCurvature, flagSuperSampleCurvature, listOfWorms.valid(wormToMeasure,:));
+                [ temporalFreq , spatialFreq , dynamicAmplitude , curvature ] = CSTComputeMeasuresFromBody(listOfWorms.skel{wormToMeasure}, flagSmoothCurvature, flagSuperSampleCurvature, listOfWorms.valid(wormToMeasure,:));
                 rangeUsable = ~isnan(temporalFreq);
                 if isempty(rangeUsable)
                     return
@@ -449,12 +448,6 @@ waitfor(mainFigure,'BeingDeleted','on');
                 allMeasures.('Asymmetry_Range')(wormToMeasure)   = ( prctile(tmpAverCurvature,90) - prctile(tmpAverCurvature,10) );
                 allMeasures.('Asymmetry_10')(wormToMeasure)   = prctile(tmpAverCurvature,10);
                 %-----------------
-                % Reverse Swimming
-                %-----------------
-                framesInReverse = sum(spatialFreq(rangeUsable) < negativeThreshold);
-                allFrames = numel(spatialFreq(rangeUsable));
-                allMeasures.('Reverse_Swimming')(wormToMeasure) = framesInReverse / allFrames;
-                %-----------------
                 % Curling
                 %-----------------
                 usableFrames = 0;
@@ -480,13 +473,6 @@ waitfor(mainFigure,'BeingDeleted','on');
                 allMeasures.('Stretch_Median')(wormToMeasure)  = median(dynamicAmplitude(rangeUsable));
                 allMeasures.('Stretch_Range')(wormToMeasure)   = ( prctile(dynamicAmplitude(rangeUsable) ,90) - prctile(dynamicAmplitude(rangeUsable) ,10) );
                 allMeasures.('Stretch_10')(wormToMeasure)   = prctile(dynamicAmplitude(rangeUsable) ,10);
-                %-----------------
-                % Attenuation
-                %-----------------
-                allMeasures.('Attenuation_All')(wormToMeasure,rangeUsable)  = 100 * attenuation(rangeUsable);
-                allMeasures.('Attenuation_Median')(wormToMeasure)  = 100 * median(attenuation(rangeUsable));
-                allMeasures.('Attenuation_Range')(wormToMeasure)   = 100 * ( prctile(attenuation(rangeUsable) ,90) - prctile(attenuation(rangeUsable) ,10) );
-                allMeasures.('Attenuation_10')(wormToMeasure)   = 100 * prctile(attenuation(rangeUsable) ,10);
                 %-----------------
                 % Travel speed
                 %-----------------
@@ -643,8 +629,8 @@ waitfor(mainFigure,'BeingDeleted','on');
                 totalWormsChecked = totalWormsChecked + 1;
             end
             if flagRemoveTempMeasures
-                finalNamesAllValues = {'Wave_Initiation_Rate_All', 'Body_Wave_Number_All', 'Asymmetry_All', 'Reverse_Swimming_All', ...
-                    'Curling_All', 'Stretch_All', 'Attenuation_All', 'Traveling_Speed_All', 'Brush_Stroke_All', 'Activity_Index_All'...
+                finalNamesAllValues = {'Wave_Initiation_Rate_All', 'Body_Wave_Number_All', 'Asymmetry_All', ...
+                    'Curling_All', 'Stretch_All', 'Traveling_Speed_All', 'Brush_Stroke_All', 'Activity_Index_All'...
                     };
                 for measureIdx = 1:length(finalNamesAllValues)
                     allMeasures = rmfield(allMeasures, finalNamesAllValues{measureIdx});
@@ -2203,7 +2189,7 @@ waitfor(mainFigure,'BeingDeleted','on');
         delete(mainFigure);
     end
 
-    function [ temporalFreq , spatialFreq , dynamicAmplitude , attenuation , curvature ] = CSTComputeMeasuresFromBody(skel, flagSmoothCurvature, flagSuperSampleCurvature, validity, returnOnlyCurvature)
+    function [ temporalFreq , spatialFreq , dynamicAmplitude , curvature ] = CSTComputeMeasuresFromBody(skel, flagSmoothCurvature, flagSuperSampleCurvature, validity, returnOnlyCurvature)
         if nargin < 2
             flagSmoothCurvature = false;
         end
@@ -2282,7 +2268,6 @@ waitfor(mainFigure,'BeingDeleted','on');
             temporalFreq =[];
             spatialFreq =[];
             dynamicAmplitude =[];
-            attenuation =[];
             return
         end
         fftw('planner', 'exhaustive');
@@ -2355,11 +2340,7 @@ waitfor(mainFigure,'BeingDeleted','on');
         % -------
         % Ranges
         % -------
-        headIndices = 3:fix(0.25 * nbOfPoints); %first 2 values are 0
-        tailIndices = fix(0.75 * nbOfPoints):nbOfPoints;
         dynamicAmplitude = zeros(1, nbOfFramesSup);
-        attenuation = zeros(1, nbOfFramesSup);
-        atteSmooth = zeros(1, nbOfFramesSup);
         dynaSmooth = zeros(1, nbOfFramesSup);
         for ff = 1:nbOfFramesSup
             if temporalFreq(ff) > 0
@@ -2370,13 +2351,6 @@ waitfor(mainFigure,'BeingDeleted','on');
             timeRange = max(1, min(nbOfFramesSup, ff-period)):max(1, min(nbOfFramesSup, ff+period));
             if any(validity(timeRange))
                 dynamicAmplitude(ff) = max( max(curvature(timeRange,3:nbOfPoints)) - min(curvature(timeRange,3:nbOfPoints)));
-                rangeHeadTmp = max( max(curvature(timeRange,headIndices)) - min(curvature(timeRange,headIndices)) , [] ,2);
-                rangeMidTail = min( max(curvature(timeRange,tailIndices)) - min(curvature(timeRange,tailIndices)) , [] ,2);
-                if rangeHeadTmp > 0
-                    attenuation(ff) = (1 - rangeMidTail / rangeHeadTmp);
-                else
-                    attenuation(ff) = 0;
-                end
             end
         end
         for ff = 1:nbOfFramesSup
@@ -2386,10 +2360,8 @@ waitfor(mainFigure,'BeingDeleted','on');
                 period = 50;
             end
             timeRange = max(1, min(nbOfFramesSup, ff-period)):max(1, min(nbOfFramesSup, ff+period));
-            atteSmooth(ff) = mean(attenuation(timeRange));
             dynaSmooth(ff) = mean(dynamicAmplitude(timeRange));
         end
-        attenuation = atteSmooth;
         dynamicAmplitude = dynaSmooth;
         function kappa = CSTcomputeCurvatureFromBody(body)
             norms = hypot(body(1,2:end)-body(1,1:end-1), body(2,2:end)-body(2,1:end-1));

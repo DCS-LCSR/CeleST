@@ -28,6 +28,14 @@ CeleSTVersion = '3';
 startupDataCheck = false;
 logToFile = true;
 
+matver = regexp(version,'R\w*','match','once');
+if ~strcmpi(matver,'R2015b')
+    msgbox( {['Celest was built for MATLAB R2015b, but is currently being run on MATLAB ' matver ','], '', ...
+    ['CeleST''s behavior on MATLAB ' matver ' is undefined and could potentially lead to data loss.'], '', ...
+    'Please run CeleST on MATLAB R2015b or refer to the installation guide to ensure the proper runtime was installed.'}, ...
+    'Warning: Wrong MATLAB version detected' );
+end
+
 % ===============
 % Directories
 % ===============
@@ -149,7 +157,7 @@ scrsz = get(0,'ScreenSize');
 mainW = min(mainPnlW, scrsz(3) - 10);
 mainH = min(mainPnlH, scrsz(4) - 100);
 mainPanelPosition = [2, mainH-mainPnlH-2, mainPnlW, mainPnlH];
-mainFigure = figure('Visible','off','Position',[5,40,mainW,mainH], 'Name',['CeleST: Main Window | Data Location: ' filenames.data],'numbertitle','off', 'menubar', 'none', 'resizefcn', @resizeMainFigure);
+mainFigure = figure('Visible','off','Position',[5,40,mainW,mainH], 'Name',['CeleST: Main Window | Data Location: ' filenames.data ' | Running on: ' version],'numbertitle','off', 'menubar', 'none', 'resizefcn', @resizeMainFigure);
 mainPanel = uipanel('parent', mainFigure,'BorderType', 'none','units','pixels', 'position', mainPanelPosition);
 sliderHoriz = uicontrol('parent',mainFigure,'style','slider','position',[0 0 mainW-20 20],'max', 1,'min',0, 'value',0,'callback',@setMainPanelPositionBySliders);
 sliderVert = uicontrol('parent',mainFigure,'style','slider','position',[mainW-20 20 20 mainH-20],'max', max(1,-mainPanelPosition(2)),'min',0, 'value',max(1,-mainPanelPosition(2)),'callback',@setMainPanelPositionBySliders);
@@ -602,7 +610,7 @@ if fileToLog > 1; fclose(fileToLog); end
         try
             check = false;
             while ~check
-                button = questdlg('Please choose a place to save your data', 'Save Location', 'Choose save location', 'Use default', 'Quit', 'Choose save location');
+                button = questdlg('Please choose a place to save your data', 'Save Location', 'Choose Save Location', 'Previously Used Locations', 'Quit', 'Choose Save Location');
                 if strcmp(button, 'Use default')
                     saveLoc = fullfile(mainDir, 'data');
                     check = true;

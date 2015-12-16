@@ -27,8 +27,7 @@ try
                 
                 if ~strcmp(version, CeleSTVersion)
                     if ~flagDataBackedUp
-                        backupData
-                        flagDataBackedUp = true;
+                        flagDataBackedUp = backupData;
                     end
                     fileOut = {['version ' CeleSTVersion]};
                     if isempty(version)
@@ -60,8 +59,7 @@ try
                 
                 if ~strcmp(version, CeleSTVersion)
                     if ~flagDataBackedUp
-                        backupData
-                        flagDataBackedUp = true;
+                        flagDataBackedUp = backupData;
                     end
                     fileOut = {['version ' CeleSTVersion]};
                     if isempty(version)
@@ -103,8 +101,7 @@ try
                 
                 if ~strcmp(version, CeleSTVersion)
                     if ~flagDataBackedUp
-                        backupData
-                        flagDataBackedUp = true;
+                        flagDataBackedUp = backupData;
                     end
                     fileOut = {['version ' CeleSTVersion]};
                     if isempty(version)
