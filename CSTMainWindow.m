@@ -627,6 +627,10 @@ if fileToLog > 1; fclose(fileToLog); end
                         end
                     else
                         check = true;
+                        [~,name] = fileparts(saveLoc);
+                        if ~strcmp(name,'data')
+                            saveLoc = fullfile(saveLoc,'data');
+                        end
                         if ~any(strcmp(saveLoc,paths))
                             paths{end+1} = saveLoc; %#ok<AGROW>
                         end
