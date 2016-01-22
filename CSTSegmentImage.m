@@ -8,8 +8,9 @@ function [fileDBEntry,listOfWormsEntry] = CSTSegmentImage(fileDBEntry, currentIm
 % -------------------
 % Look for worms on single image
 % -------------------
-global currentImage zoneOkForCompleteWorms zoneOkForStartingWorms traceOn timingOn timings timingsTime plotAllOn flagRobustness fileToLog;
+global currentImage htmp zoneOkForCompleteWorms zoneOkForStartingWorms traceOn timingOn timings timingsTime plotAllOn flagRobustness fileToLog;
 
+plotAllOn = true;
 
 if timingOn; tic; end
 if traceOn; fprintf(fileToLog, ['processing frame ', num2str(currentFrameForProcessing), ' from ', fileDBEntry.name,' : ', currentImageFileName, '\n']); end

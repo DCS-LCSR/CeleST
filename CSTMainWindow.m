@@ -605,7 +605,7 @@ if fileToLog > 1; fclose(fileToLog); end
     function saveLoc = chooseSaveLocation
         try
             check = false;
-            pathHist = [ctfroot pathsep 'dataLocations.mat'];
+            pathHist = [ctfroot filesep 'dataLocations.mat'];
             oldPathsExist = exist(pathHist,'file');
             if oldPathsExist
                 load(pathHist);

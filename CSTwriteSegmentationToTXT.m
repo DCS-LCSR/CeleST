@@ -41,9 +41,11 @@ fid = fopen(fullfile(filenames.segmentation, ['wormSegm_',videoName,'.txt']),'w+
 fprintf(fid, header);
 
 if isfield(listOfWorms, 'status')
-    fprintf(fid, 'status\n');
-    for ww = 1:nbOfWorms
-        fprintf(fid, [listOfWorms.status{ww} '\n']);
+    if length(listOfWorms.status) > 0
+        fprintf(fid, 'status\n');
+        for ww = 1:nbOfWorms
+            fprintf(fid, [listOfWorms.status{ww} '\n']);
+        end
     end
 end
 
