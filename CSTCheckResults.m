@@ -1370,12 +1370,6 @@ waitfor(mainFigure,'BeingDeleted','on');
         try
             if (nargin <= 0) ||  (~isempty(listVideosIdx))
                 % ------------
-                % Set up in case a revert is needed
-                % ------------
-                prevVideo = currentVideo;
-                prevListOfWorms = listOfWorms;
-                
-                % ------------
                 % Check if the video should be loaded from user selection in GUI, or from arguments passed through API
                 % ------------
                 if nargin <= 0
@@ -1397,18 +1391,6 @@ waitfor(mainFigure,'BeingDeleted','on');
                     % ------------
                     listOfWorms = CSTreadSegmentationFromTXT(fileDB(currentVideo).name);
                     nbOfWorms = length(listOfWorms.skel);
-                    
-                    % ------------
-                    % Check if worms were found
-                    % ------------
-                    if nbOfWorms == 0
-                        msgbox({'> No Worms were found during video processing.', '> This could be due to lack of worms in the video or an incorrectly selected well. If this was not the case, please report this.', '', '> Segmentation Cannot Be Loaded. Previous Video will be displayed'});
-                        currentVideo = prevVideo;
-                        set(listVideos, 'Value', prevVideo);
-                        listOfWorms = prevListOfWorms;
-                        setAllEnable('on');
-                        return
-                    end
                     
                     % ------------
                     % Check the presence of image files
@@ -2115,7 +2097,7 @@ waitfor(mainFigure,'BeingDeleted','on');
                         break
                     end
                 end
-                if flagKeep && fileDB(vv).segmented
+                if flagKeep && fileDB(vv).segmented && fileDB(vv).worms >= 1
                     currentVal = currentVal + 1;
                     newListTmp{currentVal} = fileDB(vv).name;
                     listVideosIdx(currentVal) = vv;
