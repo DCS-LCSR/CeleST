@@ -844,6 +844,8 @@ if fileToLog > 1; fclose(fileToLog); end
             try
                 if isempty(get(tmpfield.name,'string')) || isempty(get(tmpfield.directory,'string'))
                     errordlg('Missing one or more required field','Input Error')
+                elseif str2double(get(tmpfield.images,'string')) <= 1
+                    errordlg('Videos must have at least two frames/images','Single Image Input')    
                 else
                     tmpNewVideo = struct(fileDB);
                     tmpNewVideo(1).name = get(tmpfield.name,'string');
