@@ -605,7 +605,14 @@ if fileToLog > 1; fclose(fileToLog); end
     function saveLoc = chooseSaveLocation
         try
             check = false;
-            pathHist = [ctfroot filesep 'dataLocations.mat'];
+            
+            if ispc
+                home = [getenv('HOMEDRIVE') getenv('HOMEPATH')];
+            else
+                home = getenv('HOME');
+            end
+            
+            pathHist = [home filesep 'CeleSTDataPaths.mat'];
             oldPathsExist = exist(pathHist,'file');
             if oldPathsExist
                 load(pathHist);
