@@ -642,19 +642,19 @@ if fileToLog > 1; fclose(fileToLog); end
                         if isdir(paths{tmpPath})
                             dispPaths{tmpPath} = paths{tmpPath};
                         end
-                        dispPaths(cellfun('isempty',dispPaths)) = [];
-                        [s, ok] = listdlg('Name','Choose Save Location','PromptString','Please choose a directory','ListString',dispPaths,'SelectionMode','single');
-                        if ok == 0
-                            check = false;
-                            errorButton = questdlg('Either no directory was chosen or the necessary folders are not present. Would you like to choose again or use the default?','Save Location', 'Try Again', 'Quit', 'Try Again');
-                            if strcmp(errorButton, 'Quit')
-                                saveLoc = 0;
-                                return
-                            end
-                        else
-                            saveLoc = dispPaths{s};
-                            check = true;
+                    end
+                    dispPaths(cellfun('isempty',dispPaths)) = [];
+                    [s, ok] = listdlg('Name','Choose Save Location','PromptString','Please choose a directory','ListString',dispPaths,'SelectionMode','single');
+                    if ok == 0
+                        check = false;
+                        errorButton = questdlg('Either no directory was chosen or the necessary folders are not present. Would you like to choose again or use the default?','Save Location', 'Try Again', 'Quit', 'Try Again');
+                        if strcmp(errorButton, 'Quit')
+                            saveLoc = 0;
+                            return
                         end
+                    else
+                        saveLoc = dispPaths{s};
+                        check = true;
                     end
                 elseif strcmp(button, 'Quit')
                     saveLoc = 0;

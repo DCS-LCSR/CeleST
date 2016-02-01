@@ -8,7 +8,7 @@ function [fileDBEntry,listOfWormsEntry] = CSTSegmentImage(fileDBEntry, currentIm
 % -------------------
 % Look for worms on single image
 % -------------------
-global currentImage htmp zoneOkForCompleteWorms zoneOkForStartingWorms traceOn timingOn timings timingsTime plotAllOn flagRobustness fileToLog;
+global currentImage zoneOkForCompleteWorms zoneOkForStartingWorms traceOn timingOn timings timingsTime plotAllOn flagRobustness fileToLog flagVIP;
 
 plotAllOn = true;
 
@@ -563,6 +563,12 @@ for currentWorm = 1:length(listOfWormsPotential.skel)
             listOfWormsFiltered.skel{end+1} = listOfWormsPotential.skel{currentWorm};
             listOfWormsFiltered.width{end+1} = listOfWormsPotential.width{currentWorm};
             listOfWormsFiltered.localthreshold{end+1} = listOfWormsPotential.localthreshold{currentWorm};
+        else
+            if flagVIP
+                % figure to let users choose if it's a worm or not
+                % including a yes or no button, the image in question, and
+                % a question
+            end
         end
     catch em
         if flagRobustness

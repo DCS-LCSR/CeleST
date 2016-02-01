@@ -88,7 +88,6 @@ uicontrol('parent', mainPanel, 'style' ,'text', 'FontWeight', 'bold','Horizontal
 txtProcCurrent = uicontrol('parent', mainPanel, 'style' ,'text', 'FontWeight', 'bold','HorizontalAlignment', 'left','String','< no video >','position',[3*filterW-20 yVideos-160 2*filterW 20]);
 txtProcFrame = uicontrol('parent', mainPanel, 'style' ,'text', 'FontWeight', 'bold','HorizontalAlignment', 'left','String','Frames processed: 0 / 0','position',[3*filterW-20 yVideos-180 2*filterW 20]);
 
-
 % ----------
 % List of videos with no well
 % ----------
@@ -408,7 +407,6 @@ waitfor(mainFigure,'BeingDeleted','on');
             flagCancel = true;
         end
     end
-
 
     function selectNoWell(hObject, eventdata)
         try
